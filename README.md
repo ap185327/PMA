@@ -1,0 +1,2 @@
+# PMA
+Pali Morphological Analyzer
