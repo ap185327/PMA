@@ -338,6 +338,20 @@ namespace PMA.Application.ViewModels
 
         #region Overrides of ViewModelBase
 
+        #region Overrides of ViewModelBase<MorphPropertyViewModel>
+
+        /// <summary>
+        /// Action when the view appears.
+        /// </summary>
+        public override void OnAppearing()
+        {
+            base.OnAppearing();
+
+            _lastGetIdButtonClicked = GetIdButton.Main;
+        }
+
+        #endregion
+
         /// <summary>
         /// Presses a modal dialog button.
         /// </summary>

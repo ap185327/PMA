@@ -2,6 +2,7 @@
 //     Copyright 2017-2021 Andrey Pospelov. All rights reserved.
 // </copyright>
 
+using System;
 using PMA.Domain.Models;
 using PMA.Infrastructure.Entities;
 
@@ -42,8 +43,11 @@ namespace PMA.Infrastructure.Extensions
             entity.Parameter19 = entry.Parameters[19];
             entity.Parameter20 = entry.Parameters[20];
             entity.Base = entry.Base;
-            entity.IsVirtual = System.Convert.ToInt32(entry.IsVirtual);
+            entity.LeftEntryId = entry.Left?.Id ?? 0;
+            entity.RightEntryId = entry.Right?.Id ?? 0;
+            entity.IsVirtual = Convert.ToInt32(entry.IsVirtual);
             entity.Source = entry.Source;
+            entity.Updated = DateTime.UtcNow;
         }
     }
 }

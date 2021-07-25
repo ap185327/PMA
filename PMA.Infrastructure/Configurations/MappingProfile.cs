@@ -55,7 +55,8 @@ namespace PMA.Infrastructure.Configurations
                 .ForMember(dest => dest.Parameter19, act => act.MapFrom(src => src.Parameters[19]))
                 .ForMember(dest => dest.Parameter20, act => act.MapFrom(src => src.Parameters[20]))
                 .ForMember(dest => dest.LeftEntryId, act => act.MapFrom(src => src.Left != null ? src.Left.Id : 0))
-                .ForMember(dest => dest.RightEntryId, act => act.MapFrom(src => src.Right != null ? src.Right.Id : 0));
+                .ForMember(dest => dest.RightEntryId, act => act.MapFrom(src => src.Right != null ? src.Right.Id : 0))
+                .ForMember(dest => dest.Updated, act => act.MapFrom(src => DateTime.UtcNow));
 
             // MorphRuleEntity --> MorphRule
             CreateMap<MorphRuleEntity, MorphRule>().ConvertUsing(src => new MorphRule

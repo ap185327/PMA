@@ -173,40 +173,48 @@ namespace PMA.WinForms.Forms
                 TreeNode solutionNode;
                 if (hasChildren)
                 {
+                    if (currentDepthLevel <= MaxTreeViewDepthLevel) continue;
+
                     solutionNode = wordFormNode.Nodes[i];
+
+                    // LeftEntry
+                    if (solutionTreeNodeViewModel.LeftNode is not null)
+                    {
+                        AddChildNodes(solutionNode.Nodes[0], currentDepthLevel);
+                    }
+
+                    // RightEntry
+                    if (solutionTreeNodeViewModel.RightNode is not null)
+                    {
+                        AddChildNodes(solutionNode.Nodes[^1], currentDepthLevel);
+                    }
                 }
                 else
                 {
                     solutionNode = TreeNodeHelper.GetTreeNode(solutionTreeNodeViewModel, SolutionTreeView.Font);
 
                     wordFormNode.Nodes.Add(solutionNode);
-                }
 
-                // LeftEntry
-                if (solutionTreeNodeViewModel.LeftNode != null)
-                {
-                    if (solutionNode.Nodes.Count == 0)
+                    // LeftEntry
+                    if (solutionTreeNodeViewModel.LeftNode is not null)
                     {
                         solutionNode.Nodes.Add(TreeNodeHelper.GetTreeNode(solutionTreeNodeViewModel.LeftNode));
+
+                        if (currentDepthLevel > MaxTreeViewDepthLevel)
+                        {
+                            AddChildNodes(solutionNode.Nodes[0], currentDepthLevel);
+                        }
                     }
+
+                    // RightEntry
+                    if (solutionTreeNodeViewModel.RightNode is null) continue;
+
+                    solutionNode.Nodes.Add(TreeNodeHelper.GetTreeNode(solutionTreeNodeViewModel.RightNode));
 
                     if (currentDepthLevel > MaxTreeViewDepthLevel)
                     {
-                        AddChildNodes(solutionNode.Nodes[0], currentDepthLevel);
+                        AddChildNodes(solutionNode.Nodes[^1], currentDepthLevel);
                     }
-                }
-
-                // RightEntry
-                if (solutionTreeNodeViewModel.RightNode is null) continue;
-
-                if (solutionNode.Nodes.Count == 1)
-                {
-                    solutionNode.Nodes.Add(TreeNodeHelper.GetTreeNode(solutionTreeNodeViewModel.RightNode));
-                }
-
-                if (currentDepthLevel > MaxTreeViewDepthLevel)
-                {
-                    AddChildNodes(solutionNode.Nodes[1], currentDepthLevel);
                 }
             }
         }

@@ -90,7 +90,12 @@ namespace PMA.Application.ViewModels.Controls
         public int SelectedIndex
         {
             get => _selectedIndex;
-            set => SetProperty(ref _selectedIndex, value);
+            set
+            {
+                Logger.LogDebug($"Try to set SelectedIndex: {value} (SelectedIndex = {_selectedIndex}; Index = {Index}; Name = {Name}; TermEntries = {string.Join(",", TermEntries)}; TermIds = {string.Join(",", TermIds)})");
+
+                SetProperty(ref _selectedIndex, value);
+            }
         }
 
         /// <summary>
