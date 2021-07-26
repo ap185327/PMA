@@ -67,14 +67,12 @@ namespace PMA.Application.UseCases.Primary
                 return OperationResult.FailureResult(ErrorMessageConstants.MorphParameterIndexOutOfRange, inputData.StartIndex);
             }
 
-            int startIndex = inputData.StartIndex;
-
-            byte[] parameters = inputData.Properties.Where(x => x.Index < startIndex).OrderBy(x => x.Index).Select(x => x.TermIds[x.SelectedIndex]).ToArray();
-
-            var combinations = _morphCombinationManager.GetValidParameters(parameters);
-
-            for (int i = startIndex; i < MorphConstants.ParameterCount; i++)
+            for (int i = inputData.StartIndex; i < MorphConstants.ParameterCount; i++)
             {
+                byte[] parameters = inputData.Properties.Where(x => x.Index < i).OrderBy(x => x.Index).Select(x => x.TermIds[x.SelectedIndex]).ToArray();
+
+                var combinations = _morphCombinationManager.GetValidParameters(parameters);
+
                 var values = combinations.Select(x => x[i]).Distinct().ToList();
 
                 if (values.Count > 1)
