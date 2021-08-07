@@ -40,11 +40,6 @@ namespace PMA.Application.ViewModels
         private readonly ILogger<GetEntryIdControlViewModel> _controlLogger;
 
         /// <summary>
-        /// The current modal dialog.
-        /// </summary>
-        private ModalDialogName _currentModalDialog = ModalDialogName.None;
-
-        /// <summary>
         /// Initializes the new instance of <see cref="GetEntryIdViewModel"/> class.
         /// </summary>
         /// <param name="interactor">The get entry ID view model interactor.</param>
@@ -98,9 +93,7 @@ namespace PMA.Application.ViewModels
         /// <param name="modalButtonIndex">A button index.</param>
         protected override void PressModalDialogButton(int modalButtonIndex)
         {
-            base.PressModalDialogButton(modalButtonIndex);
-
-            switch (_currentModalDialog)
+            switch (CurrentModalDialog)
             {
                 case ModalDialogName.DeleteMorphEntry:
                     switch (modalButtonIndex)
@@ -117,7 +110,7 @@ namespace PMA.Application.ViewModels
                     break;
             }
 
-            _currentModalDialog = ModalDialogName.None;
+            base.PressModalDialogButton(modalButtonIndex);
         }
 
         /// <summary>
@@ -136,6 +129,7 @@ namespace PMA.Application.ViewModels
             if (!result.Success)
             {
                 Logger.LogErrors(result.Messages);
+                ShowErrorModalDialog(result.Messages);
             }
             else
             {
@@ -182,7 +176,7 @@ namespace PMA.Application.ViewModels
         /// <param name="count">Number of morphological entries.</param>
         private void ShowDeleteMorphEntryModalDialog(int count)
         {
-            _currentModalDialog = ModalDialogName.DeleteMorphEntry;
+            CurrentModalDialog = ModalDialogName.DeleteMorphEntry;
 
             OnShowModalDialog(ServiceLocator.TranslateService.Translate("GetEntryIdViewModel.MessageBoxTitle"),
                 ServiceLocator.TranslateService.Translate("GetEntryIdViewModel.DeleteEntryMessageBoxText", count),
@@ -202,7 +196,7 @@ namespace PMA.Application.ViewModels
         /// <param name="errorParents">The parents of morphological entries.</param>
         private void ShowMorphEntryDeletedModalDialog(IReadOnlyCollection<int> deletedIds, ICollection errorIds, List<MorphEntry> errorParents)
         {
-            _currentModalDialog = ModalDialogName.MorphEntryDeleted;
+            CurrentModalDialog = ModalDialogName.MorphEntryDeleted;
 
             var stringBuilder = new StringBuilder();
 
@@ -244,7 +238,7 @@ namespace PMA.Application.ViewModels
         /// <param name="entry">The morphological entry.</param>
         private void ShowMorphEntryNotFoundModalDialog(string entry)
         {
-            _currentModalDialog = ModalDialogName.MorphEntryNotFound;
+            CurrentModalDialog = ModalDialogName.MorphEntryNotFound;
 
             OnShowModalDialog(ServiceLocator.TranslateService.Translate("GetEntryIdViewModel.MessageBoxTitle"),
                 ServiceLocator.TranslateService.Translate("GetEntryIdViewModel.NotFoundEntryMessageBoxText", entry),
@@ -263,6 +257,7 @@ namespace PMA.Application.ViewModels
             if (!result.Success)
             {
                 Logger.LogErrors(result.Messages);
+                ShowErrorModalDialog(result.Messages);
                 return;
             }
 

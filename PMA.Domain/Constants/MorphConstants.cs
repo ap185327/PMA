@@ -23,5 +23,15 @@ namespace PMA.Domain.Constants
         /// The alternative unknown term ID.
         /// </summary>
         public const byte AlternativeUnknownTermId = 255;
+
+        /// <summary>
+        /// The auto chronological layer.
+        /// </summary>
+        public const uint AutoLayer = 0;
+
+        /// <summary>
+        /// The default chronological layer.
+        /// </summary>
+        public const int DefaultLayer = 6;
     }
 }

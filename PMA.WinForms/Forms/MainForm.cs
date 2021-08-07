@@ -242,6 +242,8 @@ namespace PMA.WinForms.Forms
                                 AnimToolStripStatusLabel.Enabled = true;
                                 LayerToolStripComboBox.Enabled = false;
                                 _depthToolStripNumberControl.Enabled = false;
+
+                                StartToolStripSplitButton.Enabled = true;
                             }
                             else
                             {
@@ -251,9 +253,11 @@ namespace PMA.WinForms.Forms
                                 AnimToolStripStatusLabel.Enabled = false;
                                 LayerToolStripComboBox.Enabled = true;
                                 _depthToolStripNumberControl.Enabled = true;
+
+                                StartToolStripSplitButton.Enabled = !_enterToolStripTextBox.IsWatermarkShown;
                             }
 
-                            StartToolStripSplitButton.Enabled = !_enterToolStripTextBox.IsWatermarkShown;
+                            
 
                             // to avoid incorrect display of the element _enterToolStripTextBox
                             // after changing the image of the element StartToolStripSplitButton.

@@ -11,6 +11,7 @@ using PMA.Domain.EventArguments;
 using PMA.Domain.Interfaces.Locators;
 using PMA.Domain.Interfaces.ViewModels.Base;
 using System;
+using System.Collections.Generic;
 using System.Windows.Input;
 
 namespace PMA.Application.ViewModels.Base
@@ -35,6 +36,11 @@ namespace PMA.Application.ViewModels.Base
         /// The logger.
         /// </summary>
         protected readonly ILogger<T> Logger;
+
+        /// <summary>
+        /// The current modal dialog.
+        /// </summary>
+        protected ModalDialogName CurrentModalDialog = ModalDialogName.None;
 
         /// <summary>
         /// Initializes the new instance of <see cref="ViewModelBase{T}"/> class.
@@ -163,7 +169,26 @@ namespace PMA.Application.ViewModels.Base
         /// </summary>
         private void OnHideModalDialog()
         {
+            CurrentModalDialog = ModalDialogName.None;
+
             HideModalDialog?.Invoke(this, EventArgs.Empty);
+        }
+
+        /// <summary>
+        /// Shows a dialog with error messages.
+        /// </summary>
+        /// <param name="errors">The collection of error messages.</param>
+        protected void ShowErrorModalDialog(IEnumerable<string> errors)
+        {
+            CurrentModalDialog = ModalDialogName.MorphEntryIsExist;
+
+            OnShowModalDialog(ServiceLocator.TranslateService.Translate("ViewModelBase.ErrorMessageBoxTitle"),
+                ServiceLocator.TranslateService.Translate("ViewModelBase.ErrorMessageBoxText", string.Join("\n", errors)),
+                new[]
+                {
+                    ServiceLocator.TranslateService.Translate("MessageBox.Button.Ok")
+                },
+                ModalDialogType.Error);
         }
     }
 }

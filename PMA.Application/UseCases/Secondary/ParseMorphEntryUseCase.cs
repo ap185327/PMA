@@ -22,6 +22,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using PMA.Domain.Interfaces.Services;
 
 namespace PMA.Application.UseCases.Secondary
 {
@@ -56,9 +57,19 @@ namespace PMA.Application.UseCases.Secondary
         private readonly IMorphCombinationManager _morphCombinationManager;
 
         /// <summary>
+        /// The setting service.
+        /// </summary>
+        private readonly ISettingService _settingService;
+
+        /// <summary>
         /// The input data.
         /// </summary>
         private MorphParserInputPort _inputData;
+
+        /// <summary>
+        /// The max depth level value.
+        /// </summary>
+        private int _maxDepthLevel;
 
         /// <summary>
         /// The current depth level value.
@@ -88,12 +99,14 @@ namespace PMA.Application.UseCases.Secondary
         /// <param name="morphEntryManager">The morphological entry manager.</param>
         /// <param name="morphRuleManager">The morphological rule manager.</param>
         /// <param name="morphCombinationManager">The morphological combination manager.</param>
+        /// <param name="settingService">The setting service.</param>
         /// <param name="mediator">The mediator.</param>
         /// <param name="parallelOptions">Options that configure the operation of methods on the <see cref="Parallel"/> class.</param>
         /// <param name="logger">The logger.</param>
         public ParseMorphEntryUseCase(IMorphEntryManager morphEntryManager,
             IMorphRuleManager morphRuleManager,
             IMorphCombinationManager morphCombinationManager,
+            ISettingService settingService,
             IMediator mediator,
             ParallelOptions parallelOptions,
             ILogger<ParseMorphEntryUseCase> logger) : base(mediator, parallelOptions, logger)
@@ -101,6 +114,7 @@ namespace PMA.Application.UseCases.Secondary
             _morphEntryManager = morphEntryManager;
             _morphRuleManager = morphRuleManager;
             _morphCombinationManager = morphCombinationManager;
+            _settingService = settingService;
 
             Logger.LogInit();
         }
@@ -137,6 +151,7 @@ namespace PMA.Application.UseCases.Secondary
             }
 
             _inputData = inputData;
+            _maxDepthLevel = _settingService.GetValue<int>("Options.MaxDepthLevel");
             CurrentDepthLevel = 0;
 
             var time = new Stopwatch();
@@ -161,9 +176,6 @@ namespace PMA.Application.UseCases.Secondary
 
             // Clear
             _tempDictionary.Clear();
-            _morphCombinationManager.Clear();
-            _morphEntryManager.Clear();
-            _morphRuleManager.Clear();
             _inputData = null;
 
             Logger.LogExit();
@@ -301,7 +313,7 @@ namespace PMA.Application.UseCases.Secondary
 
             string key = draftSolution.GetUniqKey(left, right, sandhiMatch);
 
-            if (currentDepthLevel > _inputData.MaxDepthLevel)
+            if (currentDepthLevel > _maxDepthLevel)
             {
                 key += ";";
 
@@ -398,12 +410,16 @@ namespace PMA.Application.UseCases.Secondary
 
             if (left != null)
             {
-                solution.Left = left.Id > 0 ? GetWordFormFromMorphEntry(left, currentDepthLevel) : WordFormFactory.Create(left.Entry);
+                solution.Left = left.Id > 0
+                    ? GetWordFormFromMorphEntry(_morphEntryManager.GetValue(left.Id), currentDepthLevel)
+                    : WordFormFactory.Create(left.Entry);
             }
 
             if (right is null) return solution;
 
-            solution.Right = right.Id > 0 ? GetWordFormFromMorphEntry(right, currentDepthLevel) : WordFormFactory.Create(right.Entry);
+            solution.Right = right.Id > 0
+                ? GetWordFormFromMorphEntry(_morphEntryManager.GetValue(right.Id), currentDepthLevel)
+                : WordFormFactory.Create(right.Entry);
 
             return solution;
         }

@@ -34,6 +34,11 @@ namespace PMA.Application.UseCases.Secondary
         private const int MaxSolutionsForCurrentThread = 20;
 
         /// <summary>
+        /// The number of processors on the current machine.
+        /// </summary>
+        private readonly int _processorCount = Environment.ProcessorCount;
+
+        /// <summary>
         /// The input data.
         /// </summary>
         private MorphParserInputPort _inputData;
@@ -220,7 +225,7 @@ namespace PMA.Application.UseCases.Secondary
                     }
                 }
 
-                var actions = new Action[ParallelOptions.MaxDegreeOfParallelism];
+                var actions = new Action[_processorCount];
                 actions.Fill(DynamicAction);
 
                 Parallel.Invoke(ParallelOptions, actions);

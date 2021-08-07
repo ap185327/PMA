@@ -9,7 +9,7 @@ using PMA.Domain.Interfaces.Interactors.Base;
 namespace PMA.Domain.Interfaces.Interactors.Secondary
 {
     /// <summary>
-    /// Initializes a new instance of the IMorphParserInteractor interfacing class.
+    /// Initializes a new instance of the <see cref="IMorphParserInteractor"/> interfacing class.
     /// </summary>
     public interface IMorphParserInteractor : IInteractor
     {
@@ -75,5 +75,11 @@ namespace PMA.Domain.Interfaces.Interactors.Secondary
         /// <param name="inputData">The input data.</param>
         /// <returns>The result of operation.</returns>
         OperationResult ValidateSolutions(MorphParserInputPort inputData);
+
+        /// <summary>
+        /// Clears manager cache.
+        /// </summary>
+        /// <returns>The result of operation.</returns>
+        OperationResult ClearCache();
     }
 }

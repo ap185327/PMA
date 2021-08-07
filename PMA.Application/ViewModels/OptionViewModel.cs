@@ -108,6 +108,7 @@ namespace PMA.Application.ViewModels
             if (!result.Success)
             {
                 Logger.LogErrors(result.Messages);
+                ShowErrorModalDialog(result.Messages);
             }
             else
             {
@@ -147,6 +148,7 @@ namespace PMA.Application.ViewModels
             if (!result.Success)
             {
                 Logger.LogErrors(result.Messages);
+                ShowErrorModalDialog(result.Messages);
             }
         }
 

@@ -18,6 +18,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
+using PMA.Domain.Interfaces.Services;
 
 namespace PMA.Application.UseCases.Secondary
 {
@@ -32,18 +33,31 @@ namespace PMA.Application.UseCases.Secondary
         private const int MaxSolutionsForCurrentThread = 20;
 
         /// <summary>
+        /// The setting service.
+        /// </summary>
+        private readonly ISettingService _settingService;
+
+        /// <summary>
         /// THe input data.
         /// </summary>
         private MorphParserInputPort _inputData;
 
         /// <summary>
+        /// The max depth level value.
+        /// </summary>
+        private int _maxDepthLevel;
+
+        /// <summary>
         /// Initializes a new instance of <see cref="RemoveSolutionWithExcessiveDepthUseCase"/> class.
         /// </summary>
+        /// <param name="settingService">The setting service.</param>
         /// <param name="mediator">The mediator.</param>
         /// <param name="parallelOptions">Options that configure the operation of methods on the <see cref="Parallel"/> class.</param>
         /// <param name="logger">The logger.</param>
-        public RemoveSolutionWithExcessiveDepthUseCase(IMediator mediator, ParallelOptions parallelOptions, ILogger<RemoveSolutionWithExcessiveDepthUseCase> logger) : base(mediator, parallelOptions, logger)
+        public RemoveSolutionWithExcessiveDepthUseCase(ISettingService settingService, IMediator mediator, ParallelOptions parallelOptions, ILogger<RemoveSolutionWithExcessiveDepthUseCase> logger) : base(mediator, parallelOptions, logger)
         {
+            _settingService = settingService;
+
             Logger.LogInit();
         }
 
@@ -79,6 +93,7 @@ namespace PMA.Application.UseCases.Secondary
             }
 
             _inputData = inputData;
+            _maxDepthLevel = _settingService.GetValue<int>("Options.MaxDepthLevel");
 
             var time = new Stopwatch();
 
@@ -187,7 +202,7 @@ namespace PMA.Application.UseCases.Secondary
                 currentDepthLevel++;
             }
 
-            if (solution.Content.Id == 0 && currentDepthLevel > _inputData.MaxDepthLevel) return true;
+            if (solution.Content.Id == 0 && currentDepthLevel > _maxDepthLevel) return true;
 
             var left = solution.Left;
             var right = solution.Right;

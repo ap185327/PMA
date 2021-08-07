@@ -34,6 +34,11 @@ namespace PMA.Application.UseCases.Secondary
         private const int MaxSolutionsForCurrentThread = 40;
 
         /// <summary>
+        /// The number of processors on the current machine.
+        /// </summary>
+        private readonly int _processorCount = Environment.ProcessorCount;
+
+        /// <summary>
         /// The morphological combination manager.
         /// </summary>
         private readonly IMorphCombinationManager _morphCombinationManager;
@@ -102,7 +107,6 @@ namespace PMA.Application.UseCases.Secondary
             Logger.LogInformation($"UpdateSolutionUseCase.Execute() => {time.ElapsedMilliseconds} ms");
 
             _inputData = null;
-            _morphCombinationManager.Clear();
 
             Logger.LogExit();
             return OperationResult.SuccessResult();
@@ -143,7 +147,7 @@ namespace PMA.Application.UseCases.Secondary
                     }
                 }
 
-                var actions = new Action[ParallelOptions.MaxDegreeOfParallelism];
+                var actions = new Action[_processorCount];
                 actions.Fill(DynamicAction);
 
                 Parallel.Invoke(ParallelOptions, actions);
@@ -185,15 +189,21 @@ namespace PMA.Application.UseCases.Secondary
 
             var parameterCollection = part.Solutions.Select(x => x.Content.Parameters).ToList();
 
-            byte[] collectiveParameters = parameterCollection.GetCollectiveParameters();
+            byte[] solutionCollectiveParameters = parameterCollection.GetCollectiveParameters();
 
-            bool isUpdated = parameters.UpdateByParameters(collectiveParameters);
+            bool isUpdated = parameters.UpdateByParameters(solutionCollectiveParameters);
 
-            if (!isUpdated) return;
+            bool isUpdated2;
 
-            if (_morphCombinationManager.CheckAndCache(parameters))
+            if (_morphCombinationManager.CheckAndCache(parameters, out byte[] collectiveParameters))
             {
-                solution.Content = SolutionContentFactory.Clone(solution.Content, parameters);
+                isUpdated2 = parameters.UpdateByParameters(collectiveParameters);
+
+                if (isUpdated || isUpdated2)
+                {
+                    solution.Content = SolutionContentFactory.Clone(solution.Content, parameters);
+                }
+
                 return;
             }
 
@@ -202,9 +212,9 @@ namespace PMA.Application.UseCases.Secondary
 
             for (int i = 0; i < MorphConstants.ParameterCount; i++)
             {
-                if (collectiveParameters[i] == MorphConstants.UnknownTermId || parameters[i] != MorphConstants.UnknownTermId) continue;
+                if (solutionCollectiveParameters[i] == MorphConstants.UnknownTermId || parameters[i] != MorphConstants.UnknownTermId) continue;
 
-                parameters[i] = collectiveParameters[i];
+                parameters[i] = solutionCollectiveParameters[i];
 
                 if (!_morphCombinationManager.CheckAndCache(parameters))
                 {
@@ -216,7 +226,11 @@ namespace PMA.Application.UseCases.Secondary
                 }
             }
 
-            if (isUpdated)
+            _morphCombinationManager.CheckAndCache(parameters, out collectiveParameters);
+
+            isUpdated2 = parameters.UpdateByParameters(collectiveParameters);
+
+            if (isUpdated || isUpdated2)
             {
                 solution.Content = SolutionContentFactory.Clone(solution.Content, parameters);
             }

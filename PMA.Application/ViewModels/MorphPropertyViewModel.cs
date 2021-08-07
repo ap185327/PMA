@@ -45,11 +45,6 @@ namespace PMA.Application.ViewModels
         private GetIdButton _lastGetIdButtonClicked = GetIdButton.Main;
 
         /// <summary>
-        /// The current modal dialog.
-        /// </summary>
-        private ModalDialogName _currentModalDialog = ModalDialogName.None;
-
-        /// <summary>
         /// Initializes the new instance of <see cref="MorphPropertyViewModel"/> class.
         /// </summary>
         /// <param name="interactor">The morphological property view model interactor.</param>
@@ -79,6 +74,7 @@ namespace PMA.Application.ViewModels
             if (!result.Success)
             {
                 Logger.LogErrors(result.Messages);
+                ShowErrorModalDialog(result.Messages);
             }
 
             foreach (var property in Properties)
@@ -358,9 +354,7 @@ namespace PMA.Application.ViewModels
         /// <param name="modalButtonIndex">A button index.</param>
         protected override void PressModalDialogButton(int modalButtonIndex)
         {
-            base.PressModalDialogButton(modalButtonIndex);
-
-            switch (_currentModalDialog)
+            switch (CurrentModalDialog)
             {
                 case ModalDialogName.SaveMorphEntry:
                     switch (modalButtonIndex)
@@ -427,7 +421,7 @@ namespace PMA.Application.ViewModels
                     break;
             }
 
-            _currentModalDialog = ModalDialogName.None;
+            base.PressModalDialogButton(modalButtonIndex);
         }
 
         #endregion
@@ -510,16 +504,15 @@ namespace PMA.Application.ViewModels
             var inputData = new MorphParserInputPort
             {
                 MorphEntry = morphEntry,
-                ParsingType = ServiceLocator.SettingService.GetValue<bool>("Options.DebugMode") ? MorphParsingType.Debug : MorphParsingType.Release,
-                MaxDepthLevel = ServiceLocator.SettingService.GetValue<int>("Options.MaxDepthLevel")
+                ParsingType = ServiceLocator.SettingService.GetValue<bool>("Options.DebugMode") ? MorphParsingType.Debug : MorphParsingType.Release
             };
 
             var result = _interactor.StartAnalysis(inputData);
 
-            if (!result.Success)
-            {
-                Logger.LogErrors(result.Messages);
-            }
+            if (result.Success) return;
+
+            Logger.LogErrors(result.Messages);
+            ShowErrorModalDialog(result.Messages);
         }
 
         /// <summary>
@@ -529,10 +522,10 @@ namespace PMA.Application.ViewModels
         {
             var result = _interactor.StopAnalysis();
 
-            if (!result.Success)
-            {
-                Logger.LogErrors(result.Messages);
-            }
+            if (result.Success) return;
+
+            Logger.LogErrors(result.Messages);
+            ShowErrorModalDialog(result.Messages);
         }
 
         /// <summary>
@@ -560,6 +553,9 @@ namespace PMA.Application.ViewModels
         /// </summary>
         private void Save()
         {
+            if (IsLeftChecked && LeftId == 0) return;
+            if (IsRightChecked && RightId == 0) return;
+
             ShowSaveMorphEntryModalDialog();
         }
 
@@ -706,7 +702,11 @@ namespace PMA.Application.ViewModels
                         for (int i = 0; i < morphEntry.Parameters.Length; i++)
                         {
                             var property = Properties[i];
-                            property.SelectedIndex = property.TermIds.IndexOf(morphEntry.Parameters[i]);
+
+                            property.SelectedIndex =
+                                property.TermIds.Count == 1 && morphEntry.Parameters[i] == MorphConstants.UnknownTermId
+                                    ? 0
+                                    : property.TermIds.IndexOf(morphEntry.Parameters[i]);
                         }
 
                         break;
@@ -745,6 +745,7 @@ namespace PMA.Application.ViewModels
                     if (!result.Success)
                     {
                         Logger.LogErrors(result.Messages);
+                        ShowErrorModalDialog(result.Messages);
                     }
 
                     foreach (var property in Properties)
@@ -760,7 +761,7 @@ namespace PMA.Application.ViewModels
         /// </summary>
         private void ShowSaveMorphEntryModalDialog()
         {
-            _currentModalDialog = ModalDialogName.SaveMorphEntry;
+            CurrentModalDialog = ModalDialogName.SaveMorphEntry;
 
             OnShowModalDialog(ServiceLocator.TranslateService.Translate("MorphPropertyViewModel.MessageBoxTitle"),
                 ServiceLocator.TranslateService.Translate("MorphPropertyViewModel.SaveEntryMessageBoxText", Entry),
@@ -777,7 +778,7 @@ namespace PMA.Application.ViewModels
         /// </summary>
         private void ShowDeleteMorphEntryModalDialog()
         {
-            _currentModalDialog = ModalDialogName.DeleteMorphEntry;
+            CurrentModalDialog = ModalDialogName.DeleteMorphEntry;
 
             OnShowModalDialog(ServiceLocator.TranslateService.Translate("MorphPropertyViewModel.MessageBoxTitle"),
                 ServiceLocator.TranslateService.Translate("MorphPropertyViewModel.DeleteEntryMessageBoxText", EntryId),
@@ -795,7 +796,7 @@ namespace PMA.Application.ViewModels
         /// <param name="ids">The collection of existing morphological entry IDs.</param>
         private void ShowMorphEntryIsExistModalDialog(IEnumerable<int> ids)
         {
-            _currentModalDialog = ModalDialogName.MorphEntryIsExist;
+            CurrentModalDialog = ModalDialogName.MorphEntryIsExist;
 
             OnShowModalDialog(ServiceLocator.TranslateService.Translate("MorphPropertyViewModel.MessageBoxTitle"),
                 ServiceLocator.TranslateService.Translate("MorphPropertyViewModel.EntryIsExistMessageBoxText", Entry, string.Join(",", ids)),
@@ -814,7 +815,7 @@ namespace PMA.Application.ViewModels
         /// <param name="error">The morphological entry error.</param>
         private void ShowSaveMorphEntryErrorModalDialog(string error)
         {
-            _currentModalDialog = ModalDialogName.SaveMorphEntryError;
+            CurrentModalDialog = ModalDialogName.SaveMorphEntryError;
 
             OnShowModalDialog(ServiceLocator.TranslateService.Translate("MorphPropertyViewModel.MessageBoxTitle"),
                 error,
@@ -827,7 +828,7 @@ namespace PMA.Application.ViewModels
         /// <param name="parentMorphEntries">The collection of parent morphological entries.</param>
         private void ShowDeleteMorphEntryErrorModalDialog(IList<MorphEntry> parentMorphEntries)
         {
-            _currentModalDialog = ModalDialogName.DeleteMorphEntryError;
+            CurrentModalDialog = ModalDialogName.DeleteMorphEntryError;
 
             var stringBuilder = new StringBuilder();
             stringBuilder.Append(ServiceLocator.TranslateService.Translate("MorphPropertyViewModel.EntryCannotBeDeletedHeader"));
@@ -857,7 +858,7 @@ namespace PMA.Application.ViewModels
         /// <param name="entryId">The inserted morphological entry ID.</param>
         private void ShowMorphEntryInsertedModalDialog(string entry, int entryId)
         {
-            _currentModalDialog = ModalDialogName.MorphEntryInserted;
+            CurrentModalDialog = ModalDialogName.MorphEntryInserted;
 
             OnShowModalDialog(ServiceLocator.TranslateService.Translate("MorphPropertyViewModel.MessageBoxTitle"),
                 ServiceLocator.TranslateService.Translate("MorphPropertyViewModel.EntryInsertedMessageBoxText", entry, entryId),
@@ -871,7 +872,7 @@ namespace PMA.Application.ViewModels
         /// <param name="ids">The collection of updated morphological entry IDs.</param>
         private void ShowMorphEntryUpdatedModalDialog(string entry, IEnumerable<int> ids)
         {
-            _currentModalDialog = ModalDialogName.MorphEntryUpdated;
+            CurrentModalDialog = ModalDialogName.MorphEntryUpdated;
 
             OnShowModalDialog(ServiceLocator.TranslateService.Translate("MorphPropertyViewModel.MessageBoxTitle"),
                 ServiceLocator.TranslateService.Translate("MorphPropertyViewModel.EntryUpdatedMessageBoxText", entry, string.Join(",", ids)),
@@ -884,7 +885,7 @@ namespace PMA.Application.ViewModels
         /// <param name="id">The deleted morphological entry ID.</param>
         private void ShowMorphEntryDeletedModalDialog(int id)
         {
-            _currentModalDialog = ModalDialogName.MorphEntryDeleted;
+            CurrentModalDialog = ModalDialogName.MorphEntryDeleted;
 
             OnShowModalDialog(ServiceLocator.TranslateService.Translate("MorphPropertyViewModel.MessageBoxTitle"),
                 ServiceLocator.TranslateService.Translate("MorphPropertyViewModel.EntryDeletedMessageBoxText", id),
@@ -904,6 +905,7 @@ namespace PMA.Application.ViewModels
             if (!result.Success)
             {
                 Logger.LogErrors(result.Messages);
+                ShowErrorModalDialog(result.Messages);
             }
             else
             {
@@ -930,6 +932,7 @@ namespace PMA.Application.ViewModels
             if (!result.Success)
             {
                 Logger.LogErrors(result.Messages);
+                ShowErrorModalDialog(result.Messages);
             }
             else
             {
@@ -954,6 +957,7 @@ namespace PMA.Application.ViewModels
             if (!result.Success)
             {
                 Logger.LogErrors(result.Messages);
+                ShowErrorModalDialog(result.Messages);
             }
             else
             {

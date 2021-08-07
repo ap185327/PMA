@@ -13,23 +13,18 @@ namespace PMA.Domain.InputPorts
     public class MorphParserInputPort
     {
         /// <summary>
-        /// Gets or sets a morphological entry.
+        /// Gets or initializes a morphological entry.
         /// </summary>
         public MorphEntry MorphEntry { get; init; }
 
         /// <summary>
-        /// Gets or sets a wordform.
+        /// Gets or initializes a wordform.
         /// </summary>
         public WordForm WordForm { get; set; }
 
         /// <summary>
-        /// Gets or sets a morphological parsing type.
+        /// Gets or initializes a morphological parsing type.
         /// </summary>
         public MorphParsingType ParsingType { get; init; }
-
-        /// <summary>
-        /// Gets or sets a maximum depth of wordform analysis according to morphological rules.
-        /// </summary>
-        public int MaxDepthLevel { get; init; }
     }
 }

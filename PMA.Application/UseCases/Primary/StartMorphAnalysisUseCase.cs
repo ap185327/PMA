@@ -91,6 +91,7 @@ namespace PMA.Application.UseCases.Primary
                         Logger.LogErrors(result.Messages);
                         return;
                     }
+
                     result = _morphParserInteractor.RemoveSolutionsWithExcessiveDepth(inputData);
 
                     if (!result.Success)
@@ -156,7 +157,15 @@ namespace PMA.Application.UseCases.Primary
                     }
 #endif
                 }
-                catch (OperationCanceledException) { }
+                catch (OperationCanceledException)
+                {
+                    if (inputData.WordForm is not null)
+                    {
+                        inputData.WordForm.Solutions = null;
+                    }
+                }
+
+                _morphParserInteractor.ClearCache();
 
                 // ReSharper disable once MethodSupportsCancellation
                 Mediator.Publish(new MorphParserNotification

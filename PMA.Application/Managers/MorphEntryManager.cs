@@ -40,6 +40,16 @@ namespace PMA.Application.Managers
         #region Implementation of IMorphEntryService
 
         /// <summary>
+        /// Get morphological entry by ID.
+        /// </summary>
+        /// <param name="id">The ID.</param>
+        /// <returns>The morphological entry.</returns>
+        public MorphEntry GetValue(int id)
+        {
+            return _morphEntryDbProvider.GetValues().Single(x => x.Id == id);
+        }
+
+        /// <summary>
         /// Gets a collection of morphological entries by parameters.
         /// </summary>
         /// <param name="entry">The entry.</param>

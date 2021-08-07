@@ -148,8 +148,8 @@ namespace PMA.Application.UseCases.Primary
                 error = _translateService.Translate(MorphEntryError.EntryAlreadyExists);
             }
 
-            if (morphEntry.Left is not null) morphEntry.Left = _morphEntryDbProvider.GetValues().Single(x => x.Id == morphEntry.Left.Id);
-            if (morphEntry.Right is not null) morphEntry.Right = _morphEntryDbProvider.GetValues().Single(x => x.Id == morphEntry.Right.Id);
+            if (morphEntry.Left is not null) morphEntry.Left = _morphEntryManager.GetValue(morphEntry.Left.Id);
+            if (morphEntry.Right is not null) morphEntry.Right = _morphEntryManager.GetValue(morphEntry.Right.Id);
 
             return error;
         }

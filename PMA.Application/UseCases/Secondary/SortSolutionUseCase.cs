@@ -100,12 +100,12 @@ namespace PMA.Application.UseCases.Secondary
             }
 
             _inputData = inputData;
+            UpdateLayer();
+            UpdateRatingRatios();
 
             var time = new Stopwatch();
 
             time.Start();
-            _freqRatingManager.SetLayerByEntry(_inputData.WordForm.Entry);
-            UpdateRatingRatios();
             InternalExecute(_inputData.WordForm);
             time.Stop();
 
@@ -121,6 +121,23 @@ namespace PMA.Application.UseCases.Secondary
         }
 
         #endregion
+
+        /// <summary>
+        /// Updates chronological layer.
+        /// </summary>
+        private void UpdateLayer()
+        {
+            uint layer = _settingService.GetValue<uint>("Options.Layer");
+
+            if (layer == MorphConstants.AutoLayer)
+            {
+                _freqRatingManager.SetLayerByEntry(_inputData.WordForm.Entry);
+            }
+            else
+            {
+                _freqRatingManager.SetLayer(layer);
+            }
+        }
 
         /// <summary>
         /// Updates rating ratios.
@@ -151,9 +168,17 @@ namespace PMA.Application.UseCases.Secondary
                 CalculateRating(solution);
             }
 
-            if (solutions.Count > 1 && _inputData.ParsingType != MorphParsingType.Debug)
+            if (solutions.Count > 1)
             {
-                wordForm.Solutions = solutions.OrderByDescending(x => x.Rating).ToList();
+                if (_inputData.ParsingType == MorphParsingType.Debug)
+                {
+                    wordForm.Solutions = solutions.Where(x => x.Rules is not null).OrderBy(x => x.Rules[0].Id).ToList();
+                    wordForm.Solutions.AddRange(solutions.Where(x => x.Rules is null).OrderByDescending(x => x.Rating));
+                }
+                else
+                {
+                    wordForm.Solutions = solutions.OrderByDescending(x => x.Rating).ToList();
+                }
             }
         }
 

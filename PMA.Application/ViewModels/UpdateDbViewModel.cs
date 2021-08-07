@@ -210,10 +210,10 @@ namespace PMA.Application.ViewModels
 
             var result = _interactor.StartDbUpdating(inputData);
 
-            if (!result.Success)
-            {
-                Logger.LogErrors(result.Messages);
-            }
+            if (result.Success) return;
+
+            Logger.LogErrors(result.Messages);
+            ShowErrorModalDialog(result.Messages);
         }
 
         /// <summary>
@@ -223,10 +223,10 @@ namespace PMA.Application.ViewModels
         {
             var result = _interactor.StopDbUpdating();
 
-            if (!result.Success)
-            {
-                Logger.LogErrors(result.Messages);
-            }
+            if (result.Success) return;
+
+            Logger.LogErrors(result.Messages);
+            ShowErrorModalDialog(result.Messages);
         }
 
         /// <summary>
@@ -234,14 +234,13 @@ namespace PMA.Application.ViewModels
         /// </summary>
         private void Reset()
         {
-            if (!IsBusy)
-            {
-                IsSandhiGroupDbTableChecked = true;
-                IsSandhiRuleDbTableChecked = true;
-                IsMorphRuleDbTableChecked = true;
-                IsMorphCombinationDbTableChecked = true;
-                DataFilePath = string.Empty;
-            }
+            if (IsBusy) return;
+
+            IsSandhiGroupDbTableChecked = true;
+            IsSandhiRuleDbTableChecked = true;
+            IsMorphRuleDbTableChecked = true;
+            IsMorphCombinationDbTableChecked = true;
+            DataFilePath = string.Empty;
         }
     }
 }

@@ -303,7 +303,7 @@ namespace PMA.Application.ViewModels
         /// <param name="cancellationToken">Cancellation token</param>
         public Task Handle(DepthLevelNotification notification, CancellationToken cancellationToken)
         {
-            _currentDepthLevel = notification.CurrentDepthLevel; ;
+            _currentDepthLevel = notification.CurrentDepthLevel;
 
             return Task.CompletedTask;
         }
@@ -318,16 +318,15 @@ namespace PMA.Application.ViewModels
             var inputData = new MorphParserInputPort
             {
                 MorphEntry = MorphEntryFactory.Create(InputText),
-                ParsingType = ServiceLocator.SettingService.GetValue<bool>("Options.DebugMode") ? MorphParsingType.Debug : MorphParsingType.Release,
-                MaxDepthLevel = MaxDepthLevel
+                ParsingType = ServiceLocator.SettingService.GetValue<bool>("Options.DebugMode") ? MorphParsingType.Debug : MorphParsingType.Release
             };
 
             var result = _interactor.StartAnalysis(inputData);
 
-            if (!result.Success)
-            {
-                Logger.LogErrors(result.Messages);
-            }
+            if (result.Success) return;
+
+            Logger.LogErrors(result.Messages);
+            ShowErrorModalDialog(result.Messages);
         }
 
         /// <summary>
@@ -337,10 +336,10 @@ namespace PMA.Application.ViewModels
         {
             var result = _interactor.StopAnalysis();
 
-            if (!result.Success)
-            {
-                Logger.LogErrors(result.Messages);
-            }
+            if (result.Success) return;
+
+            Logger.LogErrors(result.Messages);
+            ShowErrorModalDialog(result.Messages);
         }
 
         /// <summary>

@@ -115,6 +115,7 @@ namespace PMA.Application.ViewModels.Controls
                 if (!result.Success)
                 {
                     Logger.LogErrors(result.Messages);
+                    ShowErrorModalDialog(result.Messages);
                 }
                 else
                 {

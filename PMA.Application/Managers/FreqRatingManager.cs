@@ -14,7 +14,7 @@ using System.Linq;
 namespace PMA.Application.Managers
 {
     /// <summary>
-    /// The frequency rating manager.
+    /// The frequency rating manager class.
     /// </summary>
     public sealed class FreqRatingManager : IFreqRatingManager
     {
@@ -91,7 +91,7 @@ namespace PMA.Application.Managers
                 ratings[i] = (double)sums[i] / _maxCounts[i];
             }
 
-            _layer = ratings.Sum() == 0 ? 6 : ratings.MaxIndex() + 1; // 6 is default layer
+            _layer = ratings.Sum() == 0 ? MorphConstants.DefaultLayer : ratings.MaxIndex() + 1;
         }
 
         /// <summary>
@@ -130,7 +130,6 @@ namespace PMA.Application.Managers
         public void Clear()
         {
             _tempDictionary.Clear();
-            _layer = -1;
         }
 
         #endregion

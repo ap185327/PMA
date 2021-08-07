@@ -13,6 +13,7 @@ using PMA.Domain.Models;
 using PMA.Utils.Extensions;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace PMA.Application.UseCases.Primary
@@ -58,7 +59,7 @@ namespace PMA.Application.UseCases.Primary
 
             try
             {
-                var morphEntries = _morphEntryManager.GetValues(inputData.Entry, inputData.Parameters, inputData.Base, inputData.IsVirtual, inputData.Left, inputData.Right);
+                var morphEntries = _morphEntryManager.GetValues(inputData.Entry, inputData.Parameters, inputData.Base, inputData.IsVirtual, inputData.Left, inputData.Right).Where(x => x.Id > 0).ToList();
 
                 return OperationResult<IList<MorphEntry>>.SuccessResult(morphEntries);
             }

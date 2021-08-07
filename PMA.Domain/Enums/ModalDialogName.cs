@@ -10,6 +10,7 @@ namespace PMA.Domain.Enums
     public enum ModalDialogName
     {
         None,
+        Error,
         SaveMorphEntry,
         DeleteMorphEntry,
         MorphEntryIsExist,

@@ -12,6 +12,7 @@ using PMA.Domain.Notifications;
 using PMA.Utils.Extensions;
 using System.Threading;
 using System.Threading.Tasks;
+using PMA.Domain.Enums;
 
 namespace PMA.Application.UseCases.Primary
 {
@@ -49,6 +50,11 @@ namespace PMA.Application.UseCases.Primary
                 Logger.LogError(ErrorMessageConstants.CancellationIsAlreadyRequested);
                 return OperationResult.FailureResult(ErrorMessageConstants.CancellationIsAlreadyRequested);
             }
+
+            Mediator.Publish(new MorphParserNotification
+            {
+                State = ProcessState.Canceling
+            });
 
             _cancellationTokenSource.Cancel();
             _cancellationTokenSource = null;

@@ -106,7 +106,7 @@ namespace PMA.Application.UseCases.Primary
 
                 if (inputData.Id > 0)
                 {
-                    var morphEntry = _morphEntryDbProvider.GetValues().Single(x => x.Id == inputData.Id);
+                    var morphEntry = _morphEntryManager.GetValue(inputData.Id);
 
                     morphEntry.Entry = inputData.Entry;
                     morphEntry.Parameters = inputData.Parameters;
@@ -214,6 +214,9 @@ namespace PMA.Application.UseCases.Primary
             {
                 error = _translateService.Translate(MorphEntryError.NoMorphCombinationMatches);
             }
+
+            if (morphEntry.Left is not null) morphEntry.Left = _morphEntryManager.GetValue(morphEntry.Left.Id);
+            if (morphEntry.Right is not null) morphEntry.Right = _morphEntryManager.GetValue(morphEntry.Right.Id);
 
             return error;
         }

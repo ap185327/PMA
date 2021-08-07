@@ -2,6 +2,7 @@
 //     Copyright 2017-2021 Andrey Pospelov. All rights reserved.
 // </copyright>
 
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using PMA.Domain.Interfaces.Services;
 using PMA.Infrastructure.DbContexts;
@@ -32,7 +33,7 @@ namespace PMA.Infrastructure.Services
         {
             Logger.LogInit();
 
-            _dictionary = context.Strings.Select(x => new
+            _dictionary = context.Strings.AsNoTracking().Select(x => new
             {
                 Key = x.Name,
                 x.Value,

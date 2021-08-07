@@ -179,10 +179,10 @@ namespace PMA.Application.ViewModels
 
             var result = _interactor.StartImportMorphEntries(inputData);
 
-            if (!result.Success)
-            {
-                Logger.LogErrors(result.Messages);
-            }
+            if (result.Success) return;
+
+            Logger.LogErrors(result.Messages);
+            ShowErrorModalDialog(result.Messages);
         }
 
         /// <summary>
@@ -192,10 +192,10 @@ namespace PMA.Application.ViewModels
         {
             var result = _interactor.StopImportMorphEntries();
 
-            if (!result.Success)
-            {
-                Logger.LogErrors(result.Messages);
-            }
+            if (result.Success) return;
+
+            Logger.LogErrors(result.Messages);
+            ShowErrorModalDialog(result.Messages);
         }
 
         /// <summary>
@@ -203,12 +203,11 @@ namespace PMA.Application.ViewModels
         /// </summary>
         private void Reset()
         {
-            if (!IsBusy)
-            {
-                IsAnalyzeBeforeImportChecked = true;
-                AnalyzeProgressBarValue = 0;
-                DataFilePath = string.Empty;
-            }
+            if (IsBusy) return;
+
+            IsAnalyzeBeforeImportChecked = true;
+            AnalyzeProgressBarValue = 0;
+            DataFilePath = string.Empty;
         }
     }
 }

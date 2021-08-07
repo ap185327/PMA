@@ -257,6 +257,7 @@ namespace PMA.WinForms.Forms
                     case "IsLeftChecked":
                         {
                             UpdateLeftControls();
+                            UpdateButtons();
                             break;
                         }
                     case "RightEntry":
@@ -264,6 +265,7 @@ namespace PMA.WinForms.Forms
                     case "IsRightChecked":
                         {
                             UpdateRightControls();
+                            UpdateButtons();
                             break;
                         }
                     case "EntryId":
@@ -384,7 +386,7 @@ namespace PMA.WinForms.Forms
             {
                 ResetButton.Enabled = true;
                 DeleteButton.Enabled = _morphPropertyViewModel.EntryId != 0;
-                SaveButton.Enabled = !string.IsNullOrEmpty(_morphPropertyViewModel.Entry);
+                SaveButton.Enabled = !string.IsNullOrEmpty(_morphPropertyViewModel.Entry) && LeftIdLabel.ForeColor == Color.Black && RightIdLabel.ForeColor == Color.Black;
 
                 StartButton.Enabled = SaveButton.Enabled;
                 StartButton.Image = Properties.Resources.start;

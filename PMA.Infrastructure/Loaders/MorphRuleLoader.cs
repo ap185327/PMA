@@ -304,7 +304,7 @@ namespace PMA.Infrastructure.Loaders
         /// </summary>
         private void SplitRows()
         {
-            var splitColumns = new List<string> { "Label", "LeftLabel", "RightLabel" };
+            var splitColumns = new List<string> { "Label", "LeftLabel", "LeftEntry", "RightLabel", "RightEntry" };
 
             for (int i = 0; i < MorphConstants.ParameterCount; i++)
             {
@@ -541,11 +541,18 @@ namespace PMA.Infrastructure.Loaders
 
                     if (filteredMorphCombinations.Any()) continue;
 
-                    rawLogMessages.Add(new RawLogMessage
+                    object[] parameters = { (string)row["Id"], prefix + "Info" };
+
+                    if (!rawLogMessages.Any(x =>
+                        x.Parameters[0] == parameters[0] &&
+                        x.Parameters[1] == parameters[1]))
                     {
-                        Type = LogMessageType.DataTableMorphCombinationValidationFailed,
-                        Parameters = new object[] { (string)row["Id"], prefix + "Info" }
-                    });
+                        rawLogMessages.Add(new RawLogMessage
+                        {
+                            Type = LogMessageType.DataTableMorphCombinationValidationFailed,
+                            Parameters = parameters
+                        });
+                    }
 
                     break;
                 }

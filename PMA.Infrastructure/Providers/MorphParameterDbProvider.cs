@@ -12,6 +12,7 @@ using PMA.Utils.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.EntityFrameworkCore;
 
 namespace PMA.Infrastructure.Providers
 {
@@ -36,8 +37,8 @@ namespace PMA.Infrastructure.Providers
             Logger.LogInit();
 
             var settings = context.Settings.ToList();
-            var strings = context.Strings.ToList();
-            var morphParameterEntities = context.MorphParameters.ToList();
+            var strings = context.Strings.AsNoTracking().ToList();
+            var morphParameterEntities = context.MorphParameters.AsNoTracking().ToList();
 
             _morphParameters = morphParameterEntities.Select(morphParameter =>
                 new MorphParameter

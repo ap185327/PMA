@@ -27,7 +27,7 @@ namespace PMA.Infrastructure.Providers
         private readonly IList<MorphEntry> _morphEntries;
 
         /// <summary>
-        /// Initializes the new instance of <see cref="DbProviderBase{T}"/> class.
+        /// Initializes the new instance of <see cref="MorphEntryDbProvider"/> class.
         /// </summary>
         /// <param name="context">The database context.</param>
         /// <param name="mapper">The mapper.</param>

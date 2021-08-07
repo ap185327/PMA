@@ -33,7 +33,7 @@ namespace PMA.Application
         public static void RegisterApplicationTypes(this ContainerBuilder builder)
         {
             // Configurations
-            builder.RegisterType<ParallelOptions>().WithProperty("MaxDegreeOfParallelism", Environment.ProcessorCount).SingleInstance();
+            builder.RegisterType<ParallelOptions>().SingleInstance();
             builder.RegisterType<Mediator>().As<IMediator>().SingleInstance();
             builder.Register<ServiceFactory>(context =>
             {
@@ -127,6 +127,7 @@ namespace PMA.Application
                 .SingleInstance();
 
             // Secondary UseCases
+            builder.RegisterType<ClearCacheUseCase>().As<IClearCacheUseCase>().SingleInstance();
             builder.RegisterType<CollapseSolutionUseCase>().As<ICollapseSolutionUseCase>().SingleInstance();
             builder.RegisterType<ParseMorphEntryUseCase>().As<IParseMorphEntryUseCase>().SingleInstance();
             builder.RegisterType<RemoveDuplicateUseCase>().As<IRemoveDuplicateUseCase>().SingleInstance();
@@ -165,7 +166,11 @@ namespace PMA.Application
                 .EnableInterfaceInterceptors()
                 .InterceptedBy(typeof(ILoggerInterceptor))
                 .SingleInstance();
-            builder.RegisterType<MorphRuleInfoViewModel>().As<IMorphRuleInfoViewModel>().SingleInstance();
+            builder.RegisterType<MorphRuleInfoViewModel>().As<IMorphRuleInfoViewModel>()
+                .As<INotificationHandler<MorphRuleNotification>>()
+                .EnableInterfaceInterceptors()
+                .InterceptedBy(typeof(ILoggerInterceptor))
+                .SingleInstance();
             builder.RegisterType<MorphSolutionViewModel>().As<IMorphSolutionViewModel>()
                 .As<INotificationHandler<MorphParserNotification>>()
                 .EnableInterfaceInterceptors()

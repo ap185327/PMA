@@ -60,17 +60,23 @@ namespace PMA.Application.Interactors.Secondary
         private readonly IValidateSolutionUseCase _validateSolutionUseCase;
 
         /// <summary>
+        /// The clear cache use case.
+        /// </summary>
+        private readonly IClearCacheUseCase _clearCacheUseCase;
+
+        /// <summary>
         /// Initializes the new instance of <see cref="MorphParserInteractor"/> class.
         /// </summary>
-        /// <param name="collapseSolutionUseCase"></param>
-        /// <param name="parseMorphEntryUseCase"></param>
-        /// <param name="removeDuplicateUseCase"></param>
-        /// <param name="removeSolutionWithExcessiveDepthUseCase"></param>
-        /// <param name="removeUnsuitableDerivativeSolutionUseCase"></param>
-        /// <param name="removeUnsuitableSolutionUseCase"></param>
-        /// <param name="sortSolutionUseCase"></param>
-        /// <param name="updateSolutionUseCase"></param>
-        /// <param name="validateSolutionUseCase"></param>
+        /// <param name="collapseSolutionUseCase">The collapse solution use case.</param>
+        /// <param name="parseMorphEntryUseCase">The parse morphological entry use case.</param>
+        /// <param name="removeDuplicateUseCase">The remove duplicate use case.</param>
+        /// <param name="removeSolutionWithExcessiveDepthUseCase">The remove solution with excessive depth use case.</param>
+        /// <param name="removeUnsuitableDerivativeSolutionUseCase">The remove unsuitable derivative solution use case.</param>
+        /// <param name="removeUnsuitableSolutionUseCase">The remove unsuitable solution use case.</param>
+        /// <param name="sortSolutionUseCase">The sort solution use case.</param>
+        /// <param name="updateSolutionUseCase">The update solution use case.</param>
+        /// <param name="validateSolutionUseCase">The validate solution use case.</param>
+        /// <param name="clearCacheUseCase">The clear cache use case.</param>
         public MorphParserInteractor(ICollapseSolutionUseCase collapseSolutionUseCase,
             IParseMorphEntryUseCase parseMorphEntryUseCase,
             IRemoveDuplicateUseCase removeDuplicateUseCase,
@@ -79,7 +85,8 @@ namespace PMA.Application.Interactors.Secondary
             IRemoveUnsuitableSolutionUseCase removeUnsuitableSolutionUseCase,
             ISortSolutionUseCase sortSolutionUseCase,
             IUpdateSolutionUseCase updateSolutionUseCase,
-            IValidateSolutionUseCase validateSolutionUseCase)
+            IValidateSolutionUseCase validateSolutionUseCase,
+            IClearCacheUseCase clearCacheUseCase)
         {
             _collapseSolutionUseCase = collapseSolutionUseCase;
             _parseMorphEntryUseCase = parseMorphEntryUseCase;
@@ -90,6 +97,7 @@ namespace PMA.Application.Interactors.Secondary
             _sortSolutionUseCase = sortSolutionUseCase;
             _updateSolutionUseCase = updateSolutionUseCase;
             _validateSolutionUseCase = validateSolutionUseCase;
+            _clearCacheUseCase = clearCacheUseCase;
         }
 
         #region Implementation of IMorphParserInteractor
@@ -182,6 +190,15 @@ namespace PMA.Application.Interactors.Secondary
         public OperationResult ValidateSolutions(MorphParserInputPort inputData)
         {
             return _validateSolutionUseCase.Execute(inputData);
+        }
+
+        /// <summary>
+        /// Clears manager cache.
+        /// </summary>
+        /// <returns>The result of operation.</returns>
+        public OperationResult ClearCache()
+        {
+            return _clearCacheUseCase.Execute();
         }
 
         #endregion

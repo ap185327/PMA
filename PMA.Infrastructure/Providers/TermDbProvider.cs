@@ -3,6 +3,7 @@
 // </copyright>
 
 using AutoMapper;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using PMA.Domain.Interfaces.Providers;
 using PMA.Domain.Models;
@@ -34,7 +35,7 @@ namespace PMA.Infrastructure.Providers
         {
             Logger.LogInit();
 
-            _terms = Context.Terms.ToList().Select(term =>
+            _terms = Context.Terms.AsNoTracking().ToList().Select(term =>
                 new Term
                 {
                     Id = term.Id,

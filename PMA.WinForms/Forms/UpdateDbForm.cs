@@ -365,7 +365,7 @@ namespace PMA.WinForms.Forms
             _openFileComboBox.Text = _dbUpdateViewModel.DataFilePath;
 
             ImportSandhiGroupsCheckBox.Checked = _dbUpdateViewModel.IsSandhiGroupDbTableChecked;
-            ImportSandhiRulesCheckBox.Checked = _dbUpdateViewModel.IsSandhiGroupDbTableChecked;
+            ImportSandhiRulesCheckBox.Checked = _dbUpdateViewModel.IsSandhiRuleDbTableChecked;
             ImportMorphRulesCheckBox.Checked = _dbUpdateViewModel.IsMorphRuleDbTableChecked;
             ImportMorphCombinationsCheckBox.Checked = _dbUpdateViewModel.IsMorphCombinationDbTableChecked;
 

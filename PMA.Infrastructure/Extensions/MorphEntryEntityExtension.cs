@@ -21,6 +21,7 @@ namespace PMA.Infrastructure.Extensions
         public static void OverrideBy(this MorphEntryEntity entity, MorphEntry entry)
         {
             entity.Id = entry.Id;
+            entity.Entry = entry.Entry;
             entity.Parameter0 = entry.Parameters[0];
             entity.Parameter1 = entry.Parameters[1];
             entity.Parameter2 = entry.Parameters[2];

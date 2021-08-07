@@ -14,6 +14,13 @@ namespace PMA.Domain.Interfaces.Managers
     public interface IMorphEntryManager
     {
         /// <summary>
+        /// Get morphological entry by ID.
+        /// </summary>
+        /// <param name="id">The ID.</param>
+        /// <returns>The morphological entry.</returns>
+        MorphEntry GetValue(int id);
+
+        /// <summary>
         /// Gets a collection of morphological entries by parameters.
         /// </summary>
         /// <param name="entry">The entry.</param>
