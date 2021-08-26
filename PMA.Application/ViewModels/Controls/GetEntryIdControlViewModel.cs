@@ -54,7 +54,7 @@ namespace PMA.Application.ViewModels.Controls
             Base = _morphEntry.Base.ToString().ToLower();
             Left = _morphEntry.Left is null ? string.Empty : _morphEntry.Left.Entry;
             Right = _morphEntry.Right is null ? string.Empty : _morphEntry.Right.Entry;
-            IsVirtual = _morphEntry.IsVirtual;
+            IsVirtual = _morphEntry.IsVirtual.HasValue && _morphEntry.IsVirtual.Value;
         }
 
         #region Implementation of IGetEntryIdControlViewModel

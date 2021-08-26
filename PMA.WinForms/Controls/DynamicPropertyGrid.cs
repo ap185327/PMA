@@ -7,6 +7,8 @@ using PMA.WinForms.EventArguments;
 using PMA.WinForms.Models;
 using PMA.WinForms.Types;
 using System;
+using System.Drawing;
+using System.Linq;
 using System.Windows.Forms;
 
 namespace PMA.WinForms.Controls
@@ -14,7 +16,7 @@ namespace PMA.WinForms.Controls
     /// <summary>
     /// Provides a user interface for browsing the dynamic properties of an object.
     /// </summary>
-    internal class DynamicPropertyGrid : PropertyGrid
+    internal sealed class DynamicPropertyGrid : PropertyGrid
     {
         /// <summary>
         /// Gets or sets the collection of selected property values.
@@ -36,12 +38,30 @@ namespace PMA.WinForms.Controls
         /// </summary>
         public DynamicPropertyGrid()
         {
+            BackColor = Color.LightYellow;
+
             SelectedObject = _dynamicPropertyCollection;
 
             ActiveControl.Controls[1].GotFocus += DynamicPropertyGrid_GotFocus;
             SelectedGridItemChanged += DynamicPropertyGrid_SelectedGridItemChanged;
             PropertyValueChanged += DynamicPropertyGrid_PropertyValueChanged;
         }
+
+        #region Overrides of PropertyGrid
+
+        /// <summary>
+        /// Forces the control to invalidate its client area and immediately redraw itself and any child controls.
+        /// </summary>
+        public override void Refresh()
+        {
+            BackColor = _dynamicPropertyCollection.Cast<DynamicProperty>().Any(x => x.Values.Length > 1 && (string)x.Value == x.Values[0])
+                ? Color.LightYellow
+                : DefaultBackColor;
+
+            base.Refresh();
+        }
+
+        #endregion
 
         /// <summary>
         /// Adds a new dynamic property.

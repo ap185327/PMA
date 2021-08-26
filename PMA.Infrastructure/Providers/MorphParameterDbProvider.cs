@@ -45,6 +45,7 @@ namespace PMA.Infrastructure.Providers
                 {
                     Id = morphParameter.Id,
                     Name = strings.Single(x => x.Name == $"MorphParameters[{morphParameter.Id}].Name").Value,
+                    PropertyName = strings.Single(x => x.Name == $"MorphParameters[{morphParameter.Id}].PropertyName").Value,
                     Category = strings.Single(x => x.Name == $"MorphParameters.Category[{morphParameter.CategoryId}]").Value,
                     Description = strings.Single(x => x.Name == $"MorphParameters[{morphParameter.Id}].Description").Value,
                     UseAltPropertyEntry = Convert.ToBoolean(morphParameter.UseAltPropertyEntry),

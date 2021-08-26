@@ -199,7 +199,7 @@ namespace PMA.Application.UseCases.Secondary
             // ReSharper disable once CompareOfFloatsByEqualityOperator
             if (solution.Rules is null && solution.CollapseRating == 1d)
             {
-                solution.Rating = 1d;
+                solution.Rating = 2d;
                 return;
             }
 

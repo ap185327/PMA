@@ -53,6 +53,11 @@ namespace PMA.WinForms.Forms
         private WatermarkTextBox _rightTextBox;
 
         /// <summary>
+        /// Whether morphological analysis has been started or not.
+        /// </summary>
+        private bool _isStarted;
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="MorphPropertyForm">MorphPropertyForm</see> class.
         /// </summary>
         public MorphPropertyForm()
@@ -163,11 +168,11 @@ namespace PMA.WinForms.Forms
             ActiveControl = BaseComboBox;
 
             BaseComboBox.SelectedIndex = (int)_morphPropertyViewModel.Base;
-            IsVirtualCheckBox.Checked = _morphPropertyViewModel.IsVirtual;
             EntryIdLabel.Text = _translateService.Translate($"{Name}.{EntryIdLabel.Name}", _morphPropertyViewModel.EntryId);
             GetEntryIdButton.Enabled = !string.IsNullOrEmpty(_morphPropertyViewModel.Entry);
             LockIdCheckBox.Checked = _morphPropertyViewModel.IsLockEntryIdChecked;
 
+            UpdateIsVirtualCheckBox();
             UpdateButtons();
             UpdateLeftControls();
             UpdateRightControls();
@@ -283,7 +288,8 @@ namespace PMA.WinForms.Forms
                         }
                     case "IsVirtual":
                         {
-                            IsVirtualCheckBox.Checked = _morphPropertyViewModel.IsVirtual;
+                            UpdateIsVirtualCheckBox();
+                            UpdateButtons();
                             break;
                         }
                     case "IsBusy":
@@ -324,7 +330,7 @@ namespace PMA.WinForms.Forms
                         LeftCheckBox.Enabled = false;
                         _leftTextBox.Enabled = false;
                         GetLeftIdButton.Enabled = false;
-                        LeftIdLabel.ForeColor = Color.Black;
+                        LeftIdLabel.ForeColor = DefaultForeColor;
                         break;
                     }
                 default:
@@ -332,7 +338,7 @@ namespace PMA.WinForms.Forms
                         LeftCheckBox.Enabled = true;
                         _leftTextBox.Enabled = _morphPropertyViewModel.IsLeftChecked;
                         GetLeftIdButton.Enabled = !string.IsNullOrEmpty(_morphPropertyViewModel.LeftEntry) && _morphPropertyViewModel.IsLeftChecked;
-                        LeftIdLabel.ForeColor = _morphPropertyViewModel.IsLeftChecked && _morphPropertyViewModel.LeftId == 0 ? Color.Red : Color.Black;
+                        LeftIdLabel.ForeColor = _morphPropertyViewModel.IsLeftChecked && _morphPropertyViewModel.LeftId == 0 ? Color.Red : DefaultForeColor;
                         break;
                     }
             }
@@ -354,7 +360,7 @@ namespace PMA.WinForms.Forms
                         RightCheckBox.Enabled = false;
                         _rightTextBox.Enabled = false;
                         GetRightIdButton.Enabled = false;
-                        RightIdLabel.ForeColor = Color.Black;
+                        RightIdLabel.ForeColor = DefaultForeColor;
                         break;
                     }
                 default:
@@ -362,7 +368,7 @@ namespace PMA.WinForms.Forms
                         RightCheckBox.Enabled = true;
                         _rightTextBox.Enabled = _morphPropertyViewModel.IsRightChecked;
                         GetRightIdButton.Enabled = !string.IsNullOrEmpty(_morphPropertyViewModel.RightEntry) && _morphPropertyViewModel.IsRightChecked;
-                        RightIdLabel.ForeColor = _morphPropertyViewModel.IsRightChecked && _morphPropertyViewModel.RightId == 0 ? Color.Red : Color.Black;
+                        RightIdLabel.ForeColor = _morphPropertyViewModel.IsRightChecked && _morphPropertyViewModel.RightId == 0 ? Color.Red : DefaultForeColor;
                         break;
                     }
             }
@@ -379,6 +385,8 @@ namespace PMA.WinForms.Forms
                 DeleteButton.Enabled = false;
                 SaveButton.Enabled = false;
 
+                if (!_isStarted) return;
+
                 StartButton.Image = Properties.Resources.stop;
                 StartButton.Text = _translateService.Translate($"{Name}.StopButton");
             }
@@ -386,12 +394,33 @@ namespace PMA.WinForms.Forms
             {
                 ResetButton.Enabled = true;
                 DeleteButton.Enabled = _morphPropertyViewModel.EntryId != 0;
-                SaveButton.Enabled = !string.IsNullOrEmpty(_morphPropertyViewModel.Entry) && LeftIdLabel.ForeColor == Color.Black && RightIdLabel.ForeColor == Color.Black;
+                SaveButton.Enabled = !string.IsNullOrEmpty(_morphPropertyViewModel.Entry) &&
+                                     LeftIdLabel.ForeColor != Color.Red &&
+                                     RightIdLabel.ForeColor != Color.Red &&
+                                     IsVirtualCheckBox.ForeColor != Color.Red;
 
-                StartButton.Enabled = SaveButton.Enabled;
+                StartButton.Enabled = !string.IsNullOrEmpty(_morphPropertyViewModel.Entry);
                 StartButton.Image = Properties.Resources.start;
                 StartButton.Text = _translateService.Translate($"{Name}.{StartButton.Name}");
             }
+        }
+
+        /// <summary>
+        /// Updates IsVirtual checkbox.
+        /// </summary>
+        private void UpdateIsVirtualCheckBox()
+        {
+            if (!_morphPropertyViewModel.IsVirtual.HasValue)
+            {
+                IsVirtualCheckBox.CheckState = CheckState.Indeterminate;
+                IsVirtualCheckBox.ForeColor = Color.Red;
+                return;
+            }
+
+            IsVirtualCheckBox.ForeColor = DefaultForeColor;
+            IsVirtualCheckBox.CheckState = _morphPropertyViewModel.IsVirtual.Value
+                ? CheckState.Checked
+                : CheckState.Unchecked;
         }
 
         /// <summary>
@@ -453,6 +482,10 @@ namespace PMA.WinForms.Forms
         private void BaseComboBox_SelectedIndexChanged(object sender, EventArgs e)
         {
             _morphPropertyViewModel.Base = (MorphBase)BaseComboBox.SelectedIndex;
+
+            BaseLabel.BackColor = _morphPropertyViewModel.Base == MorphBase.Unknown
+                ? Color.LightYellow
+                : DefaultBackColor;
         }
 
         /// <summary>
@@ -460,9 +493,14 @@ namespace PMA.WinForms.Forms
         /// </summary>
         /// <param name="sender">Object sender.</param>
         /// <param name="e">Event arguments.</param>
-        private void IsVirtualCheckBox_CheckedChanged(object sender, EventArgs e)
+        private void IsVirtualCheckBox_CheckStateChanged(object sender, EventArgs e)
         {
-            _morphPropertyViewModel.IsVirtual = IsVirtualCheckBox.Checked;
+            _morphPropertyViewModel.IsVirtual = IsVirtualCheckBox.CheckState switch
+            {
+                CheckState.Checked => true,
+                CheckState.Unchecked => false,
+                _ => null
+            };
         }
 
         /// <summary>
@@ -540,6 +578,8 @@ namespace PMA.WinForms.Forms
             {
                 form.ShowDialog();
             }
+
+            _morphPropertyViewModel.OnAppearing();
         }
 
         /// <summary>
@@ -571,6 +611,7 @@ namespace PMA.WinForms.Forms
         {
             if (StartButton.Text == _translateService.Translate($"{Name}.{StartButton.Name}"))
             {
+                _isStarted = true;
                 _morphPropertyViewModel.StartCommand.Execute(null);
             }
             else

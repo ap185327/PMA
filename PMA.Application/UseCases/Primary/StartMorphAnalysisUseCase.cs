@@ -164,6 +164,13 @@ namespace PMA.Application.UseCases.Primary
                         inputData.WordForm.Solutions = null;
                     }
                 }
+                catch (AggregateException)
+                {
+                    if (inputData.WordForm is not null)
+                    {
+                        inputData.WordForm.Solutions = null;
+                    }
+                }
 
                 _morphParserInteractor.ClearCache();
 

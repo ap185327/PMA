@@ -142,6 +142,7 @@ namespace PMA.Utils.Extensions
                 .GroupBy(r => r[newColumnName])
                 .Where(g => g.Count() > 1)
                 .Select(g => string.Join(",", g.Select(x => (string)x[idColumnName]).Distinct().ToList()))
+                .Distinct()
                 .ToList();
 
             dataTable.Columns.Remove(newColumnName);

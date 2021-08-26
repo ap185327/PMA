@@ -19,7 +19,7 @@ namespace PMA.Application.Factories
         /// <returns>A new instance of the <see cref="MorphEntry"/> class.</returns>
         public static MorphEntry Create(int id)
         {
-            return new()
+            return new MorphEntry
             {
                 Id = id,
                 Parameters = ParameterFactory.Create()
@@ -33,7 +33,7 @@ namespace PMA.Application.Factories
         /// <returns>A new instance of the <see cref="MorphEntry"/> class.</returns>
         public static MorphEntry Create(string entry)
         {
-            return new()
+            return new MorphEntry
             {
                 Entry = entry,
                 Parameters = ParameterFactory.Create()
@@ -48,7 +48,7 @@ namespace PMA.Application.Factories
         /// <returns>A new instance of the <see cref="MorphEntry"/> class.</returns>
         public static MorphEntry Create(int id, string entry)
         {
-            return new()
+            return new MorphEntry
             {
                 Id = id,
                 Entry = entry,
@@ -67,7 +67,7 @@ namespace PMA.Application.Factories
         /// <returns>A new instance of the <see cref="MorphEntry"/> class.</returns>
         public static MorphEntry Create(int id, string entry, byte[] parameters, MorphBase morphBase, bool isVirtual)
         {
-            return new()
+            return new MorphEntry
             {
                 Id = id,
                 Entry = entry,
@@ -87,9 +87,9 @@ namespace PMA.Application.Factories
         /// <param name="isVirtual">The solution is virtual (doesn't exist in the live language) or not.</param>
         /// <param name="source">The morphological entry source.</param>
         /// <returns>A new instance of the <see cref="MorphEntry"/> class.</returns>
-        public static MorphEntry Create(int id, string entry, byte[] parameters, MorphBase morphBase, bool isVirtual, MorphEntrySource source)
+        public static MorphEntry Create(int id, string entry, byte[] parameters, MorphBase morphBase, bool? isVirtual, MorphEntrySource source)
         {
-            return new()
+            return new MorphEntry
             {
                 Id = id,
                 Entry = entry,

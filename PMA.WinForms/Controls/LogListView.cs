@@ -65,6 +65,8 @@ namespace PMA.WinForms.Controls
         /// </summary>
         private void ShowDialog()
         {
+            if (SelectedItems.Count == 0) return;
+
             var item = SelectedItems[0];
             MessageBox.Show(item.SubItems[2].Text, item.SubItems[1].Text, MessageBoxButtons.OK);
         }

@@ -18,7 +18,7 @@ namespace PMA.Application.Factories
         /// <returns>A new instance of the <see cref="SolutionContent"/> class.</returns>
         public static SolutionContent Create(int id, byte[] parameters, MorphBase morphBase)
         {
-            return new()
+            return new SolutionContent
             {
                 Id = id,
                 Parameters = ParameterFactory.Clone(parameters),
@@ -33,13 +33,13 @@ namespace PMA.Application.Factories
         /// <param name="morphBase">The morphological base.</param>
         /// <param name="isVirtual">The solution is virtual (doesn't exist in the live language) or not.</param>
         /// <returns>A new instance of the <see cref="SolutionContent"/> class.</returns>
-        public static SolutionContent Create(byte[] parameters, MorphBase morphBase, bool isVirtual)
+        public static SolutionContent Create(byte[] parameters, MorphBase morphBase, bool? isVirtual)
         {
-            return new()
+            return new SolutionContent
             {
                 Parameters = ParameterFactory.Clone(parameters),
                 Base = morphBase,
-                IsVirtual = isVirtual
+                IsVirtual = isVirtual.HasValue && isVirtual.Value
             };
         }
 
@@ -51,14 +51,14 @@ namespace PMA.Application.Factories
         /// <param name="morphBase">The morphological base.</param>
         /// <param name="isVirtual">The solution is virtual (doesn't exist in the live language) or not.</param>
         /// <returns>A new instance of the <see cref="SolutionContent"/> class.</returns>
-        public static SolutionContent Create(int id, byte[] parameters, MorphBase morphBase, bool isVirtual)
+        public static SolutionContent Create(int id, byte[] parameters, MorphBase morphBase, bool? isVirtual)
         {
-            return new()
+            return new SolutionContent
             {
                 Id = id,
                 Parameters = ParameterFactory.Clone(parameters),
                 Base = morphBase,
-                IsVirtual = isVirtual
+                IsVirtual = isVirtual.HasValue && isVirtual.Value
             };
         }
 
@@ -73,7 +73,7 @@ namespace PMA.Application.Factories
         /// <returns>A new instance of the <see cref="SolutionContent"/> class.</returns>
         public static SolutionContent Create(int id, byte[] parameters, MorphBase morphBase, bool isVirtual, SolutionError error)
         {
-            return new()
+            return new SolutionContent
             {
                 Id = id,
                 Parameters = ParameterFactory.Clone(parameters),
@@ -90,7 +90,7 @@ namespace PMA.Application.Factories
         /// <returns>A new instance of the <see cref="SolutionContent"/> class.</returns>
         public static SolutionContent Clone(SolutionContent source)
         {
-            return new()
+            return new SolutionContent
             {
                 Id = source.Id,
                 Parameters = ParameterFactory.Clone(source.Parameters),
@@ -108,7 +108,7 @@ namespace PMA.Application.Factories
         /// <returns>A new instance of the <see cref="SolutionContent"/> class.</returns>
         public static SolutionContent Clone(SolutionContent source, SolutionError error)
         {
-            return new()
+            return new SolutionContent
             {
                 Id = source.Id,
                 Parameters = ParameterFactory.Clone(source.Parameters),
@@ -126,7 +126,7 @@ namespace PMA.Application.Factories
         /// <returns>A new instance of the <see cref="SolutionContent"/> class.</returns>
         public static SolutionContent Clone(SolutionContent source, byte[] parameters)
         {
-            return new()
+            return new SolutionContent
             {
                 Id = source.Id,
                 Parameters = parameters,

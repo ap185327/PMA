@@ -56,6 +56,11 @@ namespace PMA.WinForms.Forms
         private ToolStripNumberControl _depthToolStripNumberControl;
 
         /// <summary>
+        /// Whether morphological analysis has been started or not.
+        /// </summary>
+        private bool _isStarted;
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="MainForm"/> class.
         /// </summary>
         public MainForm()
@@ -236,33 +241,47 @@ namespace PMA.WinForms.Forms
                         {
                             if (_mainViewModel.IsBusy)
                             {
-                                _enterToolStripTextBox.Enabled = false;
-                                MorphologicalToolStripMenuItem.Image = Properties.Resources.stop;
-                                StartToolStripSplitButton.Image = Properties.Resources.stop;
+                                if (_isStarted)
+                                {
+                                    MorphologicalToolStripMenuItem.Image = Properties.Resources.stop;
+                                    StartToolStripSplitButton.Image = Properties.Resources.stop;
+
+                                    // to avoid incorrect display of the element _enterToolStripTextBox
+                                    // after changing the image of the element StartToolStripSplitButton.
+                                    ToolStrip.Width++;
+                                    ToolStrip.Width--;
+                                }
+                                else
+                                {
+                                    StartToolStripSplitButton.Enabled = false;
+                                }
+                                
                                 AnimToolStripStatusLabel.Enabled = true;
                                 LayerToolStripComboBox.Enabled = false;
                                 _depthToolStripNumberControl.Enabled = false;
-
-                                StartToolStripSplitButton.Enabled = true;
                             }
                             else
                             {
-                                _enterToolStripTextBox.Enabled = true;
-                                MorphologicalToolStripMenuItem.Image = Properties.Resources.start;
-                                StartToolStripSplitButton.Image = Properties.Resources.start;
+
+                                if (_isStarted)
+                                {
+                                    _isStarted = false;
+
+                                    MorphologicalToolStripMenuItem.Image = Properties.Resources.start;
+                                    StartToolStripSplitButton.Image = Properties.Resources.start;
+
+                                    // to avoid incorrect display of the element _enterToolStripTextBox
+                                    // after changing the image of the element StartToolStripSplitButton.
+                                    ToolStrip.Width++;
+                                    ToolStrip.Width--;
+                                }
+
                                 AnimToolStripStatusLabel.Enabled = false;
                                 LayerToolStripComboBox.Enabled = true;
                                 _depthToolStripNumberControl.Enabled = true;
 
                                 StartToolStripSplitButton.Enabled = !_enterToolStripTextBox.IsWatermarkShown;
                             }
-
-                            
-
-                            // to avoid incorrect display of the element _enterToolStripTextBox
-                            // after changing the image of the element StartToolStripSplitButton.
-                            ToolStrip.Width++;
-                            ToolStrip.Width--;
 
                             break;
                         }
@@ -347,6 +366,7 @@ namespace PMA.WinForms.Forms
             }
             else
             {
+                _isStarted = true;
                 _mainViewModel.StartCommand.Execute(null);
             }
         }
@@ -365,6 +385,7 @@ namespace PMA.WinForms.Forms
             }
             else
             {
+                _isStarted = true;
                 _mainViewModel.StartCommand.Execute(null);
             }
         }

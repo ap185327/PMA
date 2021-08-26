@@ -217,14 +217,17 @@
             // 
             this.IsVirtualCheckBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.IsVirtualCheckBox.AutoSize = true;
+            this.IsVirtualCheckBox.Checked = true;
+            this.IsVirtualCheckBox.CheckState = System.Windows.Forms.CheckState.Indeterminate;
             this.IsVirtualCheckBox.Location = new System.Drawing.Point(14, 488);
             this.IsVirtualCheckBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this.IsVirtualCheckBox.Name = "IsVirtualCheckBox";
             this.IsVirtualCheckBox.Size = new System.Drawing.Size(60, 19);
             this.IsVirtualCheckBox.TabIndex = 45;
             this.IsVirtualCheckBox.Text = "Virtual";
+            this.IsVirtualCheckBox.ThreeState = true;
             this.IsVirtualCheckBox.UseVisualStyleBackColor = true;
-            this.IsVirtualCheckBox.CheckedChanged += new System.EventHandler(this.IsVirtualCheckBox_CheckedChanged);
+            this.IsVirtualCheckBox.CheckStateChanged += new System.EventHandler(this.IsVirtualCheckBox_CheckStateChanged);
             // 
             // SaveButton
             // 

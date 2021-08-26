@@ -30,7 +30,7 @@ namespace PMA.Domain.Interfaces.Managers
         /// <param name="left">A left morphological entry.</param>
         /// <param name="right">A right morphological entry.</param>
         /// <returns>The collection of morphological entries.</returns>
-        IList<MorphEntry> GetValues(string entry, byte[] parameters, MorphBase morphBase, bool isVirtual, MorphEntry left = null, MorphEntry right = null);
+        IList<MorphEntry> GetValues(string entry, byte[] parameters, MorphBase morphBase, bool? isVirtual, MorphEntry left = null, MorphEntry right = null);
 
         /// <summary>
         /// Gets and caches a collection of morphological entries by parameters.

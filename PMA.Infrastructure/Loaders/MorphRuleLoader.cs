@@ -447,7 +447,7 @@ namespace PMA.Infrastructure.Loaders
             {
                 foreach (string duplicateId in duplicates)
                 {
-                    ServiceLocator.LogMessageService.SendMessage(MessageLevel.Error, ServiceLocator.TranslateService.Translate(LogMessageType.DataTableDuplicateFound, _rawData.TableName, duplicateId));
+                    ServiceLocator.LogMessageService.SendMessage(MessageLevel.Error, ServiceLocator.TranslateService.Translate(LogMessageType.DataTableDuplicateFound, duplicateId));
                 }
 
                 Logger.LogError(ErrorMessageConstants.DataTableContainsDuplicates);

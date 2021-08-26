@@ -20,6 +20,11 @@ namespace PMA.Domain.Models
         public string Name { get; init; }
 
         /// <summary>
+        /// Gets or sets a parameter property name.
+        /// </summary>
+        public string PropertyName { get; init; }
+
+        /// <summary>
         /// Gets or sets a parameter category.
         /// </summary>
         public string Category { get; init; }

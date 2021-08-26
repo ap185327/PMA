@@ -73,7 +73,7 @@ namespace PMA.Application.ViewModels.Controls
         /// <summary>
         /// Gets the property name.
         /// </summary>
-        public string Name => _morphParameter.Name;
+        public string Name => _morphParameter.PropertyName;
 
         /// <summary>
         /// Gets the property description.

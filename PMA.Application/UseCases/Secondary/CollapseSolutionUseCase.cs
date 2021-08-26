@@ -313,7 +313,7 @@ namespace PMA.Application.UseCases.Secondary
 
                         wordForm = WordFormFactory.Clone(wordForm, group.Select(x => x.Solution).ToList());
                     }
-                    else
+                    else if (parent is not null) // ignore other entries for initial wordform (first node)
                     {
                         WordForm parentRight = null;
 

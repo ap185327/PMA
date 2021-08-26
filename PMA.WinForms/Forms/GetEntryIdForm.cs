@@ -46,12 +46,11 @@ namespace PMA.WinForms.Forms
             OverrideStrings();
             SetDefaultValues();
 
+            SetSettings();
+
             SubscribeEvents();
 
             _getEntryIdViewModel.OnAppearing();
-
-            SetSettings();
-
         }
 
         #region Initialization methods

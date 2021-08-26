@@ -211,7 +211,7 @@ namespace PMA.Application.UseCases.Secondary
             return wordForm;
         }
 
-        private WordForm GetWordFormFromParameters(string entry, byte[] parameters, bool isVirtual, MorphBase morphBase, MorphEntry left, MorphEntry right, string label, int currentDepthLevel)
+        private WordForm GetWordFormFromParameters(string entry, byte[] parameters, bool? isVirtual, MorphBase morphBase, MorphEntry left, MorphEntry right, string label, int currentDepthLevel)
         {
             var wordForm = WordFormFactory.Create(entry);
 
@@ -402,7 +402,7 @@ namespace PMA.Application.UseCases.Secondary
             return _tempDictionary.GetOrAdd(key, solution);
         }
 
-        private Solution GetSolutionFromParameters(byte[] parameters, bool isVirtual, MorphBase morphBase, MorphEntry left, MorphEntry right, int currentDepthLevel)
+        private Solution GetSolutionFromParameters(byte[] parameters, bool? isVirtual, MorphBase morphBase, MorphEntry left, MorphEntry right, int currentDepthLevel)
         {
             currentDepthLevel++;
 

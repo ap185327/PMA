@@ -232,12 +232,12 @@ namespace PMA.Application.ViewModels
         /// <summary>
         ///  Backing field for the IsVirtual property.
         /// </summary>
-        private bool _isVirtual;
+        private bool? _isVirtual;
 
         /// <summary>
         /// Gets or sets whether the input morphological entry is virtual (doesn't exist in the live language) or not.
         /// </summary>
-        public bool IsVirtual
+        public bool? IsVirtual
         {
             get => _isVirtual;
             set => SetProperty(ref _isVirtual, value);
@@ -540,7 +540,7 @@ namespace PMA.Application.ViewModels
             RightEntry = string.Empty;
             IsRightChecked = false;
             RightId = 0;
-            IsVirtual = false;
+            IsVirtual = null;
 
             foreach (var property in Properties)
             {
@@ -555,6 +555,7 @@ namespace PMA.Application.ViewModels
         {
             if (IsLeftChecked && LeftId == 0) return;
             if (IsRightChecked && RightId == 0) return;
+            if (IsVirtual is null) return;
 
             ShowSaveMorphEntryModalDialog();
         }
@@ -604,41 +605,35 @@ namespace PMA.Application.ViewModels
             switch (_lastGetIdButtonClicked)
             {
                 case GetIdButton.Left:
-                    {
-                        morphEntry = MorphEntryFactory.Create(LeftId, LeftEntry);
-                        break;
-                    }
+                    morphEntry = MorphEntryFactory.Create(LeftId, LeftEntry);
+                    break;
                 case GetIdButton.Right:
-                    {
-                        morphEntry = MorphEntryFactory.Create(RightId, RightEntry);
-                        break;
-                    }
+                    morphEntry = MorphEntryFactory.Create(RightId, RightEntry);
+                    break;
                 default:
+                    morphEntry = MorphEntryFactory.Create(EntryId, 
+                        Entry, 
+                        Properties.OrderBy(x => x.Index)
+                            .Select(x => x.TermIds[x.SelectedIndex])
+                            .ToArray(), 
+                        Base, 
+                        IsVirtual, 
+                        MorphEntrySource.User);
+
+                    if (Base != MorphBase.None)
                     {
-                        morphEntry = MorphEntryFactory.Create(EntryId,
-                            Entry,
-                            Properties.OrderBy(x => x.Index)
-                                .Select(x => x.TermIds[x.SelectedIndex])
-                                .ToArray(),
-                            Base,
-                            IsVirtual,
-                            MorphEntrySource.User);
-
-                        if (Base != MorphBase.None)
+                        if (IsLeftChecked)
                         {
-                            if (IsLeftChecked)
-                            {
-                                morphEntry.Left = MorphEntryFactory.Create(LeftId, LeftEntry);
-                            }
-
-                            if (IsRightChecked)
-                            {
-                                morphEntry.Right = MorphEntryFactory.Create(RightId, RightEntry);
-                            }
+                            morphEntry.Left = MorphEntryFactory.Create(LeftId, LeftEntry);
                         }
 
-                        break;
+                        if (IsRightChecked)
+                        {
+                            morphEntry.Right = MorphEntryFactory.Create(RightId, RightEntry);
+                        }
                     }
+
+                    break;
             }
 
             return morphEntry;
@@ -650,24 +645,19 @@ namespace PMA.Application.ViewModels
         /// <param name="morphEntry">The morphological entry.</param>
         private void SetPropertiesFromMorphEntry(MorphEntry morphEntry)
         {
-            if (morphEntry is null) return;
-
-            switch (_lastGetIdButtonClicked)
+            if (morphEntry is not null)
             {
-                case GetIdButton.Left:
-                    {
+                switch (_lastGetIdButtonClicked)
+                {
+                    case GetIdButton.Left:
                         LeftEntry = morphEntry.Entry;
                         LeftId = morphEntry.Id;
                         break;
-                    }
-                case GetIdButton.Right:
-                    {
+                    case GetIdButton.Right:
                         RightEntry = morphEntry.Entry;
                         RightId = morphEntry.Id;
                         break;
-                    }
-                default:
-                    {
+                    default:
                         Entry = morphEntry.Entry;
                         EntryId = morphEntry.Id;
                         Base = morphEntry.Base;
@@ -710,10 +700,8 @@ namespace PMA.Application.ViewModels
                         }
 
                         break;
-                    }
+                }
             }
-
-            _lastGetIdButtonClicked = GetIdButton.Main;
         }
 
         /// <summary>

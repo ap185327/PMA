@@ -44,7 +44,7 @@ namespace PMA.Domain.Models
         /// <summary>
         /// Gets or sets whether a MorphEntry is virtual (doesn't exist in the live language) or not.
         /// </summary>
-        public bool IsVirtual { get; set; }
+        public bool? IsVirtual { get; set; }
 
         /// <summary>
         /// Gets or sets a MorphEntry source.

@@ -63,7 +63,7 @@ namespace PMA.Domain.Interfaces.ViewModels
         /// <summary>
         /// Gets or sets whether the input morphological entry is virtual (doesn't exist in the live language) or not.
         /// </summary>
-        bool IsVirtual { get; set; }
+        bool? IsVirtual { get; set; }
 
         /// <summary>
         /// Gets or sets whether the left part of the morphological entry is used or not.

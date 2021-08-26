@@ -59,7 +59,7 @@ namespace PMA.Application.Managers
         /// <param name="left">A left morphological entry.</param>
         /// <param name="right">A right morphological entry.</param>
         /// <returns>The collection of morphological entries.</returns>
-        public IList<MorphEntry> GetValues(string entry, byte[] parameters, MorphBase morphBase, bool isVirtual, MorphEntry left = null, MorphEntry right = null)
+        public IList<MorphEntry> GetValues(string entry, byte[] parameters, MorphBase morphBase, bool? isVirtual, MorphEntry left = null, MorphEntry right = null)
         {
             List<MorphEntry> values;
 
@@ -127,7 +127,17 @@ namespace PMA.Application.Managers
                 values = values.Where(x => x.Base == MorphBase.Unknown || x.Base == morphBase).ToList();
             }
 
-            return values.Count == 0 ? values : values.Where(x => x.IsVirtual == isVirtual).ToList();
+            if (values.Count == 0)
+            {
+                return values;
+            }
+
+            if (isVirtual.HasValue)
+            {
+                values = values.Where(x => x.IsVirtual == isVirtual).ToList();
+            }
+
+            return values;
         }
 
         /// <summary>

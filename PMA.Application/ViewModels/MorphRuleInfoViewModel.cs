@@ -93,7 +93,7 @@ namespace PMA.Application.ViewModels
                 }
             }
 
-            sandhiRules = sandhiRules.Distinct().ToList();
+            sandhiRules = sandhiRules.DistinctBy(x => x.Id).ToList();
 
             foreach (var sandhiRule in sandhiRules)
             {
