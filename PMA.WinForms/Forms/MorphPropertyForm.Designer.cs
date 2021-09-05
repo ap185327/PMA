@@ -328,7 +328,6 @@
             this.StartPosition = System.Windows.Forms.FormStartPosition.Manual;
             this.Text = "Morpological Properties";
             this.LocationChanged += new System.EventHandler(this.MorphPropertyForm_LocationChanged);
-            this.VisibleChanged += new System.EventHandler(this.MorphPropertyForm_VisibleChanged);
             this.ResumeLayout(false);
             this.PerformLayout();
 

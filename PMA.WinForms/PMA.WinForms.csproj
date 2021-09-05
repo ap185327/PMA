@@ -1,25 +1,23 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net5.0-windows</TargetFramework>
     <UseWindowsForms>true</UseWindowsForms>
     <Company>Andrey Pospelov</Company>
     <Authors>Andrey Pospelov</Authors>
-    <Version>0.9.0</Version>
+    <Version>0.9.1.0</Version>
     <Copyright>Copyright © Andrey Pospelov 2017-2021</Copyright>
     <ApplicationIcon>icon.ico</ApplicationIcon>
-    <Product>PMA</Product>
-    <AssemblyName>PMA</AssemblyName>
-    <AssemblyVersion>0.9.0.4</AssemblyVersion>
-    <FileVersion>0.9.0.4</FileVersion>
+    <Product>PMA.WinForms</Product>
+    <AssemblyName>PMA.WinForms</AssemblyName>
+    <AssemblyVersion>0.9.1.0</AssemblyVersion>
+    <FileVersion>0.9.1.0</FileVersion>
+    <PackageId>PMA.WinForms</PackageId>
   </PropertyGroup>
-
   <ItemGroup>
     <None Remove="appsettings.json" />
     <None Remove="nlog.config" />
   </ItemGroup>
-
   <ItemGroup>
     <Content Include="appsettings.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -28,15 +26,12 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
-
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="5.0.0" />
     <PackageReference Include="NLog.Extensions.Logging" Version="1.7.4" />
   </ItemGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\PMA.Application\PMA.Application.csproj" />
     <ProjectReference Include="..\PMA.Infrastructure\PMA.Infrastructure.csproj" />
   </ItemGroup>
-
 </Project>

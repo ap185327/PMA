@@ -3,7 +3,6 @@
 // </copyright>
 
 using PMA.Domain.Interfaces.ViewModels.Base;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Windows.Input;
 
@@ -18,16 +17,6 @@ namespace PMA.Domain.Interfaces.ViewModels
         /// Gets or sets a option allows you to select the way how the wordform will be analyzed: False – only successful solutions sorted by rating; True – all solutions, including unsuccessful ones.
         /// </summary>
         bool DebugMode { get; set; }
-
-        /// <summary>
-        /// Gets or sets s selected root term index.
-        /// </summary>
-        int SelectedRootTermIndex { get; set; }
-
-        /// <summary>
-        /// Gets a collection of root terms.
-        /// </summary>
-        IList<string> RootTerms { get; }
 
         /// <summary>
         /// Gets a collection of available terms.

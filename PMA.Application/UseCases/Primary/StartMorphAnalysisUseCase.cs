@@ -30,17 +30,20 @@ namespace PMA.Application.UseCases.Primary
         private readonly IMorphParserInteractor _morphParserInteractor;
 
         /// <summary>
+        /// The mediator.
+        /// </summary>
+        private readonly IMediator _mediator;
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="StartMorphAnalysisUseCase" /> class.
         /// </summary>
         /// <param name="morphParserInteractor">The morphological parser interactor.</param>
         /// <param name="mediator">The mediator.</param>
-        /// <param name="parallelOptions">Options that configure the operation of methods on the <see cref="Parallel"/> class.</param>
         /// <param name="logger">The logger.</param>
-        public StartMorphAnalysisUseCase(IMorphParserInteractor morphParserInteractor, IMediator mediator, ParallelOptions parallelOptions, ILogger<StartMorphAnalysisUseCase> logger) : base(mediator, parallelOptions, logger)
+        public StartMorphAnalysisUseCase(IMorphParserInteractor morphParserInteractor, IMediator mediator, ILogger<StartMorphAnalysisUseCase> logger) : base(logger)
         {
             _morphParserInteractor = morphParserInteractor;
-
-            Logger.LogInit();
+            _mediator = mediator;
         }
 
         #region Overrides of UseCaseBase<StartMorphAnalysisInputPort,bool>
@@ -48,144 +51,146 @@ namespace PMA.Application.UseCases.Primary
         /// <summary>
         /// Executes an action.
         /// </summary>
-        /// <param name="inputData">The input data.</param>
+        /// <param name="inputPort">The input data.</param>
         /// <returns>The result of action execution.</returns>
-        public override OperationResult Execute(MorphParserInputPort inputData)
+        public override OperationResult Execute(MorphParserInputPort inputPort)
         {
-            if (inputData is null)
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Executes an action.
+        /// </summary>
+        /// <param name="inputPort">The input data.</param>
+        /// <param name="token">The cancellation token.</param>
+        /// <returns>The result of action execution.</returns>
+        public override async Task<OperationResult> ExecuteAsync(MorphParserInputPort inputPort, CancellationToken token = default)
+        {
+
+            if (inputPort is null)
             {
-                Logger.LogError(ErrorMessageConstants.ValueIsNull, nameof(inputData));
-                return OperationResult.FailureResult(ErrorMessageConstants.ValueIsNull, nameof(inputData));
+                Logger.LogError(ErrorMessageConstants.ValueIsNull, nameof(inputPort));
+                return OperationResult.FailureResult(ErrorMessageConstants.ValueIsNull, nameof(inputPort));
             }
 
-            if (inputData.MorphEntry is null)
+            if (inputPort.MorphEntry is null)
             {
-                Logger.LogError(ErrorMessageConstants.ValueIsNull, nameof(inputData.MorphEntry));
-                return OperationResult.FailureResult(ErrorMessageConstants.ValueIsNull, nameof(inputData.MorphEntry));
+                Logger.LogError(ErrorMessageConstants.ValueIsNull, nameof(inputPort.MorphEntry));
+                return OperationResult.FailureResult(ErrorMessageConstants.ValueIsNull, nameof(inputPort.MorphEntry));
             }
 
-            var cancellationTokenSource = new CancellationTokenSource();
-
-            // ReSharper disable once MethodSupportsCancellation
-            Mediator.Publish(new CancellationTokenResourceNotification
-            {
-                CancellationTokenSource = cancellationTokenSource
-            });
-
-            ParallelOptions.CancellationToken = cancellationTokenSource.Token;
-
-            Task.Run(() =>
+            try
             {
                 // ReSharper disable once MethodSupportsCancellation
-                Mediator.Publish(new MorphParserNotification
+                await _mediator.Publish(new MorphParserNotification
                 {
                     State = ProcessState.InProgress
-                });
+                }, token);
 
-                try
+                var result = await _morphParserInteractor.ParseMorphEntryAsync(inputPort, token);
+
+                if (!result.Success)
                 {
-                    var result = _morphParserInteractor.ParseMorphEntry(inputData);
+                    Logger.LogErrors(result.Messages);
+                    return OperationResult.FailureResult(result.Messages);
+                }
 
-                    if (!result.Success)
-                    {
-                        Logger.LogErrors(result.Messages);
-                        return;
-                    }
+                result = await _morphParserInteractor.RemoveSolutionsWithExcessiveDepthAsync(inputPort, token);
 
-                    result = _morphParserInteractor.RemoveSolutionsWithExcessiveDepth(inputData);
+                if (!result.Success)
+                {
+                    Logger.LogErrors(result.Messages);
+                    return OperationResult.FailureResult(result.Messages);
+                }
 
-                    if (!result.Success)
-                    {
-                        Logger.LogErrors(result.Messages);
-                        return;
-                    }
+                result = await _morphParserInteractor.CollapseSolutionsAsync(inputPort, token);
 
-                    result = _morphParserInteractor.CollapseSolutions(inputData);
+                if (!result.Success)
+                {
+                    Logger.LogErrors(result.Messages);
+                    return OperationResult.FailureResult(result.Messages);
+                }
 
-                    if (!result.Success)
-                    {
-                        Logger.LogErrors(result.Messages);
-                        return;
-                    }
+                result = await _morphParserInteractor.RemoveUnsuitableDerivativeSolutionsAsync(inputPort, token);
 
-                    result = _morphParserInteractor.RemoveUnsuitableDerivativeSolutions(inputData);
+                if (!result.Success)
+                {
+                    Logger.LogErrors(result.Messages);
+                    return OperationResult.FailureResult(result.Messages);
+                }
 
-                    if (!result.Success)
-                    {
-                        Logger.LogErrors(result.Messages);
-                        return;
-                    }
+                result = await _morphParserInteractor.UpdateSolutionsAsync(inputPort, token);
 
-                    result = _morphParserInteractor.UpdateSolutions(inputData);
+                if (!result.Success)
+                {
+                    Logger.LogErrors(result.Messages);
+                    return OperationResult.FailureResult(result.Messages);
+                }
 
-                    if (!result.Success)
-                    {
-                        Logger.LogErrors(result.Messages);
-                        return;
-                    }
+                result = await _morphParserInteractor.RemoveDuplicatesAsync(inputPort, token);
 
-                    result = _morphParserInteractor.RemoveDuplicates(inputData);
+                if (!result.Success)
+                {
+                    Logger.LogErrors(result.Messages);
+                    return OperationResult.FailureResult(result.Messages);
+                }
 
-                    if (!result.Success)
-                    {
-                        Logger.LogErrors(result.Messages);
-                        return;
-                    }
+                result = await _morphParserInteractor.RemoveUnsuitableSolutionsAsync(inputPort, token);
 
-                    result = _morphParserInteractor.RemoveUnsuitableSolutions(inputData);
+                if (!result.Success)
+                {
+                    Logger.LogErrors(result.Messages);
+                    return OperationResult.FailureResult(result.Messages);
+                }
 
-                    if (!result.Success)
-                    {
-                        Logger.LogErrors(result.Messages);
-                        return;
-                    }
+                result = await _morphParserInteractor.SortSolutionsAsync(inputPort, token);
 
-                    result = _morphParserInteractor.SortSolutions(inputData);
-
-                    if (!result.Success)
-                    {
-                        Logger.LogErrors(result.Messages);
-                        return;
-                    }
+                if (!result.Success)
+                {
+                    Logger.LogErrors(result.Messages);
+                    return OperationResult.FailureResult(result.Messages);
+                }
 #if DEBUG
-                    result = _morphParserInteractor.ValidateSolutions(inputData);
+                result = await _morphParserInteractor.ValidateSolutionsAsync(inputPort, token);
 
-                    if (!result.Success)
-                    {
-                        Logger.LogErrors(result.Messages);
-                        return;
-                    }
+                if (!result.Success)
+                {
+                    Logger.LogErrors(result.Messages);
+                    return OperationResult.FailureResult(result.Messages);
+                }
 #endif
-                }
-                catch (OperationCanceledException)
+                await _morphParserInteractor.ClearCacheAsync(token);
+
+                await _mediator.Publish(new MorphParserNotification
                 {
-                    if (inputData.WordForm is not null)
-                    {
-                        inputData.WordForm.Solutions = null;
-                    }
-                }
-                catch (AggregateException)
+                    Result = inputPort.WordForm,
+                    State = ProcessState.Completed
+                }, token);
+
+                return OperationResult.SuccessResult();
+            }
+            catch (Exception exception)
+            {
+                if (exception is not OperationCanceledException && exception is not AggregateException)
                 {
-                    if (inputData.WordForm is not null)
-                    {
-                        inputData.WordForm.Solutions = null;
-                    }
+                    return OperationResult.ExceptionResult(exception);
                 }
 
-                _morphParserInteractor.ClearCache();
-
-                // ReSharper disable once MethodSupportsCancellation
-                Mediator.Publish(new MorphParserNotification
+                if (inputPort.WordForm is not null)
                 {
-                    Result = inputData.WordForm,
-                    State = cancellationTokenSource.IsCancellationRequested
-                        ? ProcessState.Canceled
-                        : ProcessState.Completed
-                });
+                    inputPort.WordForm.Solutions = null;
+                }
 
-            }, cancellationTokenSource.Token);
+                await _morphParserInteractor.ClearCacheAsync(token);
 
-            return OperationResult.SuccessResult();
+                await _mediator.Publish(new MorphParserNotification
+                {
+                    Result = inputPort.WordForm,
+                    State = ProcessState.Canceled
+                }, CancellationToken.None);
+
+                return OperationResult.SuccessResult();
+            }
         }
 
         #endregion

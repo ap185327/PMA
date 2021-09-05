@@ -2,7 +2,9 @@
 //     Copyright 2017-2021 Andrey Pospelov. All rights reserved.
 // </copyright>
 
+using PMA.Domain.EventArguments;
 using PMA.Domain.Interfaces.Services.Base;
+using System;
 
 namespace PMA.Domain.Interfaces.Services
 {
@@ -11,6 +13,11 @@ namespace PMA.Domain.Interfaces.Services
     /// </summary>
     public interface ISettingService : IService
     {
+        /// <summary>
+        ///  The event that the setting was changed.
+        /// </summary>
+        event EventHandler<SettingEventArgs> SettingChanged;
+
         /// <summary>
         /// Gets a setting value by name.
         /// </summary>

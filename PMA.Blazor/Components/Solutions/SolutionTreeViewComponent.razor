@@ -1,0 +1,10 @@
+﻿<MudTreeView ServerData="LoadServerData"
+             @bind-SelectedValue="SelectedValue"
+             Items="TreeItems"
+             Dense="true"
+             Hover="false"
+             ExpandOnClick="true">
+    <ItemTemplate>
+        <SolutionTreeNodeComponent ViewModel="context" />
+    </ItemTemplate>
+</MudTreeView>

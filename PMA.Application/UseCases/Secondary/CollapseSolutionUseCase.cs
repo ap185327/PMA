@@ -2,7 +2,6 @@
 //     Copyright 2017-2021 Andrey Pospelov. All rights reserved.
 // </copyright>
 
-using MediatR;
 using Microsoft.Extensions.Logging;
 using PMA.Application.Extensions;
 using PMA.Application.Factories;
@@ -19,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace PMA.Application.UseCases.Secondary
@@ -28,6 +28,11 @@ namespace PMA.Application.UseCases.Secondary
     /// </summary>
     public sealed class CollapseSolutionUseCase : UseCaseBase<CollapseSolutionUseCase, MorphParserInputPort>, ICollapseSolutionUseCase
     {
+        /// <summary>
+        /// Options that configure the operation of methods on the <see cref="Parallel"/> class.
+        /// </summary>
+        private readonly ParallelOptions _parallelOptions = new();
+
         /// <summary>
         /// Maximum number of solutions for current thread.
         /// </summary>
@@ -46,12 +51,9 @@ namespace PMA.Application.UseCases.Secondary
         /// <summary>
         /// Initializes a new instance of <see cref="CollapseSolutionUseCase"/> class.
         /// </summary>
-        /// <param name="mediator">The mediator.</param>
-        /// <param name="parallelOptions">Options that configure the operation of methods on the <see cref="Parallel"/> class.</param>
         /// <param name="logger">The logger.</param>
-        public CollapseSolutionUseCase(IMediator mediator, ParallelOptions parallelOptions, ILogger<CollapseSolutionUseCase> logger) : base(mediator, parallelOptions, logger)
+        public CollapseSolutionUseCase(ILogger<CollapseSolutionUseCase> logger) : base(logger)
         {
-            Logger.LogInit();
         }
 
         #region Overrides of UseCaseBase<CollapseSolutionUseCase,MorphParserInputPort>
@@ -59,39 +61,56 @@ namespace PMA.Application.UseCases.Secondary
         /// <summary>
         /// Executes an action.
         /// </summary>
-        /// <param name="inputData">The input data.</param>
+        /// <param name="inputPort">The input data.</param>
         /// <returns>The result of action execution.</returns>
-        public override OperationResult Execute(MorphParserInputPort inputData)
+        public override OperationResult Execute(MorphParserInputPort inputPort)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Executes an action.
+        /// </summary>
+        /// <param name="inputPort">The input data.</param>
+        /// <param name="token">The cancellation token.</param>
+        /// <returns>The result of action execution.</returns>
+        public override async Task<OperationResult> ExecuteAsync(MorphParserInputPort inputPort, CancellationToken token = default)
         {
             Logger.LogEntry();
 
-            if (inputData is null)
+            token.ThrowIfCancellationRequested();
+
+            _parallelOptions.CancellationToken = token;
+
+            if (inputPort is null)
             {
-                Logger.LogError(ErrorMessageConstants.ValueIsNull, nameof(inputData));
+                Logger.LogError(ErrorMessageConstants.ValueIsNull, nameof(inputPort));
                 Logger.LogExit();
-                return OperationResult.FailureResult(ErrorMessageConstants.ValueIsNull, nameof(inputData));
+                return OperationResult.FailureResult(ErrorMessageConstants.ValueIsNull, nameof(inputPort));
             }
 
-            if (inputData.WordForm is null)
+            if (inputPort.WordForm is null)
             {
-                Logger.LogError(ErrorMessageConstants.ValueIsNull, nameof(inputData.WordForm));
+                Logger.LogError(ErrorMessageConstants.ValueIsNull, nameof(inputPort.WordForm));
                 Logger.LogExit();
-                return OperationResult.FailureResult(ErrorMessageConstants.ValueIsNull, nameof(inputData.WordForm));
+                return OperationResult.FailureResult(ErrorMessageConstants.ValueIsNull, nameof(inputPort.WordForm));
             }
 
-            if (inputData.ParsingType == MorphParsingType.Debug || ParallelOptions.CancellationToken.IsCancellationRequested)
+            if (inputPort.ParsingType == MorphParsingType.Debug)
             {
                 Logger.LogExit();
                 return OperationResult.SuccessResult();
             }
 
-            _inputData = inputData;
+            _inputData = inputPort;
 
             var time = new Stopwatch();
 
             time.Start();
             var wordForm = _inputData.WordForm;
-            InternalExecute(ref wordForm, null);
+
+            await Task.Run(() => InternalExecute(ref wordForm, null), token);
+
             _inputData.WordForm = wordForm;
             time.Stop();
 
@@ -174,6 +193,8 @@ namespace PMA.Application.UseCases.Secondary
 
                 void DynamicAction()
                 {
+                    _parallelOptions.CancellationToken.ThrowIfCancellationRequested();
+
                     // ReSharper disable once AccessToDisposedClosure
                     // ReSharper disable once PossibleMultipleEnumeration
                     using var enumerator = dynamicPartitions.GetEnumerator();
@@ -228,7 +249,7 @@ namespace PMA.Application.UseCases.Secondary
                 var actions = new Action[_processorCount];
                 actions.Fill(DynamicAction);
 
-                Parallel.Invoke(ParallelOptions, actions);
+                Parallel.Invoke(_parallelOptions, actions);
                 ((IDisposable)dynamicPartitions).Dispose();
             }
 

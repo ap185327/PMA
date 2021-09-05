@@ -2,6 +2,7 @@
 //     Copyright 2017-2021 Andrey Pospelov. All rights reserved.
 // </copyright>
 
+using PMA.Domain.Enums;
 using PMA.Domain.Interfaces.ViewModels.Base;
 
 namespace PMA.Domain.Interfaces.ViewModels.Controls
@@ -11,6 +12,11 @@ namespace PMA.Domain.Interfaces.ViewModels.Controls
     /// </summary>
     public interface IRuleInfoItemViewModel : IViewModel
     {
+        /// <summary>
+        /// Gets a rule type.
+        /// </summary>
+        RuleType Type { get; }
+
         /// <summary>
         /// Gets a rule ID.
         /// </summary>

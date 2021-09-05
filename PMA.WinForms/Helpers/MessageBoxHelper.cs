@@ -3,13 +3,13 @@
 // </copyright>
 
 using PMA.Domain.Enums;
-using PMA.Domain.Exceptions;
+using PMA.Utils.Exceptions;
 using System.Windows.Forms;
 
 namespace PMA.WinForms.Helpers
 {
     /// <summary>
-    /// The message box helper.
+    /// The message box helper class.
     /// </summary>
     internal static class MessageBoxHelper
     {
@@ -20,33 +20,15 @@ namespace PMA.WinForms.Helpers
         /// <returns>A message box icon flag.</returns>
         public static MessageBoxIcon GetIcon(ModalDialogType type)
         {
-            switch (type)
+            return type switch
             {
-                case ModalDialogType.Information:
-                    {
-                        return MessageBoxIcon.Information;
-                    }
-                case ModalDialogType.Warning:
-                    {
-                        return MessageBoxIcon.Warning;
-                    }
-                case ModalDialogType.Error:
-                    {
-                        return MessageBoxIcon.Error;
-                    }
-                case ModalDialogType.Question:
-                    {
-                        return MessageBoxIcon.Question;
-                    }
-                case ModalDialogType.Exclamation:
-                    {
-                        return MessageBoxIcon.Exclamation;
-                    }
-                default:
-                    {
-                        return MessageBoxIcon.None;
-                    }
-            }
+                ModalDialogType.Information => MessageBoxIcon.Information,
+                ModalDialogType.Warning => MessageBoxIcon.Warning,
+                ModalDialogType.Error => MessageBoxIcon.Error,
+                ModalDialogType.Question => MessageBoxIcon.Question,
+                ModalDialogType.Exclamation => MessageBoxIcon.Exclamation,
+                _ => MessageBoxIcon.None
+            };
         }
 
         /// <summary>
@@ -54,82 +36,41 @@ namespace PMA.WinForms.Helpers
         /// </summary>
         /// <param name="buttons">Button texts.</param>
         /// <returns>Message box buttons flag.</returns>
-        public static MessageBoxButtons GetButtons(string[] buttons)
+        public static MessageBoxButtons GetButtons(ModalButtonType[] buttons)
         {
-            string firstButtonText = buttons[0]?.ToLower();
-            string secondButtonText = buttons.Length > 1 ? buttons[1]?.ToLower() : null;
-            string thirdButtonText = buttons.Length > 2 ? buttons[2]?.ToLower() : null;
+            var firstButtonText = buttons[0];
+            var secondButtonText = buttons.Length > 1 ? buttons[1] : ModalButtonType.None;
+            var thirdButtonText = buttons.Length > 2 ? buttons[2] : ModalButtonType.None;
 
-            if (firstButtonText == "ok" && string.IsNullOrEmpty(secondButtonText) && string.IsNullOrEmpty(thirdButtonText))
+            return firstButtonText switch
             {
-                return MessageBoxButtons.OK;
-            }
-
-            if (firstButtonText == "ok" && secondButtonText == "cancel" && string.IsNullOrEmpty(thirdButtonText))
-            {
-                return MessageBoxButtons.OKCancel;
-            }
-
-            if (firstButtonText == "abort" && secondButtonText == "retry" && thirdButtonText == "ignore")
-            {
-                return MessageBoxButtons.AbortRetryIgnore;
-            }
-
-            if (firstButtonText == "yes" && secondButtonText == "no" && thirdButtonText == "cancel")
-            {
-                return MessageBoxButtons.YesNoCancel;
-            }
-
-            if (firstButtonText == "yes" && secondButtonText == "no" && string.IsNullOrEmpty(thirdButtonText))
-            {
-                return MessageBoxButtons.YesNo;
-            }
-
-            if (firstButtonText == "retry" && secondButtonText == "cancel" && string.IsNullOrEmpty(thirdButtonText))
-            {
-                return MessageBoxButtons.RetryCancel;
-            }
-
-            throw new CustomException("This combination of arguments is not supported");
+                ModalButtonType.Ok when secondButtonText == ModalButtonType.None && thirdButtonText == ModalButtonType.None => MessageBoxButtons.OK,
+                ModalButtonType.Ok when secondButtonText == ModalButtonType.Cancel && thirdButtonText == ModalButtonType.None => MessageBoxButtons.OKCancel,
+                ModalButtonType.Abort when secondButtonText == ModalButtonType.Retry && thirdButtonText == ModalButtonType.Ignore => MessageBoxButtons.AbortRetryIgnore,
+                ModalButtonType.Yes when secondButtonText == ModalButtonType.No && thirdButtonText == ModalButtonType.Cancel => MessageBoxButtons.YesNoCancel,
+                ModalButtonType.Yes when secondButtonText == ModalButtonType.No && thirdButtonText == ModalButtonType.None => MessageBoxButtons.YesNo,
+                ModalButtonType.Retry when secondButtonText == ModalButtonType.Cancel && thirdButtonText == ModalButtonType.None => MessageBoxButtons.RetryCancel,
+                _ => throw new CustomException("This combination of arguments is not supported")
+            };
         }
 
         /// <summary>
-        /// Gets a button index.
+        /// Gets a button type.
         /// </summary>
         /// <param name="dialogResult">The dialog result.</param>
-        /// <param name="buttons">The buttons.</param>
-        /// <returns>A button index.</returns>
-        public static int GetButtonIndex(DialogResult dialogResult, MessageBoxButtons buttons)
+        /// <returns>A button type.</returns>
+        public static ModalButtonType GetButtonType(DialogResult dialogResult)
         {
-            switch (dialogResult)
+            return dialogResult switch
             {
-                case DialogResult.OK:
-                case DialogResult.Abort:
-                case DialogResult.Yes:
-                    {
-                        return 0;
-                    }
-                case DialogResult.No:
-                    {
-                        return 1;
-                    }
-                case DialogResult.Ignore:
-                    {
-                        return 2;
-                    }
-                case DialogResult.Cancel:
-                    {
-                        return buttons == MessageBoxButtons.YesNoCancel ? 2 : 1;
-                    }
-                case DialogResult.Retry:
-                    {
-                        return buttons == MessageBoxButtons.AbortRetryIgnore ? 1 : 0;
-                    }
-                default:
-                    {
-                        return 0;
-                    }
-            }
+                DialogResult.Abort => ModalButtonType.Abort,
+                DialogResult.Yes => ModalButtonType.Yes,
+                DialogResult.No => ModalButtonType.No,
+                DialogResult.Ignore => ModalButtonType.Ignore,
+                DialogResult.Cancel => ModalButtonType.Cancel,
+                DialogResult.Retry => ModalButtonType.Retry,
+                _ => ModalButtonType.Ok
+            };
         }
     }
 }

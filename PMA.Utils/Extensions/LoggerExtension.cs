@@ -20,7 +20,17 @@ namespace PMA.Utils.Extensions
         /// <param name="logger">The <see cref="ILogger{TCategoryName}"/> to write to.</param>
         public static void LogInit<TCategoryName>(this ILogger<TCategoryName> logger)
         {
-            logger.LogDebug($"Initialize a new instance of the class");
+            logger.LogDebug("Initialize a new instance of the class");
+        }
+
+        /// <summary>
+        /// Writes a instance disposing log message.
+        /// </summary>
+        /// <typeparam name="TCategoryName">The type who's name is used for the logger category name.</typeparam>
+        /// <param name="logger">The <see cref="ILogger{TCategoryName}"/> to write to.</param>
+        public static void LogDispose<TCategoryName>(this ILogger<TCategoryName> logger)
+        {
+            logger.LogDebug("The instance of the class was disposed");
         }
 
         /// <summary>

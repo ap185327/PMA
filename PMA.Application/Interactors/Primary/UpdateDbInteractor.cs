@@ -8,7 +8,8 @@ using PMA.Domain.DataContracts;
 using PMA.Domain.InputPorts;
 using PMA.Domain.Interfaces.Interactors.Primary;
 using PMA.Domain.Interfaces.UseCases.Primary;
-using PMA.Utils.Extensions;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace PMA.Application.Interactors.Primary
 {
@@ -23,22 +24,13 @@ namespace PMA.Application.Interactors.Primary
         private readonly IStartDbUpdatingUseCase _startDbUpdatingUseCase;
 
         /// <summary>
-        /// The stop database updating use case.
-        /// </summary>
-        private readonly IStopDbUpdatingUseCase _stopDbUpdatingUseCase;
-
-        /// <summary>
         /// Initializes the new instance of <see cref="UpdateDbInteractor"/> class.
         /// </summary>
         /// <param name="startDbUpdatingUseCase">The start database updating use case.</param>
-        /// <param name="stopDbUpdatingUseCase">The stop database updating use case.</param>
         /// <param name="logger">The logger.</param>
-        public UpdateDbInteractor(IStartDbUpdatingUseCase startDbUpdatingUseCase, IStopDbUpdatingUseCase stopDbUpdatingUseCase, ILogger<UpdateDbInteractor> logger) : base(logger)
+        public UpdateDbInteractor(IStartDbUpdatingUseCase startDbUpdatingUseCase, ILogger<UpdateDbInteractor> logger) : base(logger)
         {
             _startDbUpdatingUseCase = startDbUpdatingUseCase;
-            _stopDbUpdatingUseCase = stopDbUpdatingUseCase;
-
-            Logger.LogInit();
         }
 
         #region Implementation of IUpdateDbInteractor
@@ -47,31 +39,11 @@ namespace PMA.Application.Interactors.Primary
         /// Starts the update database process.
         /// </summary>
         /// <param name="inputData">The update database input port.</param>
-        public OperationResult StartDbUpdating(UpdateDbInputPort inputData)
+        /// <param name="token">The cancellation token.</param>
+        /// <returns>The operation result.</returns>
+        public async Task<OperationResult> StartDbUpdatingAsync(UpdateDbInputPort inputData, CancellationToken token = default)
         {
-            var result = _startDbUpdatingUseCase.Execute(inputData);
-
-            if (!result.Success)
-            {
-                Logger.LogErrors(result.Messages);
-            }
-
-            return result;
-        }
-
-        /// <summary>
-        /// Stops the update database process.
-        /// </summary>
-        public OperationResult StopDbUpdating()
-        {
-            var result = _stopDbUpdatingUseCase.Execute();
-
-            if (!result.Success)
-            {
-                Logger.LogErrors(result.Messages);
-            }
-
-            return result;
+            return await _startDbUpdatingUseCase.ExecuteAsync(inputData, token);
         }
 
         #endregion

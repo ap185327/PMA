@@ -10,6 +10,7 @@ using System;
 using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
+using PMA.WinForms.Helpers;
 
 namespace PMA.WinForms.Controls
 {
@@ -70,17 +71,17 @@ namespace PMA.WinForms.Controls
         /// <param name="category">The property category.</param>
         /// <param name="description">The property description.</param>
         /// <param name="values">The collection of property values.</param>
-        /// <param name="selectedValueIndex">The selected property value index.</param>
-        public void AddProperty(string name, string category, string description, string[] values, int selectedValueIndex)
+        /// <param name="selectedValue">The selected property value.</param>
+        public void AddProperty(string name, string category, string description, string[] values, string selectedValue)
         {
             _dynamicPropertyCollection.Add(new DynamicProperty
             {
-                Name = name,
-                Value = values[selectedValueIndex],
+                Name = TranslateHelper.ConvertPropertyName(name),
+                Value = selectedValue,
                 Type = typeof(DynamicPropertyType),
                 ReadOnly = false,
                 Visible = true,
-                Category = category,
+                Category = TranslateHelper.ConvertCategoryName(category),
                 Description = description,
                 Values = values
             });
@@ -93,7 +94,14 @@ namespace PMA.WinForms.Controls
         /// <param name="newValues">The collection of ne property values.</param>
         public void UpdatePropertyValues(int index, string[] newValues)
         {
+            string tempValue = (string) _dynamicPropertyCollection[index].Value;
+
             _dynamicPropertyCollection[index].Values = newValues;
+
+            if (tempValue != (string)_dynamicPropertyCollection[index].Value)
+            {
+                Refresh();
+            }
         }
 
         /// <summary>
@@ -105,11 +113,8 @@ namespace PMA.WinForms.Controls
         {
             var dynamicProperty = _dynamicPropertyCollection[index];
 
-            if ((string)dynamicProperty.Value == dynamicProperty.Values[valueIndex])
-            {
-                return;
-            }
-
+            if ((string)dynamicProperty.Value == dynamicProperty.Values[valueIndex]) return;
+            
             dynamicProperty.Value = dynamicProperty.Values[valueIndex];
 
             Refresh();
@@ -124,10 +129,7 @@ namespace PMA.WinForms.Controls
         {
             string value = (string)SelectedGridItem.Value;
 
-            if ((string)e.OldValue == value)
-            {
-                return;
-            }
+            if ((string)e.OldValue == value) return;
 
             string name = SelectedGridItem.Label;
 

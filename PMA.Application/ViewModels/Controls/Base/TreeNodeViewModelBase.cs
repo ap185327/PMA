@@ -2,9 +2,9 @@
 //     Copyright 2017-2021 Andrey Pospelov. All rights reserved.
 // </copyright>
 
-using MediatR;
 using Microsoft.Extensions.Logging;
 using Microsoft.Toolkit.Mvvm.Input;
+using Microsoft.Toolkit.Mvvm.Messaging;
 using PMA.Application.ViewModels.Base;
 using PMA.Domain.Interfaces.Interactors.Primary;
 using PMA.Domain.Interfaces.Locators;
@@ -27,15 +27,13 @@ namespace PMA.Application.ViewModels.Controls.Base
         /// Initializes the new instance of <see cref="TreeNodeViewModelBase{T}"/> class.
         /// </summary>
         /// <param name="parent">The parent tree node view model.</param>
-        /// <param name="tag">The tag object.</param>
         /// <param name="interactor">The tree node view model interactor.</param>
         /// <param name="serviceLocator">The service locator.</param>
-        /// <param name="mediator">The mediator.</param>
         /// <param name="logger">The logger.</param>
-        protected TreeNodeViewModelBase(ITreeNodeViewModel parent, object tag, ITreeNodeInteractor interactor, IServiceLocator serviceLocator, IMediator mediator, ILogger<T> logger) : base(serviceLocator, mediator, logger)
+        /// <param name="messenger">The messenger.</param>
+        protected TreeNodeViewModelBase(ITreeNodeViewModel parent, ITreeNodeInteractor interactor, IServiceLocator serviceLocator, ILogger<T> logger, IMessenger messenger) : base(serviceLocator, logger, messenger)
         {
             Parent = parent;
-            Tag = tag;
             Interactor = interactor;
 
             SelectCommand = new RelayCommand(Select);
@@ -66,7 +64,12 @@ namespace PMA.Application.ViewModels.Controls.Base
         /// <summary>
         /// Gets a tag object.
         /// </summary>
-        public object Tag { get; }
+        public abstract object Tag { get; }
+
+        /// <summary>
+        /// Gets whether tree node has child nodes.
+        /// </summary>
+        public abstract bool HasChildren { get; }
 
         /// <summary>
         /// Gets a parent tree node view model.

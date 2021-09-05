@@ -2,7 +2,6 @@
 //     Copyright 2017-2021 Andrey Pospelov. All rights reserved.
 // </copyright>
 
-using MediatR;
 using Microsoft.Extensions.Logging;
 using PMA.Application.UseCases.Base;
 using PMA.Domain.Constants;
@@ -10,10 +9,10 @@ using PMA.Domain.DataContracts;
 using PMA.Domain.InputPorts;
 using PMA.Domain.Interfaces.Providers;
 using PMA.Domain.Interfaces.UseCases.Primary;
-using PMA.Utils.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace PMA.Application.UseCases.Primary
@@ -32,14 +31,10 @@ namespace PMA.Application.UseCases.Primary
         /// Initializes a new instance of <see cref="GetTermEntriesByIdsUseCase"/> class.
         /// </summary>
         /// <param name="termDbProvider">The term database provider.</param>
-        /// <param name="mediator">The mediator.</param>
-        /// <param name="parallelOptions">Options that configure the operation of methods on the <see cref="Parallel"/> class.</param>
         /// <param name="logger">The logger.</param>
-        public GetTermEntriesByIdsUseCase(ITermDbProvider termDbProvider, IMediator mediator, ParallelOptions parallelOptions, ILogger<GetTermEntriesByIdsUseCase> logger) : base(mediator, parallelOptions, logger)
+        public GetTermEntriesByIdsUseCase(ITermDbProvider termDbProvider, ILogger<GetTermEntriesByIdsUseCase> logger) : base(logger)
         {
             _termDbProvider = termDbProvider;
-
-            Logger.LogInit();
         }
 
         #region Overrides of UseCaseWithResultBase<GetTermEntriesByIdsUseCase,GetTermEntriesByIdsInputPort,IList<string>>
@@ -51,18 +46,6 @@ namespace PMA.Application.UseCases.Primary
         /// <returns>The result of action execution.</returns>
         public override OperationResult<IList<string>> Execute(GetTermEntriesByIdsInputPort inputData)
         {
-            if (inputData is null)
-            {
-                Logger.LogError(ErrorMessageConstants.ValueIsNull, nameof(inputData));
-                return OperationResult<IList<string>>.FailureResult(ErrorMessageConstants.ValueIsNull, nameof(inputData));
-            }
-
-            if (inputData.TermIds is null)
-            {
-                Logger.LogError(ErrorMessageConstants.ValueIsNull, nameof(inputData.TermIds));
-                return OperationResult<IList<string>>.FailureResult(ErrorMessageConstants.FilePathIsEmpty);
-            }
-
             try
             {
                 var termEntries = inputData.TermIds.Count == 0
@@ -78,6 +61,17 @@ namespace PMA.Application.UseCases.Primary
                 Logger.LogError(exception.Message);
                 return OperationResult<IList<string>>.ExceptionResult(exception);
             }
+        }
+
+        /// <summary>
+        /// Executes an action.
+        /// </summary>
+        /// <param name="inputPort">The input data.</param>
+        /// <param name="token">The cancellation token.</param>
+        /// <returns>The result of action execution.</returns>
+        public override Task<OperationResult<IList<string>>> ExecuteAsync(GetTermEntriesByIdsInputPort inputPort, CancellationToken token = default)
+        {
+            return Task.FromResult(Execute(inputPort));
         }
 
         #endregion

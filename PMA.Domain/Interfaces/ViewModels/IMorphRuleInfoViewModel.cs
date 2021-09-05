@@ -14,13 +14,8 @@ namespace PMA.Domain.Interfaces.ViewModels
     public interface IMorphRuleInfoViewModel : IViewModel
     {
         /// <summary>
-        /// Gets a collection of morphological rule info item view models.
+        /// Gets a collection of morphological and sandhi rule info item view models.
         /// </summary>
-        ObservableCollection<IRuleInfoItemViewModel> MorphRules { get; }
-
-        /// <summary>
-        /// Gets a collection of sandhi rule info item view models.
-        /// </summary>
-        ObservableCollection<IRuleInfoItemViewModel> SandhiRules { get; }
+        ObservableCollection<IRuleInfoItemViewModel> Rules { get; }
     }
 }

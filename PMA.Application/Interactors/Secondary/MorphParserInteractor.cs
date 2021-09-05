@@ -2,17 +2,21 @@
 //     Copyright 2017-2021 Andrey Pospelov. All rights reserved.
 // </copyright>
 
+using Microsoft.Extensions.Logging;
+using PMA.Application.Interactors.Base;
 using PMA.Domain.DataContracts;
 using PMA.Domain.InputPorts;
 using PMA.Domain.Interfaces.Interactors.Secondary;
 using PMA.Domain.Interfaces.UseCases.Secondary;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace PMA.Application.Interactors.Secondary
 {
     /// <summary>
     /// The morphological parser interactor class.
     /// </summary>
-    public sealed class MorphParserInteractor : IMorphParserInteractor
+    public sealed class MorphParserInteractor : InteractorBase<MorphParserInteractor>, IMorphParserInteractor
     {
         /// <summary>
         /// The collapse solution use case.
@@ -77,6 +81,7 @@ namespace PMA.Application.Interactors.Secondary
         /// <param name="updateSolutionUseCase">The update solution use case.</param>
         /// <param name="validateSolutionUseCase">The validate solution use case.</param>
         /// <param name="clearCacheUseCase">The clear cache use case.</param>
+        /// <param name="logger">The logger.</param>
         public MorphParserInteractor(ICollapseSolutionUseCase collapseSolutionUseCase,
             IParseMorphEntryUseCase parseMorphEntryUseCase,
             IRemoveDuplicateUseCase removeDuplicateUseCase,
@@ -86,7 +91,8 @@ namespace PMA.Application.Interactors.Secondary
             ISortSolutionUseCase sortSolutionUseCase,
             IUpdateSolutionUseCase updateSolutionUseCase,
             IValidateSolutionUseCase validateSolutionUseCase,
-            IClearCacheUseCase clearCacheUseCase)
+            IClearCacheUseCase clearCacheUseCase,
+            ILogger<MorphParserInteractor> logger) : base(logger)
         {
             _collapseSolutionUseCase = collapseSolutionUseCase;
             _parseMorphEntryUseCase = parseMorphEntryUseCase;
@@ -106,99 +112,109 @@ namespace PMA.Application.Interactors.Secondary
         /// Parses morphological entry.
         /// </summary>
         /// <param name="inputData">The input data.</param>
+        /// <param name="token">The cancellation token.</param>
         /// <returns>The result of operation.</returns>
-        public OperationResult ParseMorphEntry(MorphParserInputPort inputData)
+        public async Task<OperationResult> ParseMorphEntryAsync(MorphParserInputPort inputData, CancellationToken token = default)
         {
-            return _parseMorphEntryUseCase.Execute(inputData);
+            return await _parseMorphEntryUseCase.ExecuteAsync(inputData, token);
         }
 
         /// <summary>
         /// Removes solutions with excessive depth.
         /// </summary>
         /// <param name="inputData">The input data.</param>
+        /// <param name="token">The cancellation token.</param>
         /// <returns>The result of operation.</returns>
-        public OperationResult RemoveSolutionsWithExcessiveDepth(MorphParserInputPort inputData)
+        public async Task<OperationResult> RemoveSolutionsWithExcessiveDepthAsync(MorphParserInputPort inputData, CancellationToken token = default)
         {
-            return _removeSolutionWithExcessiveDepthUseCase.Execute(inputData);
+            return await _removeSolutionWithExcessiveDepthUseCase.ExecuteAsync(inputData, token);
         }
 
         /// <summary>
         /// Collapses solutions.
         /// </summary>
         /// <param name="inputData">The input data.</param>
+        /// <param name="token">The cancellation token.</param>
         /// <returns>The result of operation.</returns>
-        public OperationResult CollapseSolutions(MorphParserInputPort inputData)
+        public async Task<OperationResult> CollapseSolutionsAsync(MorphParserInputPort inputData, CancellationToken token = default)
         {
-            return _collapseSolutionUseCase.Execute(inputData);
+            return await _collapseSolutionUseCase.ExecuteAsync(inputData, token);
         }
 
         /// <summary>
         /// Removes unsuitable derivative solutions.
         /// </summary>
         /// <param name="inputData">The input data.</param>
+        /// <param name="token">The cancellation token.</param>
         /// <returns>The result of operation.</returns>
-        public OperationResult RemoveUnsuitableDerivativeSolutions(MorphParserInputPort inputData)
+        public async Task<OperationResult> RemoveUnsuitableDerivativeSolutionsAsync(MorphParserInputPort inputData, CancellationToken token = default)
         {
-            return _removeUnsuitableDerivativeSolutionUseCase.Execute(inputData);
+            return await _removeUnsuitableDerivativeSolutionUseCase.ExecuteAsync(inputData, token);
         }
 
         /// <summary>
         /// Updates solutions.
         /// </summary>
         /// <param name="inputData">The input data.</param>
+        /// <param name="token">The cancellation token.</param>
         /// <returns>The result of operation.</returns>
-        public OperationResult UpdateSolutions(MorphParserInputPort inputData)
+        public async Task<OperationResult> UpdateSolutionsAsync(MorphParserInputPort inputData, CancellationToken token = default)
         {
-            return _updateSolutionUseCase.Execute(inputData);
+            return await _updateSolutionUseCase.ExecuteAsync(inputData, token);
         }
 
         /// <summary>
         /// Removes duplicates.
         /// </summary>
         /// <param name="inputData">The input data.</param>
+        /// <param name="token">The cancellation token.</param>
         /// <returns>The result of operation.</returns>
-        public OperationResult RemoveDuplicates(MorphParserInputPort inputData)
+        public async Task<OperationResult> RemoveDuplicatesAsync(MorphParserInputPort inputData, CancellationToken token = default)
         {
-            return _removeDuplicateUseCase.Execute(inputData);
+            return await _removeDuplicateUseCase.ExecuteAsync(inputData, token);
         }
 
         /// <summary>
         /// Removes unsuitable solutions.
         /// </summary>
         /// <param name="inputData">The input data.</param>
+        /// <param name="token">The cancellation token.</param>
         /// <returns>The result of operation.</returns>
-        public OperationResult RemoveUnsuitableSolutions(MorphParserInputPort inputData)
+        public async Task<OperationResult> RemoveUnsuitableSolutionsAsync(MorphParserInputPort inputData, CancellationToken token = default)
         {
-            return _removeUnsuitableSolutionUseCase.Execute(inputData);
+            return await _removeUnsuitableSolutionUseCase.ExecuteAsync(inputData, token);
         }
 
         /// <summary>
         /// Sort solutions.
         /// </summary>
         /// <param name="inputData">The input data.</param>
+        /// <param name="token">The cancellation token.</param>
         /// <returns>The result of operation.</returns>
-        public OperationResult SortSolutions(MorphParserInputPort inputData)
+        public async Task<OperationResult> SortSolutionsAsync(MorphParserInputPort inputData, CancellationToken token = default)
         {
-            return _sortSolutionUseCase.Execute(inputData);
+            return await _sortSolutionUseCase.ExecuteAsync(inputData, token);
         }
 
         /// <summary>
         /// Validates solutions.
         /// </summary>
         /// <param name="inputData">The input data.</param>
+        /// <param name="token">The cancellation token.</param>
         /// <returns>The result of operation.</returns>
-        public OperationResult ValidateSolutions(MorphParserInputPort inputData)
+        public async Task<OperationResult> ValidateSolutionsAsync(MorphParserInputPort inputData, CancellationToken token = default)
         {
-            return _validateSolutionUseCase.Execute(inputData);
+            return await _validateSolutionUseCase.ExecuteAsync(inputData, token);
         }
 
         /// <summary>
         /// Clears manager cache.
         /// </summary>
+        /// <param name="token">The cancellation token.</param>
         /// <returns>The result of operation.</returns>
-        public OperationResult ClearCache()
+        public async Task<OperationResult> ClearCacheAsync(CancellationToken token = default)
         {
-            return _clearCacheUseCase.Execute();
+            return await _clearCacheUseCase.ExecuteAsync(token);
         }
 
         #endregion

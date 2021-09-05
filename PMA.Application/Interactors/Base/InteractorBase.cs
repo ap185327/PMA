@@ -4,6 +4,7 @@
 
 using Microsoft.Extensions.Logging;
 using PMA.Domain.Interfaces.Interactors.Base;
+using PMA.Utils.Extensions;
 
 namespace PMA.Application.Interactors.Base
 {
@@ -25,6 +26,18 @@ namespace PMA.Application.Interactors.Base
         protected InteractorBase(ILogger<T> logger)
         {
             Logger = logger;
+
+            Logger.LogInit();
         }
+
+        #region IDisposable
+
+        /// <summary>Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.</summary>
+        public void Dispose()
+        {
+            Logger.LogDispose();
+        }
+
+        #endregion
     }
 }

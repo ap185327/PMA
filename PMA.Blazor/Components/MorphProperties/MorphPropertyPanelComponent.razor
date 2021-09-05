@@ -1,0 +1,16 @@
+﻿<MudPaper Outlined="true"
+          Elevation="0"
+          Style="@_panelStyle">
+    <MudExpansionPanels MultiExpansion="true">
+        <MudExpansionPanel Text="@Title"
+                           IsInitiallyExpanded="false">
+            <MudExpansionPanels MultiExpansion="true">
+                @foreach (var category in ViewModel.Categories)
+                {
+                    <MorphPropertyCategoryComponent ViewModel="category"/>
+                }
+            </MudExpansionPanels>
+        </MudExpansionPanel>
+        <MorphRuleContainerComponent />
+    </MudExpansionPanels>
+</MudPaper>

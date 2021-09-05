@@ -4,14 +4,11 @@
 
 using Autofac;
 using PMA.Domain.Enums;
-using PMA.Domain.EventArguments;
-using PMA.Domain.Interfaces.Services;
 using PMA.Domain.Interfaces.ViewModels;
 using PMA.Domain.Interfaces.ViewModels.Controls;
 using PMA.WinForms.Controls;
 using PMA.WinForms.EventArguments;
 using PMA.WinForms.Extensions;
-using PMA.WinForms.Helpers;
 using System;
 using System.ComponentModel;
 using System.Drawing;
@@ -26,11 +23,6 @@ namespace PMA.WinForms.Forms
         /// The morphological solution view model.
         /// </summary>
         private readonly IMorphPropertyViewModel _morphPropertyViewModel;
-
-        /// <summary>
-        /// The translate service.
-        /// </summary>
-        private readonly ITranslateService _translateService;
 
         /// <summary>
         /// The morphological parameter dynamic property grid.
@@ -53,17 +45,12 @@ namespace PMA.WinForms.Forms
         private WatermarkTextBox _rightTextBox;
 
         /// <summary>
-        /// Whether morphological analysis has been started or not.
-        /// </summary>
-        private bool _isStarted;
-
-        /// <summary>
         /// Initializes a new instance of the <see cref="MorphPropertyForm">MorphPropertyForm</see> class.
         /// </summary>
         public MorphPropertyForm()
         {
             _morphPropertyViewModel = Program.Scope.Resolve<IMorphPropertyViewModel>();
-            _translateService = Program.Scope.Resolve<ITranslateService>();
+            _morphPropertyViewModel.IsActive = true;
 
             InitializeComponent();
             OverrideStrings();
@@ -78,18 +65,18 @@ namespace PMA.WinForms.Forms
         /// </summary>
         private void OverrideStrings()
         {
-            Text = _translateService.Translate(Name);
-            BaseLabel.Text = _translateService.Translate($"{Name}.{BaseLabel.Name}");
-            LeftCheckBox.Text = _translateService.Translate($"{Name}.{LeftCheckBox.Name}");
-            RightCheckBox.Text = _translateService.Translate($"{Name}.{RightCheckBox.Name}");
-            IsVirtualCheckBox.Text = _translateService.Translate($"{Name}.{IsVirtualCheckBox.Name}");
-            GetEntryIdButton.Text = _translateService.Translate($"{Name}.{GetEntryIdButton.Name}");
-            ResetButton.Text = _translateService.Translate($"{Name}.{ResetButton.Name}");
-            GetLeftIdButton.Text = _translateService.Translate($"{Name}.{GetLeftIdButton.Name}");
-            GetRightIdButton.Text = _translateService.Translate($"{Name}.{GetRightIdButton.Name}");
-            StartButton.Text = _translateService.Translate($"{Name}.{StartButton.Name}");
-            SaveButton.Text = _translateService.Translate($"{Name}.{SaveButton.Name}");
-            DeleteButton.Text = _translateService.Translate($"{Name}.{DeleteButton.Name}");
+            Text = Properties.Resources.ResourceManager.GetString("MorphPropertyForm.Title");
+            BaseLabel.Text = Properties.Resources.ResourceManager.GetString("MorphPropertyForm.BaseLabel");
+            LeftCheckBox.Text = Properties.Resources.ResourceManager.GetString("MorphPropertyForm.LeftCheckBox");
+            RightCheckBox.Text = Properties.Resources.ResourceManager.GetString("MorphPropertyForm.RightCheckBox");
+            IsVirtualCheckBox.Text = Properties.Resources.ResourceManager.GetString("MorphPropertyForm.IsVirtualCheckBox");
+            GetEntryIdButton.Text = Properties.Resources.ResourceManager.GetString("MorphPropertyForm.GetEntryIdButton");
+            ResetButton.Text = Properties.Resources.ResourceManager.GetString("MorphPropertyForm.ResetButton");
+            GetLeftIdButton.Text = Properties.Resources.ResourceManager.GetString("MorphPropertyForm.GetLeftIdButton");
+            GetRightIdButton.Text = Properties.Resources.ResourceManager.GetString("MorphPropertyForm.GetRightIdButton");
+            StartButton.Text = Properties.Resources.ResourceManager.GetString("MorphPropertyForm.StartButton");
+            SaveButton.Text = Properties.Resources.ResourceManager.GetString("MorphPropertyForm.SaveButton");
+            DeleteButton.Text = Properties.Resources.ResourceManager.GetString("MorphPropertyForm.DeleteButton");
         }
 
         /// <summary>
@@ -98,7 +85,7 @@ namespace PMA.WinForms.Forms
         private void SetDefaultValues()
         {
             // PropertyGridParameters
-            _propertyGridParameters = new DynamicPropertyGrid()
+            _propertyGridParameters = new DynamicPropertyGrid
             {
                 Anchor = TempPropertyGridParameters.Anchor,
                 Location = TempPropertyGridParameters.Location,
@@ -112,11 +99,11 @@ namespace PMA.WinForms.Forms
 
             foreach (var controlViewModel in _morphPropertyViewModel.Properties)
             {
-                _propertyGridParameters.AddProperty(controlViewModel.Name, controlViewModel.Category, controlViewModel.Description, controlViewModel.TermEntries.ToArray(), controlViewModel.SelectedIndex);
+                _propertyGridParameters.AddProperty(controlViewModel.Name, controlViewModel.Category, controlViewModel.Description, controlViewModel.TermEntries.ToArray(), controlViewModel.SelectedTerm);
             }
 
             // EntryTextBox
-            _entryTextBox = new WatermarkTextBox(_morphPropertyViewModel.InputWatermark, _morphPropertyViewModel.AutoSymbolReplace)
+            _entryTextBox = new WatermarkTextBox(_morphPropertyViewModel.InputWatermark)
             {
                 Anchor = TempEntryTextBox.Anchor,
                 CharacterCasing = TempEntryTextBox.CharacterCasing,
@@ -130,7 +117,7 @@ namespace PMA.WinForms.Forms
             Controls.Add(_entryTextBox);
 
             // RightTextBox
-            _rightTextBox = new WatermarkTextBox(_morphPropertyViewModel.InputWatermark, _morphPropertyViewModel.AutoSymbolReplace)
+            _rightTextBox = new WatermarkTextBox(_morphPropertyViewModel.InputWatermark)
             {
                 Anchor = TempRightTextBox.Anchor,
                 CharacterCasing = TempRightTextBox.CharacterCasing,
@@ -145,7 +132,7 @@ namespace PMA.WinForms.Forms
             Controls.Add(_rightTextBox);
 
             // LeftTextBox
-            _leftTextBox = new WatermarkTextBox(_morphPropertyViewModel.InputWatermark, _morphPropertyViewModel.AutoSymbolReplace)
+            _leftTextBox = new WatermarkTextBox(_morphPropertyViewModel.InputWatermark)
             {
                 Anchor = TempLeftTextBox.Anchor,
                 CharacterCasing = TempLeftTextBox.CharacterCasing,
@@ -159,16 +146,16 @@ namespace PMA.WinForms.Forms
             TempLeftTextBox.Dispose();
             Controls.Add(_leftTextBox);
 
-            BaseComboBox.Items.Add(_translateService.Translate(MorphBase.Unknown));
-            BaseComboBox.Items.Add(_translateService.Translate(MorphBase.None));
-            BaseComboBox.Items.Add(_translateService.Translate(MorphBase.Left));
-            BaseComboBox.Items.Add(_translateService.Translate(MorphBase.Right));
-            BaseComboBox.Items.Add(_translateService.Translate(MorphBase.Both));
+            BaseComboBox.Items.Add(Properties.Resources.ResourceManager.GetString("MorphBase.Unknown")!);
+            BaseComboBox.Items.Add(Properties.Resources.ResourceManager.GetString("MorphBase.None")!);
+            BaseComboBox.Items.Add(Properties.Resources.ResourceManager.GetString("MorphBase.Left")!);
+            BaseComboBox.Items.Add(Properties.Resources.ResourceManager.GetString("MorphBase.Right")!);
+            BaseComboBox.Items.Add(Properties.Resources.ResourceManager.GetString("MorphBase.Both")!);
 
             ActiveControl = BaseComboBox;
 
             BaseComboBox.SelectedIndex = (int)_morphPropertyViewModel.Base;
-            EntryIdLabel.Text = _translateService.Translate($"{Name}.{EntryIdLabel.Name}", _morphPropertyViewModel.EntryId);
+            EntryIdLabel.Text = string.Format(Properties.Resources.ResourceManager.GetString("MorphPropertyForm.EntryIdLabel")!, _morphPropertyViewModel.EntryId);
             GetEntryIdButton.Enabled = !string.IsNullOrEmpty(_morphPropertyViewModel.Entry);
             LockIdCheckBox.Checked = _morphPropertyViewModel.IsLockEntryIdChecked;
 
@@ -187,7 +174,6 @@ namespace PMA.WinForms.Forms
             _leftTextBox.TextChanged += TextBox_TextChanged;
             _rightTextBox.TextChanged += TextBox_TextChanged;
             _propertyGridParameters.DynamicPropertyValueChanged += PropertyGridParameters_DynamicPropertyValueChanged;
-            _morphPropertyViewModel.ShowModalDialog += MorphPropertyViewModel_ShowModalDialog;
             _morphPropertyViewModel.PropertyChanged += MorphPropertyViewModel_PropertyChanged;
 
             foreach (var controlViewModel in _morphPropertyViewModel.Properties)
@@ -197,23 +183,6 @@ namespace PMA.WinForms.Forms
         }
 
         #endregion Initialization methods
-
-        /// <summary>
-        /// Event handler for the view model property dialog shown.
-        /// </summary>
-        /// <param name="sender">Object sender.</param>
-        /// <param name="e">Event arguments.</param>
-        private void MorphPropertyViewModel_ShowModalDialog(object sender, ModalDialogEventArgs e)
-        {
-            var buttons = MessageBoxHelper.GetButtons(e.Buttons);
-            var icon = MessageBoxHelper.GetIcon(e.Type);
-
-            var result = MessageBox.Show(e.Message, e.Title, buttons, icon);
-
-            int index = MessageBoxHelper.GetButtonIndex(result, buttons);
-
-            _morphPropertyViewModel.PressModalDialogButtonCommand.Execute(index);
-        }
 
         /// <summary>
         /// Event handler for the view model property control changed.
@@ -226,16 +195,12 @@ namespace PMA.WinForms.Forms
 
             switch (e.PropertyName)
             {
-                case "SelectedIndex":
-                    {
-                        _propertyGridParameters.UpdatePropertyValue(controlViewModel.Index, controlViewModel.SelectedIndex);
-                        break;
-                    }
-                case "TermEntries":
-                    {
-                        _propertyGridParameters.UpdatePropertyValues(controlViewModel.Index, controlViewModel.TermEntries.ToArray());
-                        break;
-                    }
+                case nameof(controlViewModel.SelectedTerm):
+                    _propertyGridParameters.UpdatePropertyValue(controlViewModel.Index, controlViewModel.TermEntries.IndexOf(controlViewModel.SelectedTerm));
+                    break;
+                case nameof(controlViewModel.TermEntries):
+                    _propertyGridParameters.UpdatePropertyValues(controlViewModel.Index, controlViewModel.TermEntries.ToArray());
+                    break;
             }
         }
 
@@ -250,65 +215,57 @@ namespace PMA.WinForms.Forms
             {
                 switch (e.PropertyName)
                 {
-                    case "Entry":
+                    case nameof(IMorphPropertyViewModel.Entry):
+                        UpdateButtons();
+                        GetEntryIdButton.Enabled = !string.IsNullOrEmpty(_morphPropertyViewModel.Entry);
+                        _entryTextBox.Text = _morphPropertyViewModel.Entry;
+                        break;
+                    case nameof(IMorphPropertyViewModel.LeftEntry):
+                    case nameof(IMorphPropertyViewModel.LeftId):
+                    case nameof(IMorphPropertyViewModel.IsLeftChecked):
+                        UpdateLeftControls();
+                        UpdateButtons();
+                        break;
+                    case nameof(IMorphPropertyViewModel.RightEntry):
+                    case nameof(IMorphPropertyViewModel.RightId):
+                    case nameof(IMorphPropertyViewModel.IsRightChecked):
+                        UpdateRightControls();
+                        UpdateButtons();
+                        break;
+                    case nameof(IMorphPropertyViewModel.EntryId):
+                        UpdateButtons();
+                        EntryIdLabel.Text =
+                            string.Format(
+                                Properties.Resources.ResourceManager.GetString("MorphPropertyForm.EntryIdLabel")!,
+                                _morphPropertyViewModel.EntryId);
+                        break;
+                    case nameof(IMorphPropertyViewModel.Base):
+                        BaseComboBox.SelectedIndex = (int)_morphPropertyViewModel.Base;
+                        UpdateLeftControls();
+                        UpdateRightControls();
+                        break;
+                    case nameof(IMorphPropertyViewModel.IsVirtual):
+                        UpdateIsVirtualCheckBox();
+                        UpdateButtons();
+                        break;
+                    case nameof(IMorphPropertyViewModel.IsBusy):
+                    case nameof(IMorphPropertyViewModel.ExecuteCommandDisabled):
+                        UpdateButtons();
+                        break;
+                    case nameof(IMorphPropertyViewModel.IsLockEntryIdChecked):
+                        LockIdCheckBox.Checked = _morphPropertyViewModel.IsLockEntryIdChecked;
+                        break;
+                    case nameof(IMorphPropertyViewModel.GetEntryIdViewModel):
+                        if (_morphPropertyViewModel.GetEntryIdViewModel is not null)
                         {
-                            UpdateButtons();
-                            GetEntryIdButton.Enabled = !string.IsNullOrEmpty(_morphPropertyViewModel.Entry);
-                            _entryTextBox.Text = _morphPropertyViewModel.Entry;
-                            break;
+                            using var form = new GetEntryIdForm(_morphPropertyViewModel.GetEntryIdViewModel);
+
+                            if (!form.IsDisposed)
+                            {
+                                form.ShowDialog();
+                            }
                         }
-                    case "LeftEntry":
-                    case "LeftId":
-                    case "IsLeftChecked":
-                        {
-                            UpdateLeftControls();
-                            UpdateButtons();
-                            break;
-                        }
-                    case "RightEntry":
-                    case "RightId":
-                    case "IsRightChecked":
-                        {
-                            UpdateRightControls();
-                            UpdateButtons();
-                            break;
-                        }
-                    case "EntryId":
-                        {
-                            UpdateButtons();
-                            EntryIdLabel.Text = _translateService.Translate($"{Name}.{EntryIdLabel.Name}", _morphPropertyViewModel.EntryId);
-                            break;
-                        }
-                    case "Base":
-                        {
-                            BaseComboBox.SelectedIndex = (int)_morphPropertyViewModel.Base;
-                            UpdateLeftControls();
-                            UpdateRightControls();
-                            break;
-                        }
-                    case "IsVirtual":
-                        {
-                            UpdateIsVirtualCheckBox();
-                            UpdateButtons();
-                            break;
-                        }
-                    case "IsBusy":
-                        {
-                            UpdateButtons();
-                            break;
-                        }
-                    case "IsLockEntryIdChecked":
-                        {
-                            LockIdCheckBox.Checked = _morphPropertyViewModel.IsLockEntryIdChecked;
-                            break;
-                        }
-                    case "AutoSymbolReplace":
-                        {
-                            _entryTextBox.AutoSymbolReplace = _morphPropertyViewModel.AutoSymbolReplace;
-                            _leftTextBox.AutoSymbolReplace = _morphPropertyViewModel.AutoSymbolReplace;
-                            _rightTextBox.AutoSymbolReplace = _morphPropertyViewModel.AutoSymbolReplace;
-                            break;
-                        }
+                        break;
                 }
             });
         }
@@ -320,27 +277,23 @@ namespace PMA.WinForms.Forms
         {
             LeftCheckBox.Checked = _morphPropertyViewModel.IsLeftChecked;
             _leftTextBox.Text = _morphPropertyViewModel.LeftEntry;
-            LeftIdLabel.Text = _translateService.Translate($"{Name}.{LeftIdLabel.Name}", _morphPropertyViewModel.LeftId);
+            LeftIdLabel.Text = string.Format(Properties.Resources.ResourceManager.GetString("MorphPropertyForm.LeftIdLabel")!, _morphPropertyViewModel.LeftId);
 
 
             switch (_morphPropertyViewModel.Base)
             {
                 case MorphBase.None:
-                    {
-                        LeftCheckBox.Enabled = false;
-                        _leftTextBox.Enabled = false;
-                        GetLeftIdButton.Enabled = false;
-                        LeftIdLabel.ForeColor = DefaultForeColor;
-                        break;
-                    }
+                    LeftCheckBox.Enabled = false;
+                    _leftTextBox.Enabled = false;
+                    GetLeftIdButton.Enabled = false;
+                    LeftIdLabel.ForeColor = DefaultForeColor;
+                    break;
                 default:
-                    {
-                        LeftCheckBox.Enabled = true;
-                        _leftTextBox.Enabled = _morphPropertyViewModel.IsLeftChecked;
-                        GetLeftIdButton.Enabled = !string.IsNullOrEmpty(_morphPropertyViewModel.LeftEntry) && _morphPropertyViewModel.IsLeftChecked;
-                        LeftIdLabel.ForeColor = _morphPropertyViewModel.IsLeftChecked && _morphPropertyViewModel.LeftId == 0 ? Color.Red : DefaultForeColor;
-                        break;
-                    }
+                    LeftCheckBox.Enabled = true;
+                    _leftTextBox.Enabled = _morphPropertyViewModel.IsLeftChecked;
+                    GetLeftIdButton.Enabled = !string.IsNullOrEmpty(_morphPropertyViewModel.LeftEntry) && _morphPropertyViewModel.IsLeftChecked;
+                    LeftIdLabel.ForeColor = _morphPropertyViewModel.IsLeftChecked && _morphPropertyViewModel.LeftId == 0 ? Color.Red : DefaultForeColor;
+                    break;
             }
         }
 
@@ -351,26 +304,22 @@ namespace PMA.WinForms.Forms
         {
             RightCheckBox.Checked = _morphPropertyViewModel.IsRightChecked;
             _rightTextBox.Text = _morphPropertyViewModel.RightEntry;
-            RightIdLabel.Text = _translateService.Translate($"{Name}.{RightIdLabel.Name}", _morphPropertyViewModel.RightId);
+            RightIdLabel.Text = string.Format(Properties.Resources.ResourceManager.GetString("MorphPropertyForm.RightIdLabel")!, _morphPropertyViewModel.RightId);
 
             switch (_morphPropertyViewModel.Base)
             {
                 case MorphBase.None:
-                    {
-                        RightCheckBox.Enabled = false;
-                        _rightTextBox.Enabled = false;
-                        GetRightIdButton.Enabled = false;
-                        RightIdLabel.ForeColor = DefaultForeColor;
-                        break;
-                    }
+                    RightCheckBox.Enabled = false;
+                    _rightTextBox.Enabled = false;
+                    GetRightIdButton.Enabled = false;
+                    RightIdLabel.ForeColor = DefaultForeColor;
+                    break;
                 default:
-                    {
-                        RightCheckBox.Enabled = true;
-                        _rightTextBox.Enabled = _morphPropertyViewModel.IsRightChecked;
-                        GetRightIdButton.Enabled = !string.IsNullOrEmpty(_morphPropertyViewModel.RightEntry) && _morphPropertyViewModel.IsRightChecked;
-                        RightIdLabel.ForeColor = _morphPropertyViewModel.IsRightChecked && _morphPropertyViewModel.RightId == 0 ? Color.Red : DefaultForeColor;
-                        break;
-                    }
+                    RightCheckBox.Enabled = true;
+                    _rightTextBox.Enabled = _morphPropertyViewModel.IsRightChecked;
+                    GetRightIdButton.Enabled = !string.IsNullOrEmpty(_morphPropertyViewModel.RightEntry) && _morphPropertyViewModel.IsRightChecked;
+                    RightIdLabel.ForeColor = _morphPropertyViewModel.IsRightChecked && _morphPropertyViewModel.RightId == 0 ? Color.Red : DefaultForeColor;
+                    break;
             }
         }
 
@@ -385,10 +334,10 @@ namespace PMA.WinForms.Forms
                 DeleteButton.Enabled = false;
                 SaveButton.Enabled = false;
 
-                if (!_isStarted) return;
-
                 StartButton.Image = Properties.Resources.stop;
-                StartButton.Text = _translateService.Translate($"{Name}.StopButton");
+                StartButton.Text = Properties.Resources.ResourceManager.GetString("MorphPropertyForm.StopButton");
+
+                StartButton.Enabled = !_morphPropertyViewModel.ExecuteCommandDisabled;
             }
             else
             {
@@ -399,9 +348,10 @@ namespace PMA.WinForms.Forms
                                      RightIdLabel.ForeColor != Color.Red &&
                                      IsVirtualCheckBox.ForeColor != Color.Red;
 
-                StartButton.Enabled = !string.IsNullOrEmpty(_morphPropertyViewModel.Entry);
                 StartButton.Image = Properties.Resources.start;
-                StartButton.Text = _translateService.Translate($"{Name}.{StartButton.Name}");
+                StartButton.Text = Properties.Resources.ResourceManager.GetString("MorphPropertyForm.StartButton");
+
+                StartButton.Enabled = !string.IsNullOrEmpty(_morphPropertyViewModel.Entry);
             }
         }
 
@@ -430,7 +380,11 @@ namespace PMA.WinForms.Forms
         /// <param name="e">Event arguments.</param>
         private void PropertyGridParameters_DynamicPropertyValueChanged(object sender, DynamicPropertyEventArgs e)
         {
-            _morphPropertyViewModel.Properties[e.PropertyIndex].SelectedIndex = e.NewValueIndex;
+            int newSelectedIndex = e.NewValueIndex;
+
+            var property = _morphPropertyViewModel.Properties.Single(x => x.Index == e.PropertyIndex);
+
+            property.SelectedTerm = property.TermEntries[newSelectedIndex];
         }
 
         /// <summary>
@@ -457,20 +411,14 @@ namespace PMA.WinForms.Forms
             switch (textBox.Name)
             {
                 case "LeftTextBox":
-                    {
-                        _morphPropertyViewModel.LeftEntry = textBox.Text;
-                        break;
-                    }
+                    _morphPropertyViewModel.LeftEntry = textBox.Text;
+                    break;
                 case "RightTextBox":
-                    {
-                        _morphPropertyViewModel.RightEntry = textBox.Text;
-                        break;
-                    }
+                    _morphPropertyViewModel.RightEntry = textBox.Text;
+                    break;
                 default:
-                    {
-                        _morphPropertyViewModel.Entry = textBox.Text;
-                        break;
-                    }
+                    _morphPropertyViewModel.Entry = textBox.Text;
+                    break;
             }
         }
 
@@ -556,30 +504,15 @@ namespace PMA.WinForms.Forms
             switch (getIdButton.Name)
             {
                 case "GetLeftIdButton":
-                    {
-                        _morphPropertyViewModel.GetLeftIdCommand.Execute(null);
-                        break;
-                    }
+                    _morphPropertyViewModel.GetLeftIdCommand.Execute(null);
+                    break;
                 case "GetRightIdButton":
-                    {
-                        _morphPropertyViewModel.GetRightIdCommand.Execute(null);
-                        break;
-                    }
+                    _morphPropertyViewModel.GetRightIdCommand.Execute(null);
+                    break;
                 default:
-                    {
-                        _morphPropertyViewModel.GetEntryIdCommand.Execute(null);
-                        break;
-                    }
+                    _morphPropertyViewModel.GetEntryIdCommand.Execute(null);
+                    break;
             }
-
-            using var form = new GetEntryIdForm();
-
-            if (!form.IsDisposed)
-            {
-                form.ShowDialog();
-            }
-
-            _morphPropertyViewModel.OnAppearing();
         }
 
         /// <summary>
@@ -609,32 +542,13 @@ namespace PMA.WinForms.Forms
         /// <param name="e">Event arguments.</param>
         private void StartButton_Click(object sender, EventArgs e)
         {
-            if (StartButton.Text == _translateService.Translate($"{Name}.{StartButton.Name}"))
+            if (StartButton.Text == Properties.Resources.ResourceManager.GetString("MorphPropertyForm.StartButton"))
             {
-                _isStarted = true;
-                _morphPropertyViewModel.StartCommand.Execute(null);
+                _morphPropertyViewModel.ExecuteCommand.Execute(true);
             }
             else
             {
-                StartButton.Enabled = false;
-                _morphPropertyViewModel.StopCommand.Execute(null);
-            }
-        }
-
-        /// <summary>
-        /// Event handler for the MorphPropertyForm visible changed.
-        /// </summary>
-        /// <param name="sender">Object sender.</param>
-        /// <param name="e">Event arguments.</param>
-        private void MorphPropertyForm_VisibleChanged(object sender, EventArgs e)
-        {
-            if (Visible)
-            {
-                _morphPropertyViewModel.OnAppearing();
-            }
-            else
-            {
-                _morphPropertyViewModel.OnDisappearing();
+                _morphPropertyViewModel.ExecuteCommand.Execute(false);
             }
         }
     }

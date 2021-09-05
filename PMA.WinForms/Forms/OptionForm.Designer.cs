@@ -30,7 +30,7 @@
         {
             this.CancelButton = new System.Windows.Forms.Button();
             this.OkButton = new System.Windows.Forms.Button();
-            this.TermGoupBox = new System.Windows.Forms.GroupBox();
+            this.TermGroupBox = new System.Windows.Forms.GroupBox();
             this.ShownTermLabel = new System.Windows.Forms.Label();
             this.AvailableTermLabel = new System.Windows.Forms.Label();
             this.RemoveButton = new System.Windows.Forms.Button();
@@ -41,11 +41,9 @@
             this.MorphRuleRatingLabel = new System.Windows.Forms.Label();
             this.FdictRatingLabel = new System.Windows.Forms.Label();
             this.RatingTrackBar = new System.Windows.Forms.TrackBar();
-            this.RootTermComboBox = new System.Windows.Forms.ComboBox();
-            this.RootTermLabel = new System.Windows.Forms.Label();
             this.ModeLabel = new System.Windows.Forms.Label();
             this.ModeComboBox = new System.Windows.Forms.ComboBox();
-            this.TermGoupBox.SuspendLayout();
+            this.TermGroupBox.SuspendLayout();
             this.RatingGroupBox.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.RatingTrackBar)).BeginInit();
             this.SuspendLayout();
@@ -72,22 +70,22 @@
             this.OkButton.UseVisualStyleBackColor = true;
             this.OkButton.Click += new System.EventHandler(this.OkButton_Click);
             // 
-            // TermGoupBox
+            // TermGroupBox
             // 
-            this.TermGoupBox.Controls.Add(this.ShownTermLabel);
-            this.TermGoupBox.Controls.Add(this.AvailableTermLabel);
-            this.TermGoupBox.Controls.Add(this.RemoveButton);
-            this.TermGoupBox.Controls.Add(this.ShownListBox);
-            this.TermGoupBox.Controls.Add(this.AddButton);
-            this.TermGoupBox.Controls.Add(this.AvailableListBox);
-            this.TermGoupBox.Location = new System.Drawing.Point(13, 47);
-            this.TermGoupBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.TermGoupBox.Name = "TermGoupBox";
-            this.TermGoupBox.Padding = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.TermGoupBox.Size = new System.Drawing.Size(499, 270);
-            this.TermGoupBox.TabIndex = 10;
-            this.TermGoupBox.TabStop = false;
-            this.TermGoupBox.Text = "Morphological Solution terms";
+            this.TermGroupBox.Controls.Add(this.ShownTermLabel);
+            this.TermGroupBox.Controls.Add(this.AvailableTermLabel);
+            this.TermGroupBox.Controls.Add(this.RemoveButton);
+            this.TermGroupBox.Controls.Add(this.ShownListBox);
+            this.TermGroupBox.Controls.Add(this.AddButton);
+            this.TermGroupBox.Controls.Add(this.AvailableListBox);
+            this.TermGroupBox.Location = new System.Drawing.Point(13, 47);
+            this.TermGroupBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            this.TermGroupBox.Name = "TermGroupBox";
+            this.TermGroupBox.Padding = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            this.TermGroupBox.Size = new System.Drawing.Size(499, 270);
+            this.TermGroupBox.TabIndex = 10;
+            this.TermGroupBox.TabStop = false;
+            this.TermGroupBox.Text = "Morphological Solution terms";
             // 
             // ShownTermLabel
             // 
@@ -220,26 +218,6 @@
             this.RatingTrackBar.Value = 17;
             this.RatingTrackBar.Scroll += new System.EventHandler(this.RatingTrackBar_Scroll);
             // 
-            // RootTermComboBox
-            // 
-            this.RootTermComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.RootTermComboBox.FormattingEnabled = true;
-            this.RootTermComboBox.Location = new System.Drawing.Point(372, 9);
-            this.RootTermComboBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.RootTermComboBox.Name = "RootTermComboBox";
-            this.RootTermComboBox.Size = new System.Drawing.Size(132, 23);
-            this.RootTermComboBox.TabIndex = 17;
-            // 
-            // RootTermLabel
-            // 
-            this.RootTermLabel.AutoSize = true;
-            this.RootTermLabel.Location = new System.Drawing.Point(267, 12);
-            this.RootTermLabel.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.RootTermLabel.Name = "RootTermLabel";
-            this.RootTermLabel.Size = new System.Drawing.Size(63, 15);
-            this.RootTermLabel.TabIndex = 16;
-            this.RootTermLabel.Text = "Root term:";
-            // 
             // ModeLabel
             // 
             this.ModeLabel.AutoSize = true;
@@ -267,10 +245,8 @@
             this.ClientSize = new System.Drawing.Size(522, 475);
             this.Controls.Add(this.ModeComboBox);
             this.Controls.Add(this.ModeLabel);
-            this.Controls.Add(this.RootTermComboBox);
-            this.Controls.Add(this.RootTermLabel);
             this.Controls.Add(this.RatingGroupBox);
-            this.Controls.Add(this.TermGoupBox);
+            this.Controls.Add(this.TermGroupBox);
             this.Controls.Add(this.OkButton);
             this.Controls.Add(this.CancelButton);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
@@ -281,8 +257,8 @@
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Options";
             this.VisibleChanged += new System.EventHandler(this.OptionForm_VisibleChanged);
-            this.TermGoupBox.ResumeLayout(false);
-            this.TermGoupBox.PerformLayout();
+            this.TermGroupBox.ResumeLayout(false);
+            this.TermGroupBox.PerformLayout();
             this.RatingGroupBox.ResumeLayout(false);
             this.RatingGroupBox.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.RatingTrackBar)).EndInit();
@@ -294,7 +270,7 @@
         #endregion
         private new System.Windows.Forms.Button CancelButton;
         private System.Windows.Forms.Button OkButton;
-        private System.Windows.Forms.GroupBox TermGoupBox;
+        private System.Windows.Forms.GroupBox TermGroupBox;
         private System.Windows.Forms.Label ShownTermLabel;
         private System.Windows.Forms.Label AvailableTermLabel;
         private System.Windows.Forms.Button RemoveButton;
@@ -305,8 +281,6 @@
         private System.Windows.Forms.Label FdictRatingLabel;
         private System.Windows.Forms.TrackBar RatingTrackBar;
         private System.Windows.Forms.Label MorphRuleRatingLabel;
-        private System.Windows.Forms.ComboBox RootTermComboBox;
-        private System.Windows.Forms.Label RootTermLabel;
         private System.Windows.Forms.Label ModeLabel;
         private System.Windows.Forms.ComboBox ModeComboBox;
     }

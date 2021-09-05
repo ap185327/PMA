@@ -5,6 +5,8 @@
 using PMA.Domain.DataContracts;
 using PMA.Domain.InputPorts;
 using PMA.Domain.Interfaces.Interactors.Base;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace PMA.Domain.Interfaces.Interactors.Primary
 {
@@ -17,11 +19,8 @@ namespace PMA.Domain.Interfaces.Interactors.Primary
         /// Starts the update database process.
         /// </summary>
         /// <param name="inputData">The update database input port.</param>
-        OperationResult StartDbUpdating(UpdateDbInputPort inputData);
-
-        /// <summary>
-        /// Stops the update database process.
-        /// </summary>
-        OperationResult StopDbUpdating();
+        /// <param name="token">The cancellation token.</param>
+        /// <returns>The operation result.</returns>
+        Task<OperationResult> StartDbUpdatingAsync(UpdateDbInputPort inputData, CancellationToken token = default);
     }
 }

@@ -1,0 +1,300 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="DarkModeButtonComponent.TooltipText" xml:space="preserve">
+    <value>Toggle light / dark theme</value>
+  </data>
+  <data name="DeleteButtonComponent.Text" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="EntryTextFieldComponent.HelperText" xml:space="preserve">
+    <value>ID: {0}</value>
+  </data>
+  <data name="EntryTextFieldComponent.Label" xml:space="preserve">
+    <value>Enter Entry</value>
+  </data>
+  <data name="GetEntryIdContainerComponent.Title" xml:space="preserve">
+    <value>Get ID for entry '{0}'</value>
+  </data>
+  <data name="GetEntryIdTableComponent.BaseColumnHeader" xml:space="preserve">
+    <value>Base</value>
+  </data>
+  <data name="GetEntryIdTableComponent.EntryColumnHeader" xml:space="preserve">
+    <value>Entry</value>
+  </data>
+  <data name="GetEntryIdTableComponent.IdColumnHeader" xml:space="preserve">
+    <value>ID</value>
+  </data>
+  <data name="GetEntryIdTableComponent.InfoFormat" xml:space="preserve">
+    <value>{first_item}-{last_item} of {all_items}</value>
+  </data>
+  <data name="GetEntryIdTableComponent.IsVirtualColumnHeader" xml:space="preserve">
+    <value>Is Virtual</value>
+  </data>
+  <data name="GetEntryIdTableComponent.LeftColumnHeader" xml:space="preserve">
+    <value>Left Entry</value>
+  </data>
+  <data name="GetEntryIdTableComponent.NoRecords" xml:space="preserve">
+    <value>No matching records found</value>
+  </data>
+  <data name="GetEntryIdTableComponent.ParameterColumnHeader" xml:space="preserve">
+    <value>Morph. Parameters</value>
+  </data>
+  <data name="GetEntryIdTableComponent.RightColumnHeader" xml:space="preserve">
+    <value>Right Entry</value>
+  </data>
+  <data name="GetEntryIdTableComponent.RowsPerPageString" xml:space="preserve">
+    <value>Rows Per Page</value>
+  </data>
+  <data name="GetEntryIdTableComponent.SortLabel" xml:space="preserve">
+    <value>Sort By</value>
+  </data>
+  <data name="InputTextFieldComponent.Label" xml:space="preserve">
+    <value>Enter pali-word</value>
+  </data>
+  <data name="IsVirtualCheckboxComponent.Label" xml:space="preserve">
+    <value>Is Virtual</value>
+  </data>
+  <data name="LayerSelectComponent.Label" xml:space="preserve">
+    <value>Layer</value>
+  </data>
+  <data name="LayerSelectComponent.Layer.0" xml:space="preserve">
+    <value>Auto</value>
+  </data>
+  <data name="LayerSelectComponent.Layer.1" xml:space="preserve">
+    <value>1</value>
+  </data>
+  <data name="LayerSelectComponent.Layer.2" xml:space="preserve">
+    <value>2</value>
+  </data>
+  <data name="LayerSelectComponent.Layer.3" xml:space="preserve">
+    <value>3</value>
+  </data>
+  <data name="LayerSelectComponent.Layer.4" xml:space="preserve">
+    <value>4</value>
+  </data>
+  <data name="LayerSelectComponent.Layer.5" xml:space="preserve">
+    <value>5</value>
+  </data>
+  <data name="LayerSelectComponent.Layer.6" xml:space="preserve">
+    <value>6</value>
+  </data>
+  <data name="LayerSelectComponent.Layer.7" xml:space="preserve">
+    <value>7</value>
+  </data>
+  <data name="LayerSelectComponent.Layer.8" xml:space="preserve">
+    <value>8</value>
+  </data>
+  <data name="LayerSelectComponent.TooltipText" xml:space="preserve">
+    <value>Select Chronological Layer</value>
+  </data>
+  <data name="LeftEntrySwitchComponent.Label" xml:space="preserve">
+    <value>Left Entry</value>
+  </data>
+  <data name="LeftEntryTextFieldComponent.Label" xml:space="preserve">
+    <value>Enter Left Entry</value>
+  </data>
+  <data name="LockEntryIdSwitchComponent.Label" xml:space="preserve">
+    <value>Lock Entry ID</value>
+  </data>
+  <data name="MaxDepthLevelNumericFieldComponent.Label" xml:space="preserve">
+    <value>Depth</value>
+  </data>
+  <data name="MaxDepthLevelNumericFieldComponent.TooltipText" xml:space="preserve">
+    <value>Select Max Depth Level</value>
+  </data>
+  <data name="ModalDialog.Buttons.Cancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="ModalDialog.Buttons.No" xml:space="preserve">
+    <value>No</value>
+  </data>
+  <data name="ModalDialog.Buttons.Ok" xml:space="preserve">
+    <value>OK</value>
+  </data>
+  <data name="ModalDialog.Buttons.Yes" xml:space="preserve">
+    <value>Yes</value>
+  </data>
+  <data name="MorphBase.Both" xml:space="preserve">
+    <value>both</value>
+  </data>
+  <data name="MorphBase.Left" xml:space="preserve">
+    <value>left</value>
+  </data>
+  <data name="MorphBase.None" xml:space="preserve">
+    <value>n/a</value>
+  </data>
+  <data name="MorphBase.Right" xml:space="preserve">
+    <value>right</value>
+  </data>
+  <data name="MorphBase.Unknown" xml:space="preserve">
+    <value>&lt;unknown&gt;</value>
+  </data>
+  <data name="MorphBaseSelectComponent.Label" xml:space="preserve">
+    <value>Select Morphological Base</value>
+  </data>
+  <data name="MorphPropertyButtonComponent.TooltipText" xml:space="preserve">
+    <value>Show / hide morphological properties</value>
+  </data>
+  <data name="MorphPropertyPanelComponent.Title" xml:space="preserve">
+    <value>Properties</value>
+  </data>
+  <data name="MorphRuleContainerComponent.Title" xml:space="preserve">
+    <value>Rules</value>
+  </data>
+  <data name="MorphRuleTableComponent.DescriptionColumnHeader" xml:space="preserve">
+    <value>Description</value>
+  </data>
+  <data name="MorphRuleTableComponent.IdColumnHeader" xml:space="preserve">
+    <value>ID</value>
+  </data>
+  <data name="ResetButtonComponent.Text" xml:space="preserve">
+    <value>Reset</value>
+  </data>
+  <data name="RightEntrySwitchComponent.Label" xml:space="preserve">
+    <value>Right Entry</value>
+  </data>
+  <data name="RightEntryTextFieldComponent.Label" xml:space="preserve">
+    <value>Enter Right Entry</value>
+  </data>
+  <data name="RuleType.Morphological" xml:space="preserve">
+    <value>Morhological rules</value>
+  </data>
+  <data name="RuleType.Sandhi" xml:space="preserve">
+    <value>Sandhi rules</value>
+  </data>
+  <data name="SaveButtonComponent.Text" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="SearchTextFieldComponent.Placeholder" xml:space="preserve">
+    <value>Search</value>
+  </data>
+  <data name="StartButtonComponent.StartText" xml:space="preserve">
+    <value>Start</value>
+  </data>
+  <data name="StartButtonComponent.StopText" xml:space="preserve">
+    <value>Stop</value>
+  </data>
+  <data name="StartMorphAnalysisButtonComponent.StartText" xml:space="preserve">
+    <value>Start</value>
+  </data>
+  <data name="StartMorphAnalysisButtonComponent.StopText" xml:space="preserve">
+    <value>Stop</value>
+  </data>
+</root>

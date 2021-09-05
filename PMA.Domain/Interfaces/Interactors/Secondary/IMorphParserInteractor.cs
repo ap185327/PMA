@@ -2,6 +2,8 @@
 //     Copyright 2017-2021 Andrey Pospelov. All rights reserved.
 // </copyright>
 
+using System.Threading;
+using System.Threading.Tasks;
 using PMA.Domain.DataContracts;
 using PMA.Domain.InputPorts;
 using PMA.Domain.Interfaces.Interactors.Base;
@@ -17,69 +19,79 @@ namespace PMA.Domain.Interfaces.Interactors.Secondary
         /// Parses morphological entry.
         /// </summary>
         /// <param name="inputData">The input data.</param>
+        /// <param name="token">The cancellation token.</param>
         /// <returns>The result of operation.</returns>
-        OperationResult ParseMorphEntry(MorphParserInputPort inputData);
+        Task<OperationResult> ParseMorphEntryAsync(MorphParserInputPort inputData, CancellationToken token = default);
 
         /// <summary>
         /// Removes solutions with excessive depth.
         /// </summary>
         /// <param name="inputData">The input data.</param>
+        /// <param name="token">The cancellation token.</param>
         /// <returns>The result of operation.</returns>
-        OperationResult RemoveSolutionsWithExcessiveDepth(MorphParserInputPort inputData);
+        Task<OperationResult> RemoveSolutionsWithExcessiveDepthAsync(MorphParserInputPort inputData, CancellationToken token = default);
 
         /// <summary>
         /// Collapses solutions.
         /// </summary>
         /// <param name="inputData">The input data.</param>
+        /// <param name="token">The cancellation token.</param>
         /// <returns>The result of operation.</returns>
-        OperationResult CollapseSolutions(MorphParserInputPort inputData);
+        Task<OperationResult> CollapseSolutionsAsync(MorphParserInputPort inputData, CancellationToken token = default);
 
         /// <summary>
         /// Removes unsuitable derivative solutions.
         /// </summary>
         /// <param name="inputData">The input data.</param>
+        /// <param name="token">The cancellation token.</param>
         /// <returns>The result of operation.</returns>
-        OperationResult RemoveUnsuitableDerivativeSolutions(MorphParserInputPort inputData);
+        Task<OperationResult> RemoveUnsuitableDerivativeSolutionsAsync(MorphParserInputPort inputData, CancellationToken token = default);
 
         /// <summary>
         /// Updates solutions.
         /// </summary>
         /// <param name="inputData">The input data.</param>
+        /// <param name="token">The cancellation token.</param>
         /// <returns>The result of operation.</returns>
-        OperationResult UpdateSolutions(MorphParserInputPort inputData);
+        Task<OperationResult> UpdateSolutionsAsync(MorphParserInputPort inputData, CancellationToken token = default);
 
         /// <summary>
         /// Removes duplicates.
         /// </summary>
         /// <param name="inputData">The input data.</param>
+        /// <param name="token">The cancellation token.</param>
         /// <returns>The result of operation.</returns>
-        OperationResult RemoveDuplicates(MorphParserInputPort inputData);
+        Task<OperationResult> RemoveDuplicatesAsync(MorphParserInputPort inputData, CancellationToken token = default);
 
         /// <summary>
         /// Removes unsuitable solutions.
         /// </summary>
         /// <param name="inputData">The input data.</param>
+        /// <param name="token">The cancellation token.</param>
         /// <returns>The result of operation.</returns>
-        OperationResult RemoveUnsuitableSolutions(MorphParserInputPort inputData);
+        Task<OperationResult> RemoveUnsuitableSolutionsAsync(MorphParserInputPort inputData, CancellationToken token = default);
 
         /// <summary>
         /// Sort solutions.
         /// </summary>
         /// <param name="inputData">The input data.</param>
+        /// <param name="token">The cancellation token.</param>
         /// <returns>The result of operation.</returns>
-        OperationResult SortSolutions(MorphParserInputPort inputData);
+        Task<OperationResult> SortSolutionsAsync(MorphParserInputPort inputData, CancellationToken token = default);
 
         /// <summary>
         /// Validates solutions.
         /// </summary>
         /// <param name="inputData">The input data.</param>
+        /// <param name="token">The cancellation token.</param>
         /// <returns>The result of operation.</returns>
-        OperationResult ValidateSolutions(MorphParserInputPort inputData);
+        Task<OperationResult> ValidateSolutionsAsync(MorphParserInputPort inputData, CancellationToken token = default);
 
         /// <summary>
         /// Clears manager cache.
         /// </summary>
+        /// <param name="token">The cancellation token.</param>
         /// <returns>The result of operation.</returns>
-        OperationResult ClearCache();
+        Task<OperationResult> ClearCacheAsync(CancellationToken token = default);
     }
 }

@@ -3,9 +3,9 @@
 // </copyright>
 
 using PMA.Domain.Constants;
-using PMA.Domain.Exceptions;
 using PMA.Domain.Interfaces.Managers;
 using PMA.Domain.Interfaces.Providers;
+using PMA.Utils.Exceptions;
 using PMA.Utils.Extensions;
 using System;
 using System.Collections.Concurrent;

@@ -8,7 +8,8 @@ using PMA.Domain.DataContracts;
 using PMA.Domain.InputPorts;
 using PMA.Domain.Interfaces.Interactors.Primary;
 using PMA.Domain.Interfaces.UseCases.Primary;
-using PMA.Utils.Extensions;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace PMA.Application.Interactors.Primary
 {
@@ -23,57 +24,27 @@ namespace PMA.Application.Interactors.Primary
         private readonly IStartImportMorphEntriesUseCase _startImportMorphEntriesUseCase;
 
         /// <summary>
-        /// The stop import morphological entries use case.
-        /// </summary>
-        private readonly IStopImportMorphEntriesUseCase _stopImportMorphEntriesUseCase;
-
-        /// <summary>
         /// Initializes a new instance of <see cref="ImportMorphEntryInteractor"/> class.
         /// </summary>
         /// <param name="startImportMorphEntriesUseCase">The start import morphological entries use case.</param>
-        /// <param name="stopImportMorphEntriesUseCase">The stop import morphological entries use case.</param>
         /// <param name="logger">The logger.</param>
         public ImportMorphEntryInteractor(IStartImportMorphEntriesUseCase startImportMorphEntriesUseCase,
-            IStopImportMorphEntriesUseCase stopImportMorphEntriesUseCase,
             ILogger<ImportMorphEntryInteractor> logger) : base(logger)
         {
             _startImportMorphEntriesUseCase = startImportMorphEntriesUseCase;
-            _stopImportMorphEntriesUseCase = stopImportMorphEntriesUseCase;
-
-            Logger.LogInit();
         }
 
-        #region Implementation of IImportMorphEntryViewModelInteractor
+        #region Implementation of IImportMorphEntryInteractor
 
         /// <summary>
         /// Starts the import morphological entries process.
         /// </summary>
         /// <param name="inputData">The import morphological entry input data.</param>
-        public OperationResult StartImportMorphEntries(ImportMorphEntryInputPort inputData)
+        /// <param name="token">The cancellation token.</param>
+        /// <returns>The operation result.</returns>
+        public async Task<OperationResult> StartImportMorphEntriesAsync(ImportMorphEntryInputPort inputData, CancellationToken token = default)
         {
-            var result = _startImportMorphEntriesUseCase.Execute(inputData);
-
-            if (!result.Success)
-            {
-                Logger.LogErrors(result.Messages);
-            }
-
-            return result;
-        }
-
-        /// <summary>
-        /// Stops the import morphological entries process.
-        /// </summary>
-        public OperationResult StopImportMorphEntries()
-        {
-            var result = _stopImportMorphEntriesUseCase.Execute();
-
-            if (!result.Success)
-            {
-                Logger.LogErrors(result.Messages);
-            }
-
-            return result;
+            return await _startImportMorphEntriesUseCase.ExecuteAsync(inputData, token);
         }
 
         #endregion

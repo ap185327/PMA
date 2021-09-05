@@ -5,6 +5,8 @@
 using PMA.Domain.DataContracts;
 using PMA.Domain.InputPorts;
 using PMA.Domain.Interfaces.Interactors.Base;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace PMA.Domain.Interfaces.Interactors.Primary
 {
@@ -17,13 +19,8 @@ namespace PMA.Domain.Interfaces.Interactors.Primary
         /// Starts the morphological parsing.
         /// </summary>
         /// <param name="inputData">The morphological parser input data.</param>
+        /// <param name="token">The cancellation token.</param>
         /// <returns>The operation result.</returns>
-        OperationResult StartAnalysis(MorphParserInputPort inputData);
-
-        /// <summary>
-        /// Stops the morphological parsing.
-        /// </summary>
-        /// <returns>The operation result.</returns>
-        OperationResult StopAnalysis();
+        Task<OperationResult> StartAnalysisAsync(MorphParserInputPort inputData, CancellationToken token = default);
     }
 }

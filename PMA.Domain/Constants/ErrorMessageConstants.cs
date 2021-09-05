@@ -7,10 +7,8 @@ namespace PMA.Domain.Constants
     /// <summary>
     /// The error message constant class.
     /// </summary>
-    public class ErrorMessageConstants
+    public static class ErrorMessageConstants
     {
-        // Common
-
         // Loaders
         public const string DataTableStructureIsNotValid = "The data table structure is invalid";
         public const string DataTableContainsDuplicates = "The data table contains duplicates";
@@ -18,7 +16,6 @@ namespace PMA.Domain.Constants
 
         // UseCases
         public const string ValueIsNull = "{0} is null";
-        public const string CancellationIsAlreadyRequested = "Cancellation is already requested";
         public const string FilePathIsEmpty = "File path is empty";
         public const string FileNotFound = "File '{0}' not found";
         public const string MorphParameterIndexOutOfRange = "Morphological parameter index: {0}, out of range";

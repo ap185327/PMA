@@ -2,7 +2,6 @@
 //     Copyright 2017-2021 Andrey Pospelov. All rights reserved.
 // </copyright>
 
-using MediatR;
 using Microsoft.Extensions.Logging;
 using PMA.Application.Extensions;
 using PMA.Application.Factories;
@@ -17,8 +16,10 @@ using PMA.Domain.Models;
 using PMA.Utils.Collections;
 using PMA.Utils.Extensions;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace PMA.Application.UseCases.Secondary
@@ -28,6 +29,11 @@ namespace PMA.Application.UseCases.Secondary
     /// </summary>
     public sealed class UpdateSolutionUseCase : UseCaseBase<UpdateSolutionUseCase, MorphParserInputPort>, IUpdateSolutionUseCase
     {
+        /// <summary>
+        /// Options that configure the operation of methods on the <see cref="Parallel"/> class.
+        /// </summary>
+        private readonly ParallelOptions _parallelOptions = new();
+
         /// <summary>
         /// Maximum number of solutions for current thread.
         /// </summary>
@@ -52,14 +58,10 @@ namespace PMA.Application.UseCases.Secondary
         /// Initializes a new instance of <see cref="UpdateSolutionUseCase"/> class.
         /// </summary>
         /// <param name="morphCombinationManager">The morphological combination manager.</param>
-        /// <param name="mediator">The mediator.</param>
-        /// <param name="parallelOptions">Options that configure the operation of methods on the <see cref="Parallel"/> class.</param>
         /// <param name="logger">The logger.</param>
-        public UpdateSolutionUseCase(IMorphCombinationManager morphCombinationManager, IMediator mediator, ParallelOptions parallelOptions, ILogger<UpdateSolutionUseCase> logger) : base(mediator, parallelOptions, logger)
+        public UpdateSolutionUseCase(IMorphCombinationManager morphCombinationManager, ILogger<UpdateSolutionUseCase> logger) : base(logger)
         {
             _morphCombinationManager = morphCombinationManager;
-
-            Logger.LogInit();
         }
 
         #region Overrides of UseCaseBase<UpdateSolutionUseCase,MorphParserInputPort>
@@ -67,38 +69,53 @@ namespace PMA.Application.UseCases.Secondary
         /// <summary>
         /// Executes an action.
         /// </summary>
-        /// <param name="inputData">The input data.</param>
+        /// <param name="inputPort">The input data.</param>
         /// <returns>The result of action execution.</returns>
-        public override OperationResult Execute(MorphParserInputPort inputData)
+        public override OperationResult Execute(MorphParserInputPort inputPort)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Executes an action.
+        /// </summary>
+        /// <param name="inputPort">The input data.</param>
+        /// <param name="token">The cancellation token.</param>
+        /// <returns>The result of action execution.</returns>
+        public override async Task<OperationResult> ExecuteAsync(MorphParserInputPort inputPort, CancellationToken token = default)
         {
             Logger.LogEntry();
 
-            if (inputData is null)
+            token.ThrowIfCancellationRequested();
+
+            _parallelOptions.CancellationToken = token;
+
+            if (inputPort is null)
             {
-                Logger.LogError(ErrorMessageConstants.ValueIsNull, nameof(inputData));
+                Logger.LogError(ErrorMessageConstants.ValueIsNull, nameof(inputPort));
                 Logger.LogExit();
-                return OperationResult.FailureResult(ErrorMessageConstants.ValueIsNull, nameof(inputData));
+                return OperationResult.FailureResult(ErrorMessageConstants.ValueIsNull, nameof(inputPort));
             }
 
-            if (inputData.WordForm is null)
+            if (inputPort.WordForm is null)
             {
-                Logger.LogError(ErrorMessageConstants.ValueIsNull, nameof(inputData.WordForm));
+                Logger.LogError(ErrorMessageConstants.ValueIsNull, nameof(inputPort.WordForm));
                 Logger.LogExit();
-                return OperationResult.FailureResult(ErrorMessageConstants.ValueIsNull, nameof(inputData.WordForm));
+                return OperationResult.FailureResult(ErrorMessageConstants.ValueIsNull, nameof(inputPort.WordForm));
             }
 
-            if (inputData.ParsingType == MorphParsingType.Debug || ParallelOptions.CancellationToken.IsCancellationRequested)
+            if (inputPort.ParsingType == MorphParsingType.Debug)
             {
                 Logger.LogExit();
                 return OperationResult.SuccessResult();
             }
 
-            _inputData = inputData;
+            _inputData = inputPort;
 
             var time = new Stopwatch();
 
             time.Start();
-            UpdateWordForm(_inputData.WordForm);
+            await Task.Run(() => UpdateWordForm(_inputData.WordForm), token);
             time.Stop();
 
 #if DEBUG
@@ -137,6 +154,8 @@ namespace PMA.Application.UseCases.Secondary
 
                 void DynamicAction()
                 {
+                    _parallelOptions.CancellationToken.ThrowIfCancellationRequested();
+
                     // ReSharper disable once PossibleMultipleEnumeration
                     // ReSharper disable once AccessToDisposedClosure
                     using var enumerator = dynamicPartitions.GetEnumerator();
@@ -150,7 +169,7 @@ namespace PMA.Application.UseCases.Secondary
                 var actions = new Action[_processorCount];
                 actions.Fill(DynamicAction);
 
-                Parallel.Invoke(ParallelOptions, actions);
+                Parallel.Invoke(_parallelOptions, actions);
                 ((IDisposable)dynamicPartitions).Dispose();
 
             }
@@ -167,27 +186,34 @@ namespace PMA.Application.UseCases.Secondary
 
             if (solution.Content.Parameters.All(x => x != 0)) return;
 
-            if (solution.Left != null && solution.Content.Base is MorphBase.Left or MorphBase.Both)
-            {
-                UpdateParameters(solution, solution.Left);
-            }
-
-            if (solution.Right != null && solution.Content.Base is MorphBase.Right or MorphBase.Both)
-            {
-                UpdateParameters(solution, solution.Right);
-            }
+            UpdateParameters(solution);
         }
 
         /// <summary>
         /// Inherits the morphological parameters of the child solutions, if possible.
         /// </summary>
         /// <param name="solution">The Solution.</param>
-        /// <param name="part">The Solution part.</param>
-        private void UpdateParameters(Solution solution, WordForm part)
+        private void UpdateParameters(Solution solution)
         {
-            byte[] parameters = ParameterFactory.Clone(solution.Content.Parameters);
+            List<byte[]> parameterCollection;
 
-            var parameterCollection = part.Solutions.Select(x => x.Content.Parameters).ToList();
+            switch (solution.Content.Base)
+            {
+                case MorphBase.Left when solution.Left != null:
+                    parameterCollection = solution.Left.Solutions.Select(x => x.Content.Parameters).ToList();
+                    break;
+                case MorphBase.Right when solution.Right != null:
+                    parameterCollection = solution.Right.Solutions.Select(x => x.Content.Parameters).ToList();
+                    break;
+                case MorphBase.Both when solution.Left != null && solution.Right != null:
+                    parameterCollection = solution.Left.Solutions.Select(x => x.Content.Parameters).ToList();
+                    parameterCollection.AddRange(solution.Right.Solutions.Select(x => x.Content.Parameters).ToList());
+                    break;
+                default:
+                    return;
+            }
+
+            byte[] parameters = ParameterFactory.Clone(solution.Content.Parameters);
 
             byte[] solutionCollectiveParameters = parameterCollection.GetCollectiveParameters();
 

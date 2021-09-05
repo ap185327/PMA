@@ -2,25 +2,25 @@
 //     Copyright 2017-2021 Andrey Pospelov. All rights reserved.
 // </copyright>
 
-using MediatR;
 using Microsoft.Extensions.Logging;
 using Microsoft.Toolkit.Mvvm.Input;
+using Microsoft.Toolkit.Mvvm.Messaging;
 using PMA.Application.ViewModels.Base;
-using PMA.Application.ViewModels.Controls;
+using PMA.Domain.Constants;
 using PMA.Domain.Enums;
 using PMA.Domain.Interfaces.Interactors.Primary;
 using PMA.Domain.Interfaces.Locators;
 using PMA.Domain.Interfaces.ViewModels;
 using PMA.Domain.Interfaces.ViewModels.Controls;
 using PMA.Domain.Models;
-using PMA.Domain.Requests;
-using PMA.Utils.Extensions;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Input;
+using PMA.Domain.Messages;
 
 namespace PMA.Application.ViewModels
 {
@@ -30,51 +30,112 @@ namespace PMA.Application.ViewModels
     public sealed class GetEntryIdViewModel : ViewModelBase<GetEntryIdViewModel>, IGetEntryIdViewModel
     {
         /// <summary>
+        /// The morphological entry.
+        /// </summary>
+        private readonly MorphEntry _morphEntry;
+
+        /// <summary>
         /// The get entry ID view model interactor.
         /// </summary>
         private readonly IGetEntryIdInteractor _interactor;
 
         /// <summary>
-        /// The control logger.
-        /// </summary>
-        private readonly ILogger<GetEntryIdControlViewModel> _controlLogger;
-
-        /// <summary>
         /// Initializes the new instance of <see cref="GetEntryIdViewModel"/> class.
         /// </summary>
+        /// <param name="morphEntry">The morphological entry.</param>
         /// <param name="interactor">The get entry ID view model interactor.</param>
         /// <param name="serviceLocator">The service locator.</param>
-        /// <param name="mediator">The mediator.</param>
-        /// <param name="controlLogger">The control logger.</param>
         /// <param name="logger">The logger.</param>
-        public GetEntryIdViewModel(IGetEntryIdInteractor interactor, IServiceLocator serviceLocator, IMediator mediator, ILogger<GetEntryIdControlViewModel> controlLogger, ILogger<GetEntryIdViewModel> logger) : base(serviceLocator, mediator, logger)
+        /// <param name="messenger">The messenger.</param>
+        public GetEntryIdViewModel(MorphEntry morphEntry,
+            IGetEntryIdInteractor interactor,
+            IServiceLocator serviceLocator,
+            ILogger<GetEntryIdViewModel> logger,
+            IMessenger messenger) : base(serviceLocator,
+            logger,
+            messenger)
         {
+            _morphEntry = morphEntry;
             _interactor = interactor;
-            _controlLogger = controlLogger;
-
-            Logger.LogInit();
 
             DeleteCommand = new RelayCommand(Delete);
         }
 
-        #region Implementation of IGetEntryIdViewModel
+        #region Overrides of ObservableRecipient
 
         /// <summary>
-        ///  Backing field for the Entry property.
+        /// Raised whenever the <see cref="P:Microsoft.Toolkit.Mvvm.ComponentModel.ObservableRecipient.IsActive" /> property is set to <see langword="true" />.
+        /// Use this method to register to messages and do other initialization for this instance.
         /// </summary>
-        private string _entry;
-
-        /// <summary>
-        /// Gets or sets a morphological entry.
-        /// </summary>
-        public string Entry
+        /// <remarks>
+        /// The base implementation registers all messages for this recipients that have been declared
+        /// explicitly through the <see cref="T:Microsoft.Toolkit.Mvvm.Messaging.IRecipient`1" /> interface, using the default channel.
+        /// For more details on how this works, see the <see cref="M:Microsoft.Toolkit.Mvvm.Messaging.IMessengerExtensions.RegisterAll(Microsoft.Toolkit.Mvvm.Messaging.IMessenger,System.Object)" /> method.
+        /// If you need more fine tuned control, want to register messages individually or just prefer
+        /// the lambda-style syntax for message registration, override this method and register manually.
+        /// </remarks>
+        protected override async void OnActivated()
         {
-            get => _entry;
-            private set => SetProperty(ref _entry, value);
+            base.OnActivated();
+
+            _cancellationTokenSource = new CancellationTokenSource();
+
+            var result = await _interactor.GetGetEntryIdControlViewModelsAsync(_morphEntry, _cancellationTokenSource.Token);
+
+            if (!IsOperationResultSuccess(result)) return;
+
+            if (result.Result.Count == 0)
+            {
+                ShowMorphEntryNotFoundModalDialog();
+
+                IsActive = false;
+            }
+            else
+            {
+                foreach (var entry in result.Result)
+                {
+                    MorphEntries.Add(entry);
+                }
+            }
         }
 
         /// <summary>
-        /// Gets a collection of morphological entries.
+        /// Raised whenever the <see cref="P:Microsoft.Toolkit.Mvvm.ComponentModel.ObservableRecipient.IsActive" /> property is set to <see langword="false" />.
+        /// Use this method to unregister from messages and do general cleanup for this instance.
+        /// </summary>
+        /// <remarks>
+        /// The base implementation unregisters all messages for this recipient. It does so by
+        /// invoking <see cref="M:Microsoft.Toolkit.Mvvm.Messaging.IMessenger.UnregisterAll(System.Object)" />, which removes all registered
+        /// handlers for a given subscriber, regardless of what token was used to register them.
+        /// That is, all registered handlers across all subscription channels will be removed.
+        /// </remarks>
+        protected override void OnDeactivated()
+        {
+            base.OnDeactivated();
+
+            if (!_cancellationTokenSource.IsCancellationRequested)
+            {
+                _cancellationTokenSource.Cancel();
+            }
+
+            _cancellationTokenSource = null;
+
+            MorphEntries.Clear();
+
+            Messenger.Send(new CloseGetEntryIdViewModelMessage());
+        }
+
+        #endregion
+
+        #region Implementation of IGetEntryIdViewModel
+
+        /// <summary>
+        /// Gets or sets an entry.
+        /// </summary>
+        public string Entry => _morphEntry.Entry;
+
+        /// <summary>
+        /// Gets or sets a collection of morphological entries.
         /// </summary>
         public ObservableCollection<IGetEntryIdControlViewModel> MorphEntries { get; } = new();
 
@@ -85,80 +146,16 @@ namespace PMA.Application.ViewModels
 
         #endregion
 
-        #region Overrides of ViewModelBase
+        #region Private Fields
 
         /// <summary>
-        /// Presses a modal dialog button.
+        /// The cancellation token source.
         /// </summary>
-        /// <param name="modalButtonIndex">A button index.</param>
-        protected override void PressModalDialogButton(int modalButtonIndex)
-        {
-            switch (CurrentModalDialog)
-            {
-                case ModalDialogName.DeleteMorphEntry:
-                    switch (modalButtonIndex)
-                    {
-                        case 0: // Yes
-                            TryToDeleteMorphEntries();
-                            break;
-                        case 1: // No
-                            break;
-                    }
-                    break;
-                case ModalDialogName.MorphEntryNotFound:
-                case ModalDialogName.MorphEntryDeleted:
-                    break;
-            }
-
-            base.PressModalDialogButton(modalButtonIndex);
-        }
-
-        /// <summary>
-        /// Action when the view appears.
-        /// </summary>
-        public override void OnAppearing()
-        {
-            base.OnAppearing();
-
-            var morphEntry = Mediator.Send(new GetMorphEntryRequest()).Result;
-
-            Entry = morphEntry.Entry;
-
-            var result = _interactor.GetMorphEntriesByMorphEntry(morphEntry);
-
-            if (!result.Success)
-            {
-                Logger.LogErrors(result.Messages);
-                ShowErrorModalDialog(result.Messages);
-            }
-            else
-            {
-                if (result.Result.Count == 0)
-                {
-                    ShowMorphEntryNotFoundModalDialog(morphEntry.Entry);
-                }
-                else
-                {
-                    foreach (var entry in result.Result)
-                    {
-                        MorphEntries.Add(new GetEntryIdControlViewModel(entry, _interactor, ServiceLocator, Mediator, _controlLogger));
-                    }
-                }
-            }
-        }
-
-        /// <summary>
-        /// Action when the view disappears.
-        /// </summary>
-        public override void OnDisappearing()
-        {
-            base.OnDisappearing();
-
-            Entry = null;
-            MorphEntries.Clear();
-        }
+        private CancellationTokenSource _cancellationTokenSource;
 
         #endregion
+
+        #region Private Methods
 
         /// <summary>
         /// Deletes selected morphological entries.
@@ -167,99 +164,23 @@ namespace PMA.Application.ViewModels
         {
             var selectedIds = MorphEntries.Where(x => x.IsSelected).Select(x => x.Id).ToList();
 
-            ShowDeleteMorphEntryModalDialog(selectedIds.Count);
-        }
-
-        /// <summary>
-        /// Shows DeleteMorphEntry modal dialog.
-        /// </summary>
-        /// <param name="count">Number of morphological entries.</param>
-        private void ShowDeleteMorphEntryModalDialog(int count)
-        {
-            CurrentModalDialog = ModalDialogName.DeleteMorphEntry;
-
-            OnShowModalDialog(ServiceLocator.TranslateService.Translate("GetEntryIdViewModel.MessageBoxTitle"),
-                ServiceLocator.TranslateService.Translate("GetEntryIdViewModel.DeleteEntryMessageBoxText", count),
-                new[]
-                {
-                    ServiceLocator.TranslateService.Translate("MessageBox.Button.Yes"),
-                    ServiceLocator.TranslateService.Translate("MessageBox.Button.No")
-                },
-                ModalDialogType.Question);
-        }
-
-        /// <summary>
-        /// Shows MorphEntryDeleted modal dialog.
-        /// </summary>
-        /// <param name="deletedIds">The deleted morphological entry IDs.</param>
-        /// <param name="errorIds">The error morphological entry ID.</param>
-        /// <param name="errorParents">The parents of morphological entries.</param>
-        private void ShowMorphEntryDeletedModalDialog(IReadOnlyCollection<int> deletedIds, ICollection errorIds, List<MorphEntry> errorParents)
-        {
-            CurrentModalDialog = ModalDialogName.MorphEntryDeleted;
-
-            var stringBuilder = new StringBuilder();
-
-            if (deletedIds.Count > 0)
-            {
-                stringBuilder.AppendLine(ServiceLocator.TranslateService.Translate("GetEntryIdViewModel.EntryDeletedMessageBoxText", string.Join(",", deletedIds)));
-                stringBuilder.AppendLine();
-            }
-
-            if (errorIds.Count > 0)
-            {
-                errorParents = errorParents.Distinct().ToList();
-
-                stringBuilder.Append(ServiceLocator.TranslateService.Translate("GetEntryIdViewModel.EntryCannotBeDeletedHeader"));
-                stringBuilder.AppendLine();
-
-                for (int i = 0; i < errorParents.Count; i++)
-                {
-                    if (i < 10)
-                    {
-                        stringBuilder.Append(ServiceLocator.TranslateService.Translate("GetEntryIdViewModel.EntryCannotBeDeletedEntryRow", errorParents[i].Id, errorParents[i].Entry));
-                    }
-                    else
-                    {
-                        stringBuilder.Append(ServiceLocator.TranslateService.Translate("GetEntryIdViewModel.EntryCannotBeDeletedOtherRow"));
-                        break;
-                    }
-                }
-            }
-
-            OnShowModalDialog(ServiceLocator.TranslateService.Translate("GetEntryIdViewModel.MessageBoxTitle"),
-                stringBuilder.ToString(),
-                ModalDialogType.Information);
-        }
-
-        /// <summary>
-        /// Shows MorphEntryNotFound modal dialog.
-        /// </summary>
-        /// <param name="entry">The morphological entry.</param>
-        private void ShowMorphEntryNotFoundModalDialog(string entry)
-        {
-            CurrentModalDialog = ModalDialogName.MorphEntryNotFound;
-
-            OnShowModalDialog(ServiceLocator.TranslateService.Translate("GetEntryIdViewModel.MessageBoxTitle"),
-                ServiceLocator.TranslateService.Translate("GetEntryIdViewModel.NotFoundEntryMessageBoxText", entry),
-                ModalDialogType.Information);
+            ShowDeleteMorphEntryModalDialog(selectedIds);
         }
 
         /// <summary>
         /// Tries to delete a collection of morphological entries from the database.
         /// </summary>
-        private void TryToDeleteMorphEntries()
+        private async Task TryToDeleteMorphEntriesAsync()
         {
             var selectedEntries = MorphEntries.Where(x => x.IsSelected).ToList();
 
-            var result = _interactor.TryToDeleteMorphEntries(selectedEntries.Select(x => x.Id).ToList());
+            IsBusy = true;
 
-            if (!result.Success)
-            {
-                Logger.LogErrors(result.Messages);
-                ShowErrorModalDialog(result.Messages);
-                return;
-            }
+            var result = await _interactor.TryToDeleteMorphEntriesAsync(selectedEntries.Select(x => x.Id).ToList(), _cancellationTokenSource.Token);
+
+            IsBusy = false;
+
+            if (!IsOperationResultSuccess(result)) return;
 
             var deletedIds = result.Result.Where(x => x.IsDeleted).Select(x => x.Id).ToList();
             var errorIds = result.Result.Where(x => !x.IsDeleted).Select(x => x.Id).ToList();
@@ -270,7 +191,81 @@ namespace PMA.Application.ViewModels
                 MorphEntries.Remove(entry);
             }
 
-            ShowMorphEntryDeletedModalDialog(deletedIds, errorIds, errorParents);
+            ShowMorphEntriesDeletedModalDialog(deletedIds, errorIds, errorParents);
         }
+
+        /// <summary>
+        /// Shows DeleteMorphEntry modal dialog.
+        /// </summary>
+        /// <param name="entryIds">The collection of morphological entry IDs.</param>
+        private void ShowDeleteMorphEntryModalDialog(IEnumerable<int> entryIds)
+        {
+            string title = ServiceLocator.TranslateService.Translate(ModalDialogTitleConstants.Information);
+            string message = ServiceLocator.TranslateService.Translate(ModalDialogMessageConstants.DeleteMorphEntries, string.Join(",", entryIds));
+
+            ServiceLocator.ModalDialogService.ShowModalDialog(title,
+                message,
+                ModalDialogType.Question,
+                new[]
+                {
+                    ModalButtonType.Yes,
+                    ModalButtonType.No
+                },
+                ShowDeleteMorphEntryModalDialogCallBackAsync);
+        }
+
+        /// <summary>
+        /// DeleteMorphEntry modal dialog callback.
+        /// </summary>
+        /// <param name="button">A pressed button type.</param>
+        private async void ShowDeleteMorphEntryModalDialogCallBackAsync(ModalButtonType button)
+        {
+            switch (button)
+            {
+                case ModalButtonType.Yes:
+                    await TryToDeleteMorphEntriesAsync();
+                    break;
+            }
+        }
+
+        /// <summary>
+        /// Shows MorphEntriesDeleted modal dialog.
+        /// </summary>
+        /// <param name="deletedIds">The deleted morphological entry IDs.</param>
+        /// <param name="errorIds">The error morphological entry ID.</param>
+        /// <param name="errorParents">The parents of morphological entries.</param>
+        private void ShowMorphEntriesDeletedModalDialog(ICollection<int> deletedIds, ICollection<int> errorIds, IEnumerable<MorphEntry> errorParents)
+        {
+            string title;
+            string message;
+
+            if (deletedIds.Count > 0)
+            {
+                title = ServiceLocator.TranslateService.Translate(ModalDialogTitleConstants.Information);
+                message = ServiceLocator.TranslateService.Translate(ModalDialogMessageConstants.MorphEntriesDeleted, string.Join(",", deletedIds));
+
+                ServiceLocator.ModalDialogService.ShowInformationModalDialog(title, message);
+            }
+
+            if (errorIds.Count == 0) return;
+
+            title = ServiceLocator.TranslateService.Translate(ModalDialogTitleConstants.Error);
+            message = ServiceLocator.TranslateService.Translate(ModalDialogMessageConstants.DeleteMorphEntryError, string.Join(",", errorIds), string.Join(", ", errorParents.Distinct().Select(x => $"{x.Entry} ({x.Id})")));
+
+            ServiceLocator.ModalDialogService.ShowErrorModalDialog(title, message);
+        }
+
+        /// <summary>
+        /// Shows MorphEntryNotFound modal dialog.
+        /// </summary>
+        private void ShowMorphEntryNotFoundModalDialog()
+        {
+            string title = ServiceLocator.TranslateService.Translate(ModalDialogTitleConstants.Information);
+            string message = ServiceLocator.TranslateService.Translate(ModalDialogMessageConstants.MorphEntryNotFound, Entry);
+
+            ServiceLocator.ModalDialogService.ShowInformationModalDialog(title, message);
+        }
+
+        #endregion
     }
 }

@@ -5,6 +5,7 @@
 using MediatR;
 using Microsoft.Extensions.Logging;
 using Microsoft.Toolkit.Mvvm.Input;
+using Microsoft.Toolkit.Mvvm.Messaging;
 using PMA.Application.Extensions;
 using PMA.Application.Factories;
 using PMA.Application.Helpers;
@@ -46,41 +47,77 @@ namespace PMA.Application.ViewModels
         private readonly Timer _updateStatusLabelTimer = new(1000);
 
         /// <summary>
-        /// The current process state.
-        /// </summary>
-        private ProcessState _currentProcessState;
-
-        /// <summary>
-        /// The current depth level.
-        /// </summary>
-        private int _currentDepthLevel;
-
-        /// <summary>
         /// Initializes the new instance of <see cref="MainViewModel"/> class.
         /// </summary>
         /// <param name="interactor">The main view model interactor.</param>
         /// <param name="serviceLocator">The service locator.</param>
-        /// <param name="mediator">The mediator.</param>
         /// <param name="logger">The logger.</param>
-        public MainViewModel(IMainInteractor interactor, IServiceLocator serviceLocator, IMediator mediator, ILogger<MainViewModel> logger) : base(serviceLocator, mediator, logger)
+        /// <param name="messenger">The messenger.</param>
+        public MainViewModel(IMainInteractor interactor, IServiceLocator serviceLocator, ILogger<MainViewModel> logger, IMessenger messenger) : base(serviceLocator, logger, messenger)
         {
             _interactor = interactor;
 
             Logger.LogInit();
 
-            InputWatermark = ServiceLocator.TranslateService.Translate("MainViewModel.MorphologicalWatermark");
-            StatusLabel = ServiceLocator.TranslateService.Translate($"MainViewModel.StatusLabel.{ProcessState.Idle}");
-
-            StartCommand = new RelayCommand(StartAnalysis);
-            StopCommand = new RelayCommand(StopAnalysis);
+            ExecuteCommand = new AsyncRelayCommand<bool>(StartOrStopAsync);
         }
 
-        #region Implementation of IMainViewModel
+        #region Overrides of ObservableRecipient
 
         /// <summary>
-        ///  Backing field for the InputText property.
+        /// Raised whenever the <see cref="P:Microsoft.Toolkit.Mvvm.ComponentModel.ObservableRecipient.IsActive" /> property is set to <see langword="true" />.
+        /// Use this method to register to messages and do other initialization for this instance.
         /// </summary>
-        private string _inputText = string.Empty;
+        /// <remarks>
+        /// The base implementation registers all messages for this recipients that have been declared
+        /// explicitly through the <see cref="T:Microsoft.Toolkit.Mvvm.Messaging.IRecipient`1" /> interface, using the default channel.
+        /// For more details on how this works, see the <see cref="M:Microsoft.Toolkit.Mvvm.Messaging.IMessengerExtensions.RegisterAll(Microsoft.Toolkit.Mvvm.Messaging.IMessenger,System.Object)" /> method.
+        /// If you need more fine tuned control, want to register messages individually or just prefer
+        /// the lambda-style syntax for message registration, override this method and register manually.
+        /// </remarks>
+        protected override void OnActivated()
+        {
+            base.OnActivated();
+
+            _cancellationTokenSource = new CancellationTokenSource();
+
+            InputWatermark = ServiceLocator.TranslateService.Translate("MainViewModel.Watermark");
+            StatusLabel = ServiceLocator.TranslateService.Translate($"MainViewModel.StatusLabel.{ProcessState.Idle}");
+
+            Layer = ServiceLocator.SettingService.GetValue<int>("Options.Layer");
+            MaxDepthLevel = ServiceLocator.SettingService.GetValue<int>("Options.MaxDepthLevel");
+            AutoSymbolReplace = ServiceLocator.SettingService.GetValue<bool>("Options.AutoSymbolReplace");
+
+            _updateStatusLabelTimer.Elapsed += Timer_Elapsed;
+        }
+
+        /// <summary>
+        /// Raised whenever the <see cref="P:Microsoft.Toolkit.Mvvm.ComponentModel.ObservableRecipient.IsActive" /> property is set to <see langword="false" />.
+        /// Use this method to unregister from messages and do general cleanup for this instance.
+        /// </summary>
+        /// <remarks>
+        /// The base implementation unregisters all messages for this recipient. It does so by
+        /// invoking <see cref="M:Microsoft.Toolkit.Mvvm.Messaging.IMessenger.UnregisterAll(System.Object)" />, which removes all registered
+        /// handlers for a given subscriber, regardless of what token was used to register them.
+        /// That is, all registered handlers across all subscription channels will be removed.
+        /// </remarks>
+        protected override void OnDeactivated()
+        {
+            base.OnDeactivated();
+
+            if (!_cancellationTokenSource.IsCancellationRequested)
+            {
+                _cancellationTokenSource.Cancel();
+            }
+
+            _cancellationTokenSource = null;
+
+            _updateStatusLabelTimer.Elapsed -= Timer_Elapsed;
+        }
+
+        #endregion
+
+        #region Implementation of IMainViewModel
 
         /// <summary>
         /// Gets or sets an input text for analysis.
@@ -88,13 +125,16 @@ namespace PMA.Application.ViewModels
         public string InputText
         {
             get => _inputText;
-            set => SetProperty(ref _inputText, value);
-        }
+            set
+            {
+                if (AutoSymbolReplace)
+                {
+                    value = value.LatinToPali();
+                }
 
-        /// <summary>
-        ///  Backing field for the InputWatermark property.
-        /// </summary>
-        private string _inputWatermark;
+                SetProperty(ref _inputText, value);
+            }
+        }
 
         /// <summary>
         /// Gets an input watermark.
@@ -102,13 +142,8 @@ namespace PMA.Application.ViewModels
         public string InputWatermark
         {
             get => _inputWatermark;
-            private init => SetProperty(ref _inputWatermark, value);
+            private set => SetProperty(ref _inputWatermark, value);
         }
-
-        /// <summary>
-        ///  Backing field for the StatusLabel property.
-        /// </summary>
-        private string _statusLabel;
 
         /// <summary>
         /// Gets a status label text.
@@ -118,11 +153,6 @@ namespace PMA.Application.ViewModels
             get => _statusLabel;
             private set => SetProperty(ref _statusLabel, value);
         }
-
-        /// <summary>
-        ///  Backing field for the Layer property.
-        /// </summary>
-        private int _layer;
 
         /// <summary>
         /// Gets or sets a chronological layer for calculating the rating of solutions.
@@ -140,11 +170,6 @@ namespace PMA.Application.ViewModels
         }
 
         /// <summary>
-        ///  Backing field for the MaxDepthLevel property.
-        /// </summary>
-        private int _maxDepthLevel;
-
-        /// <summary>
         /// Gets or sets a maximum depth of wordform analysis according to morphological rules.
         /// </summary>
         public int MaxDepthLevel
@@ -158,11 +183,6 @@ namespace PMA.Application.ViewModels
                 }
             }
         }
-
-        /// <summary>
-        ///  Backing field for the AutoSymbolReplace property.
-        /// </summary>
-        private bool _autoSymbolReplace;
 
         /// <summary>
         /// Gets or sets auto symbol replace option: aa -> ā, ii -> ī, etc.
@@ -180,42 +200,18 @@ namespace PMA.Application.ViewModels
         }
 
         /// <summary>
-        /// Gets the command to start analysis.
+        /// Gets whether the execute command is disabled.
         /// </summary>
-        public ICommand StartCommand { get; }
-
-        /// <summary>
-        /// Gets the command to stop analysis.
-        /// </summary>
-        public ICommand StopCommand { get; }
-
-        #endregion
-
-        #region Overrides of ViewModelBase
-
-        /// <summary>
-        /// Action when the view appears.
-        /// </summary>
-        public override void OnAppearing()
+        public bool ExecuteCommandDisabled
         {
-            base.OnAppearing();
-
-            Layer = ServiceLocator.SettingService.GetValue<int>("Options.Layer");
-            MaxDepthLevel = ServiceLocator.SettingService.GetValue<int>("Options.MaxDepthLevel");
-            AutoSymbolReplace = ServiceLocator.SettingService.GetValue<bool>("Options.AutoSymbolReplace");
-
-            _updateStatusLabelTimer.Elapsed += Timer_Elapsed;
+            get => _executeCommandDisabled;
+            private set => SetProperty(ref _executeCommandDisabled, value);
         }
 
         /// <summary>
-        /// Action when the view disappears.
+        /// Gets the command to start or stop analysis.
         /// </summary>
-        public override void OnDisappearing()
-        {
-            base.OnDisappearing();
-
-            _updateStatusLabelTimer.Elapsed -= Timer_Elapsed;
-        }
+        public ICommand ExecuteCommand { get; }
 
         #endregion
 
@@ -226,6 +222,8 @@ namespace PMA.Application.ViewModels
         /// <param name="cancellationToken">Cancellation token</param>
         public Task Handle(MorphParserNotification notification, CancellationToken cancellationToken)
         {
+            if (!IsActive) return Task.CompletedTask;
+
             _currentProcessState = notification.State;
 
             switch (_currentProcessState)
@@ -234,35 +232,28 @@ namespace PMA.Application.ViewModels
                     {
                         IsBusy = true;
 
+                        if (!_analysisStarted)
+                        {
+                            ExecuteCommandDisabled = true;
+                        }
+
                         _morphAnalysisTimer.Restart();
                         _updateStatusLabelTimer.Start();
 
                         (string sizeValue, var sizeType) = GcHelper.GetTotalMemory();
                         string memory = sizeValue + " " + ServiceLocator.TranslateService.Translate(sizeType);
 
-                        StatusLabel = ServiceLocator.TranslateService.Translate($"MainViewModel.StatusLabel.{_currentProcessState}",
+                        StatusLabel = ServiceLocator.TranslateService.Translate("MainViewModel.StatusLabel.InProgress",
                             _morphAnalysisTimer.GetTime(),
                             memory,
                             _currentDepthLevel);
-
-                        break;
-                    }
-                case ProcessState.Canceling:
-                    {
-                        (string sizeValue, var sizeType) = GcHelper.GetTotalMemory();
-                        string memory = sizeValue + " " + ServiceLocator.TranslateService.Translate(sizeType);
-
-                        StatusLabel = ServiceLocator.TranslateService.Translate(
-                            $"MainViewModel.StatusLabel.{_currentProcessState}",
-                            _morphAnalysisTimer.GetTime(),
-                            memory,
-                            _currentDepthLevel);
-
                         break;
                     }
                 case ProcessState.Completed:
                     {
                         IsBusy = false;
+                        ExecuteCommandDisabled = false;
+                        _analysisStarted = false;
 
                         _morphAnalysisTimer.Stop();
                         _updateStatusLabelTimer.Stop();
@@ -270,7 +261,7 @@ namespace PMA.Application.ViewModels
                         (string sizeValue, var sizeType) = GcHelper.GetTotalMemory();
                         string memory = sizeValue + " " + ServiceLocator.TranslateService.Translate(sizeType);
 
-                        StatusLabel = ServiceLocator.TranslateService.Translate($"MainViewModel.StatusLabel.{_currentProcessState}",
+                        StatusLabel = ServiceLocator.TranslateService.Translate("MainViewModel.StatusLabel.Completed",
                             notification.Result.TotalSolutionCount(),
                             _morphAnalysisTimer.GetTime(),
                             memory,
@@ -281,12 +272,13 @@ namespace PMA.Application.ViewModels
                 case ProcessState.Canceled:
                     {
                         IsBusy = false;
+                        ExecuteCommandDisabled = false;
+                        _analysisStarted = false;
 
                         _morphAnalysisTimer.Stop();
                         _updateStatusLabelTimer.Stop();
 
-                        StatusLabel = ServiceLocator.TranslateService.Translate($"MainViewModel.StatusLabel.{_currentProcessState}");
-
+                        StatusLabel = ServiceLocator.TranslateService.Translate("MainViewModel.StatusLabel.Canceled");
                         break;
                     }
             }
@@ -303,6 +295,8 @@ namespace PMA.Application.ViewModels
         /// <param name="cancellationToken">Cancellation token</param>
         public Task Handle(DepthLevelNotification notification, CancellationToken cancellationToken)
         {
+            if (!IsActive) return Task.CompletedTask;
+
             _currentDepthLevel = notification.CurrentDepthLevel;
 
             return Task.CompletedTask;
@@ -310,36 +304,95 @@ namespace PMA.Application.ViewModels
 
         #endregion
 
+        #region Private Fields
+
         /// <summary>
-        /// Starts analysis.
+        ///  Backing field for the InputText property.
         /// </summary>
-        private void StartAnalysis()
+        private string _inputText = string.Empty;
+
+        /// <summary>
+        ///  Backing field for the InputWatermark property.
+        /// </summary>
+        private string _inputWatermark;
+
+        /// <summary>
+        ///  Backing field for the StatusLabel property.
+        /// </summary>
+        private string _statusLabel;
+
+        /// <summary>
+        ///  Backing field for the Layer property.
+        /// </summary>
+        private int _layer;
+
+        /// <summary>
+        ///  Backing field for the MaxDepthLevel property.
+        /// </summary>
+        private int _maxDepthLevel;
+
+        /// <summary>
+        ///  Backing field for the AutoSymbolReplace property.
+        /// </summary>
+        private bool _autoSymbolReplace;
+
+        /// <summary>
+        ///  Backing field for the ExecuteCommandDisabled property.
+        /// </summary>
+        private bool _executeCommandDisabled;
+
+        /// <summary>
+        /// The cancellation token source.
+        /// </summary>
+        private CancellationTokenSource _cancellationTokenSource;
+
+        /// <summary>
+        /// The current process state.
+        /// </summary>
+        private ProcessState _currentProcessState;
+
+        /// <summary>
+        /// The current depth level.
+        /// </summary>
+        private int _currentDepthLevel;
+
+        /// <summary>
+        /// Whether the analysis started from this view model.
+        /// </summary>
+        private bool _analysisStarted;
+
+        #endregion
+
+        #region Private Methods
+
+        /// <summary>
+        /// Starts or stops analysis.
+        /// </summary>
+        /// <param name="start">Starts analysis if the value is True; stops analysis if the value is False.</param>
+        private async Task StartOrStopAsync(bool start)
         {
-            var inputData = new MorphParserInputPort
+            if (string.IsNullOrEmpty(InputText) || ExecuteCommandDisabled) return;
+
+            if (start)
             {
-                MorphEntry = MorphEntryFactory.Create(InputText),
-                ParsingType = ServiceLocator.SettingService.GetValue<bool>("Options.DebugMode") ? MorphParsingType.Debug : MorphParsingType.Release
-            };
+                _analysisStarted = true;
 
-            var result = _interactor.StartAnalysis(inputData);
+                var inputData = new MorphParserInputPort
+                {
+                    MorphEntry = MorphEntryFactory.Create(InputText),
+                    ParsingType = ServiceLocator.SettingService.GetValue<bool>("Options.DebugMode") ? MorphParsingType.Debug : MorphParsingType.Release
+                };
 
-            if (result.Success) return;
+                var result = await _interactor.StartAnalysisAsync(inputData, _cancellationTokenSource.Token);
 
-            Logger.LogErrors(result.Messages);
-            ShowErrorModalDialog(result.Messages);
-        }
+                IsOperationResultSuccess(result);
+                return;
+            }
 
-        /// <summary>
-        /// Stops analysis.
-        /// </summary>
-        private void StopAnalysis()
-        {
-            var result = _interactor.StopAnalysis();
+            _cancellationTokenSource.Cancel();
+            _cancellationTokenSource = new CancellationTokenSource();
 
-            if (result.Success) return;
-
-            Logger.LogErrors(result.Messages);
-            ShowErrorModalDialog(result.Messages);
+            ExecuteCommandDisabled = true;
         }
 
         /// <summary>
@@ -352,30 +405,17 @@ namespace PMA.Application.ViewModels
             switch (_currentProcessState)
             {
                 case ProcessState.InProgress:
-                    {
-                        (string sizeValue, var sizeType) = GcHelper.GetTotalMemory();
-                        string memory = sizeValue + " " + ServiceLocator.TranslateService.Translate(sizeType);
+                    (string sizeValue, var sizeType) = GcHelper.GetTotalMemory();
+                    string memory = sizeValue + " " + ServiceLocator.TranslateService.Translate(sizeType);
 
-                        StatusLabel = ServiceLocator.TranslateService.Translate($"MainViewModel.StatusLabel.{_currentProcessState}",
-                            _morphAnalysisTimer.GetTime(),
-                            memory,
-                            _currentDepthLevel);
-
-                        break;
-                    }
-                case ProcessState.Canceling:
-                    {
-                        (string sizeValue, var sizeType) = GcHelper.GetTotalMemory();
-                        string memory = sizeValue + " " + ServiceLocator.TranslateService.Translate(sizeType);
-
-                        StatusLabel = ServiceLocator.TranslateService.Translate($"MainViewModel.StatusLabel.{_currentProcessState}",
-                            _morphAnalysisTimer.GetTime(),
-                            memory,
-                            _currentDepthLevel);
-
-                        break;
-                    }
+                    StatusLabel = ServiceLocator.TranslateService.Translate("MainViewModel.StatusLabel.InProgress",
+                        _morphAnalysisTimer.GetTime(),
+                        memory,
+                        _currentDepthLevel);
+                    break;
             }
         }
+
+        #endregion
     }
 }

@@ -36,11 +36,6 @@ namespace PMA.Domain.Interfaces.ViewModels
         string InputWatermark { get; }
 
         /// <summary>
-        /// Gets auto symbol replace option: aa -> ā, ii -> ī, etc.
-        /// </summary>
-        bool AutoSymbolReplace { get; }
-
-        /// <summary>
         /// Gets the morphological entry ID.
         /// </summary>
         int EntryId { get; }
@@ -81,14 +76,14 @@ namespace PMA.Domain.Interfaces.ViewModels
         bool IsLockEntryIdChecked { get; set; }
 
         /// <summary>
-        /// Gets the command to start analysis.
+        /// Gets whether the execute command is disabled.
         /// </summary>
-        ICommand StartCommand { get; }
+        bool ExecuteCommandDisabled { get; }
 
         /// <summary>
-        /// Gets the command to stop analysis.
+        /// Gets the command to start or stop analysis.
         /// </summary>
-        ICommand StopCommand { get; }
+        ICommand ExecuteCommand { get; }
 
         /// <summary>
         /// Gets the command to save the morphological entry.
@@ -123,6 +118,16 @@ namespace PMA.Domain.Interfaces.ViewModels
         /// <summary>
         /// Gets the collection of property view models.
         /// </summary>
-        IList<IMorphPropertyControlViewModel> Properties { get; }
+        IEnumerable<IMorphPropertyControlViewModel> Properties { get; }
+
+        /// <summary>
+        /// Gets the collection of property category models.
+        /// </summary>
+        IEnumerable<IMorphCategoryControlViewModel> Categories { get; }
+
+        /// <summary>
+        /// Gets a get entry ID view model. The value is null if get entry ID view model is closed.
+        /// </summary>
+        IGetEntryIdViewModel GetEntryIdViewModel { get; }
     }
 }

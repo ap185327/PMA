@@ -3,6 +3,7 @@
 // </copyright>
 
 using Autofac;
+using PMA.Domain.Enums;
 using PMA.Domain.Interfaces.Services;
 using PMA.Domain.Interfaces.ViewModels;
 using PMA.Domain.Interfaces.ViewModels.Controls;
@@ -21,11 +22,6 @@ namespace PMA.WinForms.Forms
         private readonly IMorphRuleInfoViewModel _morphRuleInfoViewModel;
 
         /// <summary>
-        /// The translate service.
-        /// </summary>
-        private readonly ITranslateService _translateService;
-
-        /// <summary>
         /// The setting service.
         /// </summary>
         private readonly ISettingService _settingService;
@@ -36,8 +32,9 @@ namespace PMA.WinForms.Forms
         public MorphRuleInfoForm()
         {
             _morphRuleInfoViewModel = Program.Scope.Resolve<IMorphRuleInfoViewModel>();
-            _translateService = Program.Scope.Resolve<ITranslateService>();
             _settingService = Program.Scope.Resolve<ISettingService>();
+
+            _morphRuleInfoViewModel.IsActive = true;
 
             InitializeComponent();
             OverrideStrings();
@@ -52,11 +49,11 @@ namespace PMA.WinForms.Forms
         /// </summary>
         private void OverrideStrings()
         {
-            Text = _translateService.Translate(Name);
-            IdColumnHeader.Text = _translateService.Translate($"{Name}.IdColumnHeader");
-            DescriptionColumnHeader.Text = _translateService.Translate($"{Name}.DescriptionColumnHeader");
-            RuleListView.Groups[0].Header = _translateService.Translate($"{Name}.MorphRuleListViewGroup");
-            RuleListView.Groups[1].Header = _translateService.Translate($"{Name}.SandhiRuleListViewGroup");
+            Text = Properties.Resources.ResourceManager.GetString("MorphRuleInfoForm.Title");
+            IdColumnHeader.Text = Properties.Resources.ResourceManager.GetString("MorphRuleInfoForm.IdColumnHeader");
+            DescriptionColumnHeader.Text = Properties.Resources.ResourceManager.GetString("MorphRuleInfoForm.DescriptionColumnHeader");
+            RuleListView.Groups[0].Header = Properties.Resources.ResourceManager.GetString("MorphRuleInfoForm.MorphRuleListViewGroup")!;
+            RuleListView.Groups[1].Header = Properties.Resources.ResourceManager.GetString("MorphRuleInfoForm.SandhiRuleListViewGroup")!;
         }
 
         /// <summary>
@@ -64,10 +61,10 @@ namespace PMA.WinForms.Forms
         /// </summary>
         private void SetSettings()
         {
-            Height = _settingService.GetValue<int>($"{Name}.Height");
-            Width = _settingService.GetValue<int>($"{Name}.Width");
-            IdColumnHeader.Width = _settingService.GetValue<int>($"{Name}.IdColumnHeader.Width");
-            DescriptionColumnHeader.Width = _settingService.GetValue<int>($"{Name}.DescriptionColumnHeader.Width");
+            Height = _settingService.GetValue<int>("WinForms.MorphRuleInfoForm.Height");
+            Width = _settingService.GetValue<int>("WinForms.MorphRuleInfoForm.Width");
+            IdColumnHeader.Width = _settingService.GetValue<int>("WinForms.MorphRuleInfoForm.IdColumnHeader.Width");
+            DescriptionColumnHeader.Width = _settingService.GetValue<int>("WinForms.MorphRuleInfoForm.DescriptionColumnHeader.Width");
         }
 
         /// <summary>
@@ -75,18 +72,17 @@ namespace PMA.WinForms.Forms
         /// </summary>
         private void SubscribeEvents()
         {
-            _morphRuleInfoViewModel.MorphRules.CollectionChanged += MorphRules_CollectionChanged;
-            _morphRuleInfoViewModel.SandhiRules.CollectionChanged += SandhiRules_CollectionChanged;
+            _morphRuleInfoViewModel.Rules.CollectionChanged += OnCollectionChangedEventHandler;
         }
 
         #endregion Initialization methods
 
         /// <summary>
-        /// Event handler for the MorphRules collection changed.
+        /// Event handler for the rule collection changed.
         /// </summary>
         /// <param name="sender">Object sender.</param>
         /// <param name="e">Event arguments.</param>
-        private void MorphRules_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        private void OnCollectionChangedEventHandler(object sender, NotifyCollectionChangedEventArgs e)
         {
             switch (e.Action)
             {
@@ -98,7 +94,9 @@ namespace PMA.WinForms.Forms
                             var listViewItem = new ListViewItem
                             {
                                 Text = item.Id.ToString(),
-                                Group = RuleListView.Groups[0]
+                                Group = item.Type == RuleType.Morphological
+                                    ? RuleListView.Groups[0]
+                                    : RuleListView.Groups[1]
                             };
                             listViewItem.SubItems.Add(item.Description);
                             RuleListView.Items.Add(listViewItem);
@@ -114,41 +112,14 @@ namespace PMA.WinForms.Forms
         }
 
         /// <summary>
-        /// Event handler for the SandhiRules collection changed.
-        /// </summary>
-        /// <param name="sender">Object sender.</param>
-        /// <param name="e">Event arguments.</param>
-        private void SandhiRules_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
-        {
-            switch (e.Action)
-            {
-                case NotifyCollectionChangedAction.Add:
-                    {
-                        // ReSharper disable once PossibleNullReferenceException
-                        foreach (IRuleInfoItemViewModel item in e.NewItems)
-                        {
-                            var listViewItem = new ListViewItem
-                            {
-                                Text = item.Id.ToString(),
-                                Group = RuleListView.Groups[1]
-                            };
-                            listViewItem.SubItems.Add(item.Description);
-                            RuleListView.Items.Add(listViewItem);
-                        }
-                        break;
-                    }
-            }
-        }
-
-        /// <summary>
         /// Event handler for the RuleListView column width changed.
         /// </summary>
         /// <param name="sender">Object sender.</param>
         /// <param name="e">Event arguments.</param>
         private void RuleListView_ColumnWidthChanged(object sender, ColumnWidthChangedEventArgs e)
         {
-            _settingService.SetValue($"{Name}.IdColumnHeader.Width", IdColumnHeader.Width);
-            _settingService.SetValue($"{Name}.DescriptionColumnHeader.Width", DescriptionColumnHeader.Width);
+            _settingService.SetValue("WinForms.MorphRuleInfoForm.IdColumnHeader.Width", IdColumnHeader.Width);
+            _settingService.SetValue("WinForms.MorphRuleInfoForm.DescriptionColumnHeader.Width", DescriptionColumnHeader.Width);
         }
 
         /// <summary>
@@ -159,23 +130,6 @@ namespace PMA.WinForms.Forms
         private void MorphRuleInfoForm_LocationChanged(object sender, EventArgs e)
         {
             this.Sticking();
-        }
-
-        /// <summary>
-        /// Event handler for the MorphRuleInfoForm visible changed.
-        /// </summary>
-        /// <param name="sender">Object sender.</param>
-        /// <param name="e">Event arguments.</param>
-        private void MorphRuleInfoForm_VisibleChanged(object sender, EventArgs e)
-        {
-            if (Visible)
-            {
-                _morphRuleInfoViewModel.OnAppearing();
-            }
-            else
-            {
-                _morphRuleInfoViewModel.OnDisappearing();
-            }
         }
     }
 }

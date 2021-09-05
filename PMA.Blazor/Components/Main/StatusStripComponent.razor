@@ -1,0 +1,17 @@
+﻿<MudAppBar Bottom="true"
+           Dense="true"
+           Elevation="5">
+    @if (ViewModel.IsBusy)
+    {
+        <MudProgressCircular Color="Color.Primary"
+                             Indeterminate="true"
+                             Style="Width: 20px; height: 20px; margin-left: 2px; margin-right: 2px"/>
+    }
+    else
+    {
+        <MudIcon Icon="@Icons.Outlined.CheckCircleOutline"
+                 Size="Size.Medium"
+                 Color="Color.Primary" />
+    }
+    <MudText Class="ml-5">@ViewModel.StatusLabel</MudText>
+</MudAppBar>

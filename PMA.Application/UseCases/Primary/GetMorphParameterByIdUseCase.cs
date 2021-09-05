@@ -2,17 +2,15 @@
 //     Copyright 2017-2021 Andrey Pospelov. All rights reserved.
 // </copyright>
 
-using MediatR;
 using Microsoft.Extensions.Logging;
 using PMA.Application.UseCases.Base;
-using PMA.Domain.Constants;
 using PMA.Domain.DataContracts;
 using PMA.Domain.Interfaces.Providers;
 using PMA.Domain.Interfaces.UseCases.Primary;
 using PMA.Domain.Models;
-using PMA.Utils.Extensions;
 using System;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace PMA.Application.UseCases.Primary
@@ -31,14 +29,10 @@ namespace PMA.Application.UseCases.Primary
         /// Initializes a new instance of <see cref="GetMorphParameterByIdUseCase"/> class.
         /// </summary>
         /// <param name="morphParameterDbProvider">The morphological parameter database provider.</param>
-        /// <param name="mediator">The mediator.</param>
-        /// <param name="parallelOptions">Options that configure the operation of methods on the <see cref="Parallel"/> class.</param>
         /// <param name="logger">The logger.</param>
-        public GetMorphParameterByIdUseCase(IMorphParameterDbProvider morphParameterDbProvider, IMediator mediator, ParallelOptions parallelOptions, ILogger<GetMorphParameterByIdUseCase> logger) : base(mediator, parallelOptions, logger)
+        public GetMorphParameterByIdUseCase(IMorphParameterDbProvider morphParameterDbProvider, ILogger<GetMorphParameterByIdUseCase> logger) : base(logger)
         {
             _morphParameterDbProvider = morphParameterDbProvider;
-
-            Logger.LogInit();
         }
 
         #region Overrides of UseCaseWithResultBase<GetMorphParameterByIdUseCase,int,MorphParameter>
@@ -50,12 +44,6 @@ namespace PMA.Application.UseCases.Primary
         /// <returns>The result of action execution.</returns>
         public override OperationResult<MorphParameter> Execute(int inputData)
         {
-            if (inputData is >= MorphConstants.ParameterCount or < 0)
-            {
-                Logger.LogError(ErrorMessageConstants.MorphParameterIndexOutOfRange, inputData);
-                return OperationResult<MorphParameter>.FailureResult(ErrorMessageConstants.MorphParameterIndexOutOfRange, inputData);
-            }
-
             try
             {
                 var morphParameter = _morphParameterDbProvider.GetValues().Single(x => x.Id == inputData);
@@ -66,6 +54,17 @@ namespace PMA.Application.UseCases.Primary
                 Logger.LogError(exception.Message);
                 return OperationResult<MorphParameter>.ExceptionResult(exception);
             }
+        }
+
+        /// <summary>
+        /// Executes an action.
+        /// </summary>
+        /// <param name="inputPort">The input data.</param>
+        /// <param name="token">The cancellation token.</param>
+        /// <returns>The result of action execution.</returns>
+        public override Task<OperationResult<MorphParameter>> ExecuteAsync(int inputPort, CancellationToken token = default)
+        {
+            return Task.FromResult(Execute(inputPort));
         }
 
         #endregion

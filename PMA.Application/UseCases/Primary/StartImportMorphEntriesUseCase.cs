@@ -75,6 +75,11 @@ namespace PMA.Application.UseCases.Primary
         private readonly IExcelDataService _excelDataService;
 
         /// <summary>
+        /// The mediator.
+        /// </summary>
+        private readonly IMediator _mediator;
+
+        /// <summary>
         /// Initializes a new instance of <see cref="StartImportMorphEntriesUseCase"/> class.
         /// </summary>
         /// <param name="interactor">The morphological parser interactor.</param>
@@ -82,11 +87,10 @@ namespace PMA.Application.UseCases.Primary
         /// <param name="morphEntryManager">The morphological entry manager.</param>
         /// <param name="morphCombinationManager">The morphological combination manager.</param>
         /// <param name="morphEntryLoader">The morphological entry loader.</param>
-        /// <param name="translateService">The translate service.</param>
+        /// /// <param name="translateService">The translate service.</param>
         /// <param name="logMessageService">The log message service.</param>
         /// <param name="excelDataService">The excel data service.</param>
         /// <param name="mediator">The mediator.</param>
-        /// <param name="parallelOptions">Options that configure the operation of methods on the <see cref="Parallel"/> class.</param>
         /// <param name="logger">The logger.</param>
         public StartImportMorphEntriesUseCase(IMorphParserInteractor interactor,
             IMorphEntryDbProvider morphEntryDbProvider,
@@ -97,10 +101,7 @@ namespace PMA.Application.UseCases.Primary
             ILogMessageService logMessageService,
             IExcelDataService excelDataService,
             IMediator mediator,
-            ParallelOptions parallelOptions,
-            ILogger<StartImportMorphEntriesUseCase> logger) : base(mediator,
-            parallelOptions,
-            logger)
+            ILogger<StartImportMorphEntriesUseCase> logger) : base(logger)
         {
             _interactor = interactor;
             _morphEntryDbProvider = morphEntryDbProvider;
@@ -110,8 +111,7 @@ namespace PMA.Application.UseCases.Primary
             _translateService = translateService;
             _logMessageService = logMessageService;
             _excelDataService = excelDataService;
-
-            Logger.LogInit();
+            _mediator = mediator;
         }
 
         #region Overrides of UseCaseBase<StartImportMorphEntriesUseCase,ImportMorphEntryInputPort>
@@ -123,209 +123,205 @@ namespace PMA.Application.UseCases.Primary
         /// <returns>The result of action execution.</returns>
         public override OperationResult Execute(ImportMorphEntryInputPort inputData)
         {
-            if (inputData is null)
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Executes an action.
+        /// </summary>
+        /// <param name="inputPort">The input data.</param>
+        /// <param name="token">The cancellation token.</param>
+        /// <returns>The result of action execution.</returns>
+        public override async Task<OperationResult> ExecuteAsync(ImportMorphEntryInputPort inputPort, CancellationToken token = default)
+        {
+            if (inputPort is null)
             {
-                Logger.LogError(ErrorMessageConstants.ValueIsNull, nameof(inputData));
-                return OperationResult.FailureResult(ErrorMessageConstants.ValueIsNull, nameof(inputData));
+                Logger.LogError(ErrorMessageConstants.ValueIsNull, nameof(inputPort));
+                return OperationResult.FailureResult(ErrorMessageConstants.ValueIsNull, nameof(inputPort));
             }
 
-            if (string.IsNullOrEmpty(inputData.DataFilePath))
+            if (string.IsNullOrEmpty(inputPort.DataFilePath))
             {
                 Logger.LogError(ErrorMessageConstants.FilePathIsEmpty);
                 return OperationResult.FailureResult(ErrorMessageConstants.FilePathIsEmpty);
             }
 
-            if (!File.Exists(inputData.DataFilePath))
+            if (!File.Exists(inputPort.DataFilePath))
             {
-                Logger.LogError(ErrorMessageConstants.FileNotFound, inputData.DataFilePath);
-                return OperationResult.FailureResult(ErrorMessageConstants.FileNotFound, inputData.DataFilePath);
+                Logger.LogError(ErrorMessageConstants.FileNotFound, inputPort.DataFilePath);
+                return OperationResult.FailureResult(ErrorMessageConstants.FileNotFound, inputPort.DataFilePath);
             }
 
-            var cancellationTokenSource = new CancellationTokenSource();
-
-            // ReSharper disable once MethodSupportsCancellation
-            Mediator.Publish(new CancellationTokenResourceNotification
+            try
             {
-                CancellationTokenSource = cancellationTokenSource
-            });
-
-            ParallelOptions.CancellationToken = cancellationTokenSource.Token;
-
-            Task.Run(() =>
-            {
-                // ReSharper disable once MethodSupportsCancellation
-                Mediator.Publish(new ImportMorphEntryNotification
+                await _mediator.Publish(new ImportMorphEntryNotification
                 {
                     State = ProcessState.InProgress,
                     AnalyzeProgressBarValue = 0
-                });
+                }, token);
 
                 _logMessageService.SendMessage(_translateService.Translate(LogMessageType.ImportStart));
                 _logMessageService.SendMessage(_translateService.Translate(LogMessageType.DataFileOpening));
 
-                try
+                _excelDataService.Open(inputPort.DataFilePath);
+
+                bool readRawDataResult = _morphEntryLoader.ReadRawData();
+
+                _logMessageService.SendMessage(_translateService.Translate(LogMessageType.DataFileClosing));
+
+                _excelDataService.Close();
+
+                if (readRawDataResult && await _morphEntryLoader.ValidateAndFormatRawDataAsync(token))
                 {
-                    _excelDataService.Open(inputData.DataFilePath);
+                    var morphEntries = _morphEntryLoader.GetData();
 
-                    bool readRawDataResult = _morphEntryLoader.ReadRawData();
-
-                    _logMessageService.SendMessage(_translateService.Translate(LogMessageType.DataFileClosing));
-
-                    _excelDataService.Close();
-
-                    if (readRawDataResult && !ParallelOptions.CancellationToken.IsCancellationRequested && _morphEntryLoader.ValidateAndFormatRawData() && !ParallelOptions.CancellationToken.IsCancellationRequested)
+                    for (int i = 0; i < morphEntries.Count; i++)
                     {
-                        var morphEntries = _morphEntryLoader.GetData();
+                        var morphEntry = morphEntries[i];
 
-                        for (int i = 0; i < morphEntries.Count; i++)
+                        if (inputPort.IsAnalyzeBeforeImportChecked)
                         {
-                            if (ParallelOptions.CancellationToken.IsCancellationRequested)
+                            var parserInputData = new MorphParserInputPort
                             {
-                                break;
+                                MorphEntry = morphEntries[i],
+                                ParsingType = MorphParsingType.Import
+                            };
+
+                            var result = await _interactor.ParseMorphEntryAsync(parserInputData, token);
+
+                            if (!result.Success)
+                            {
+                                Logger.LogErrors(result.Messages);
+                                return OperationResult.FailureResult(result.Messages);
                             }
 
-                            var morphEntry = morphEntries[i];
+                            result = await _interactor.RemoveSolutionsWithExcessiveDepthAsync(parserInputData, token);
 
-                            if (inputData.IsAnalyzeBeforeImportChecked)
+                            if (!result.Success)
                             {
-                                var parserInputData = new MorphParserInputPort
-                                {
-                                    MorphEntry = morphEntries[i],
-                                    ParsingType = MorphParsingType.Import
-                                };
+                                Logger.LogErrors(result.Messages);
+                                return OperationResult.FailureResult(result.Messages);
+                            }
 
-                                var result = _interactor.ParseMorphEntry(parserInputData);
+                            result = _interactor.CollapseSolutionsAsync(parserInputData, token).Result;
 
-                                if (!result.Success)
-                                {
-                                    Logger.LogErrors(result.Messages);
-                                    return;
-                                }
+                            if (!result.Success)
+                            {
+                                Logger.LogErrors(result.Messages);
+                                return OperationResult.FailureResult(result.Messages);
+                            }
 
-                                result = _interactor.RemoveSolutionsWithExcessiveDepth(parserInputData);
+                            result = await _interactor.RemoveUnsuitableDerivativeSolutionsAsync(parserInputData, token);
 
-                                if (!result.Success)
-                                {
-                                    Logger.LogErrors(result.Messages);
-                                    return;
-                                }
+                            if (!result.Success)
+                            {
+                                Logger.LogErrors(result.Messages);
+                                return OperationResult.FailureResult(result.Messages);
+                            }
 
-                                result = _interactor.CollapseSolutions(parserInputData);
+                            result = await _interactor.UpdateSolutionsAsync(parserInputData, token);
 
-                                if (!result.Success)
-                                {
-                                    Logger.LogErrors(result.Messages);
-                                    return;
-                                }
+                            if (!result.Success)
+                            {
+                                Logger.LogErrors(result.Messages);
+                                return OperationResult.FailureResult(result.Messages);
+                            }
 
-                                result = _interactor.RemoveUnsuitableDerivativeSolutions(parserInputData);
+                            result = await _interactor.RemoveDuplicatesAsync(parserInputData, token);
 
-                                if (!result.Success)
-                                {
-                                    Logger.LogErrors(result.Messages);
-                                    return;
-                                }
+                            if (!result.Success)
+                            {
+                                Logger.LogErrors(result.Messages);
+                                return OperationResult.FailureResult(result.Messages);
+                            }
 
-                                result = _interactor.UpdateSolutions(parserInputData);
+                            result = await _interactor.RemoveUnsuitableSolutionsAsync(parserInputData, token);
 
-                                if (!result.Success)
-                                {
-                                    Logger.LogErrors(result.Messages);
-                                    return;
-                                }
-
-                                result = _interactor.RemoveDuplicates(parserInputData);
-
-                                if (!result.Success)
-                                {
-                                    Logger.LogErrors(result.Messages);
-                                    return;
-                                }
-
-                                result = _interactor.RemoveUnsuitableSolutions(parserInputData);
-
-                                if (!result.Success)
-                                {
-                                    Logger.LogErrors(result.Messages);
-                                    return;
-                                }
+                            if (!result.Success)
+                            {
+                                Logger.LogErrors(result.Messages);
+                                return OperationResult.FailureResult(result.Messages);
+                            }
 #if DEBUG
-                                result = _interactor.ValidateSolutions(parserInputData);
+                            result = await _interactor.ValidateSolutionsAsync(parserInputData, token);
 
-                                if (!result.Success)
-                                {
-                                    Logger.LogErrors(result.Messages);
-                                    return;
-                                }
+                            if (!result.Success)
+                            {
+                                Logger.LogErrors(result.Messages);
+                                return OperationResult.FailureResult(result.Messages);
+                            }
 #endif
-                                morphEntry = parserInputData.WordForm.GetMorphEntry();
-                                morphEntry.Source = MorphEntrySource.ImportWithAnalysis;
-                            }
-                            else
-                            {
-                                morphEntry.Source = MorphEntrySource.ImportWithoutAnalysis;
-                            }
-
-                            TryToAddOrUpdate(morphEntry, i + 1, morphEntries[i].Entry);
-
-                            if (inputData.IsAnalyzeBeforeImportChecked)
-                            {
-                                _morphEntryDbProvider.Commit();
-                            }
-
-                            // ReSharper disable once MethodSupportsCancellation
-                            Mediator.Publish(new ImportMorphEntryNotification
-                            {
-                                State = ProcessState.InProgress,
-                                AnalyzeProgressBarValue = Convert.ToInt32(100 * (i + 1) / morphEntries.Count)
-                            });
+                            morphEntry = parserInputData.WordForm.GetMorphEntry();
+                            morphEntry.Source = MorphEntrySource.ImportWithAnalysis;
+                        }
+                        else
+                        {
+                            morphEntry.Source = MorphEntrySource.ImportWithoutAnalysis;
                         }
 
-                        if (!inputData.IsAnalyzeBeforeImportChecked)
+                        TryToAddOrUpdate(morphEntry, i + 1, morphEntries[i].Entry);
+
+                        if (inputPort.IsAnalyzeBeforeImportChecked)
                         {
                             _morphEntryDbProvider.Commit();
                         }
+
+                        await _mediator.Publish(new ImportMorphEntryNotification
+                        {
+                            State = ProcessState.InProgress,
+                            AnalyzeProgressBarValue = Convert.ToInt32(100 * (i + 1) / morphEntries.Count)
+                        }, token);
+                    }
+
+                    if (!inputPort.IsAnalyzeBeforeImportChecked)
+                    {
+                        _morphEntryDbProvider.Commit();
                     }
                 }
-                catch (FileNotFoundException exception)
-                {
-                    _logMessageService.SendMessage(MessageLevel.Error, _translateService.Translate(LogMessageType.DataFileDoesNotExist, inputData.DataFilePath));
-                    Logger.LogError(exception.Message);
-                }
-                catch (Exception exception)
-                {
-                    _logMessageService.SendMessage(MessageLevel.Error, _translateService.Translate(LogMessageType.DataFileOpenError, exception.Message));
-                    Logger.LogError(exception.ToString());
-                }
 
-                if (ParallelOptions.CancellationToken.IsCancellationRequested)
+                await _mediator.Publish(new ImportMorphEntryNotification
                 {
-                    // ReSharper disable once MethodSupportsCancellation
-                    Mediator.Publish(new ImportMorphEntryNotification
-                    {
-                        State = ProcessState.Canceled,
-                        AnalyzeProgressBarValue = 0
-                    });
+                    State = ProcessState.Completed,
+                    AnalyzeProgressBarValue = 100
+                }, token);
 
-                    _logMessageService.SendMessage(_translateService.Translate(LogMessageType.ImportCanceled));
-                }
-                else
-                {
-                    // ReSharper disable once MethodSupportsCancellation
-                    Mediator.Publish(new ImportMorphEntryNotification
-                    {
-                        State = ProcessState.Completed,
-                        AnalyzeProgressBarValue = 100
-                    });
-
-                    _logMessageService.SendMessage(_translateService.Translate(LogMessageType.ImportCompleted));
-                }
-
+                _logMessageService.SendMessage(_translateService.Translate(LogMessageType.ImportCompleted));
                 _logMessageService.SendMessage(_translateService.Translate(LogMessageType.ImportEnd));
 
-            }, cancellationTokenSource.Token);
+                return OperationResult.SuccessResult();
+            }
+            catch (Exception exception)
+            {
+                switch (exception)
+                {
+                    case OperationCanceledException or AggregateException:
+                        await _mediator.Publish(new ImportMorphEntryNotification
+                        {
+                            State = ProcessState.Canceled,
+                            AnalyzeProgressBarValue = 0
+                        }, CancellationToken.None);
 
-            return OperationResult.SuccessResult();
+                        _logMessageService.SendMessage(_translateService.Translate(LogMessageType.ImportCanceled));
+                        _logMessageService.SendMessage(_translateService.Translate(LogMessageType.ImportEnd));
+
+                        return OperationResult.SuccessResult();
+                    case FileNotFoundException:
+                        _logMessageService.SendMessage(MessageLevel.Error, _translateService.Translate(LogMessageType.DataFileDoesNotExist, inputPort.DataFilePath));
+
+                        await _mediator.Publish(new ImportMorphEntryNotification
+                        {
+                            State = ProcessState.Completed,
+                            AnalyzeProgressBarValue = 100
+                        }, token);
+
+                        _logMessageService.SendMessage(_translateService.Translate(LogMessageType.ImportCompleted));
+                        _logMessageService.SendMessage(_translateService.Translate(LogMessageType.ImportEnd));
+
+                        return OperationResult.SuccessResult();
+                    default:
+                        return OperationResult.ExceptionResult(exception);
+                }
+            }
         }
 
         #endregion
@@ -445,8 +441,6 @@ namespace PMA.Application.UseCases.Primary
         /// <param name="entry">The entry.</param>
         private void TryToAddOrUpdate(MorphEntry newMorphEntry, int row, string entry)
         {
-            if (ParallelOptions.CancellationToken.IsCancellationRequested) return;
-
             if (newMorphEntry is null)
             {
                 _logMessageService.SendMessage(MessageLevel.Warning, _translateService.Translate(LogMessageType.MorphEntryNotFound, row, entry));

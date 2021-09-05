@@ -2,23 +2,23 @@
 //     Copyright 2017-2021 Andrey Pospelov. All rights reserved.
 // </copyright>
 
-using MediatR;
 using Microsoft.Extensions.Logging;
 using PMA.Application.Extensions;
 using PMA.Application.Factories;
 using PMA.Application.UseCases.Base;
 using PMA.Domain.Constants;
 using PMA.Domain.DataContracts;
-using PMA.Domain.Enums;
 using PMA.Domain.InputPorts;
+using PMA.Domain.Interfaces.Services;
 using PMA.Domain.Interfaces.UseCases.Secondary;
 using PMA.Domain.Models;
 using PMA.Utils.Extensions;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Threading;
 using System.Threading.Tasks;
-using PMA.Domain.Interfaces.Services;
 
 namespace PMA.Application.UseCases.Secondary
 {
@@ -27,6 +27,11 @@ namespace PMA.Application.UseCases.Secondary
     /// </summary>
     public sealed class RemoveSolutionWithExcessiveDepthUseCase : UseCaseBase<RemoveSolutionWithExcessiveDepthUseCase, MorphParserInputPort>, IRemoveSolutionWithExcessiveDepthUseCase
     {
+        /// <summary>
+        /// Options that configure the operation of methods on the <see cref="Parallel"/> class.
+        /// </summary>
+        private readonly ParallelOptions _parallelOptions = new();
+
         /// <summary>
         /// Maximum number of solutions for current thread.
         /// </summary>
@@ -51,14 +56,10 @@ namespace PMA.Application.UseCases.Secondary
         /// Initializes a new instance of <see cref="RemoveSolutionWithExcessiveDepthUseCase"/> class.
         /// </summary>
         /// <param name="settingService">The setting service.</param>
-        /// <param name="mediator">The mediator.</param>
-        /// <param name="parallelOptions">Options that configure the operation of methods on the <see cref="Parallel"/> class.</param>
         /// <param name="logger">The logger.</param>
-        public RemoveSolutionWithExcessiveDepthUseCase(ISettingService settingService, IMediator mediator, ParallelOptions parallelOptions, ILogger<RemoveSolutionWithExcessiveDepthUseCase> logger) : base(mediator, parallelOptions, logger)
+        public RemoveSolutionWithExcessiveDepthUseCase(ISettingService settingService, ILogger<RemoveSolutionWithExcessiveDepthUseCase> logger) : base(logger)
         {
             _settingService = settingService;
-
-            Logger.LogInit();
         }
 
         #region Overrides of UseCaseBase<RemoveSolutionWithExcessiveDepthUseCase,MorphParserInputPort>
@@ -66,40 +67,49 @@ namespace PMA.Application.UseCases.Secondary
         /// <summary>
         /// Executes an action.
         /// </summary>
-        /// <param name="inputData">The input data.</param>
+        /// <param name="inputPort">The input data.</param>
         /// <returns>The result of action execution.</returns>
-        public override OperationResult Execute(MorphParserInputPort inputData)
+        public override OperationResult Execute(MorphParserInputPort inputPort)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Executes an action.
+        /// </summary>
+        /// <param name="inputPort">The input data.</param>
+        /// <param name="token">The cancellation token.</param>
+        /// <returns>The result of action execution.</returns>
+        public override async Task<OperationResult> ExecuteAsync(MorphParserInputPort inputPort, CancellationToken token = default)
         {
             Logger.LogEntry();
 
-            if (inputData is null)
+            token.ThrowIfCancellationRequested();
+
+            _parallelOptions.CancellationToken = token;
+
+            if (inputPort is null)
             {
-                Logger.LogError(ErrorMessageConstants.ValueIsNull, nameof(inputData));
+                Logger.LogError(ErrorMessageConstants.ValueIsNull, nameof(inputPort));
                 Logger.LogExit();
-                return OperationResult.FailureResult(ErrorMessageConstants.ValueIsNull, nameof(inputData));
+                return OperationResult.FailureResult(ErrorMessageConstants.ValueIsNull, nameof(inputPort));
             }
 
-            if (inputData.WordForm is null)
+            if (inputPort.WordForm is null)
             {
-                Logger.LogError(ErrorMessageConstants.ValueIsNull, nameof(inputData.WordForm));
+                Logger.LogError(ErrorMessageConstants.ValueIsNull, nameof(inputPort.WordForm));
                 Logger.LogExit();
-                return OperationResult.FailureResult(ErrorMessageConstants.ValueIsNull, nameof(inputData.WordForm));
+                return OperationResult.FailureResult(ErrorMessageConstants.ValueIsNull, nameof(inputPort.WordForm));
             }
 
-            if (inputData.ParsingType == MorphParsingType.Debug || ParallelOptions.CancellationToken.IsCancellationRequested)
-            {
-                Logger.LogExit();
-                return OperationResult.SuccessResult();
-            }
-
-            _inputData = inputData;
+            _inputData = inputPort;
             _maxDepthLevel = _settingService.GetValue<int>("Options.MaxDepthLevel");
 
             var time = new Stopwatch();
 
             time.Start();
             var wordForm = _inputData.WordForm;
-            NeedToRemove(ref wordForm, 0);
+            await Task.Run(() => NeedToRemove(ref wordForm, 0), token);
             _inputData.WordForm = wordForm;
             time.Stop();
 
@@ -159,8 +169,10 @@ namespace PMA.Application.UseCases.Secondary
             {
                 var newSolutionBag = new ConcurrentBag<Solution>();
 
-                Parallel.ForEach(solutions, ParallelOptions, solution =>
+                Parallel.ForEach(solutions, _parallelOptions, solution =>
                 {
+                    _parallelOptions.CancellationToken.ThrowIfCancellationRequested();
+
                     var newSolution = solution;
 
                     if (!NeedToRemove(ref newSolution, currentDepthLevel))

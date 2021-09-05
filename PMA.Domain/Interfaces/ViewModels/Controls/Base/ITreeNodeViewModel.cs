@@ -38,6 +38,11 @@ namespace PMA.Domain.Interfaces.ViewModels.Controls.Base
         object Tag { get; }
 
         /// <summary>
+        /// Gets whether tree node has child nodes.
+        /// </summary>
+        bool HasChildren { get; }
+
+        /// <summary>
         /// Gets a parent tree node view model.
         /// </summary>
         ITreeNodeViewModel Parent { get; }

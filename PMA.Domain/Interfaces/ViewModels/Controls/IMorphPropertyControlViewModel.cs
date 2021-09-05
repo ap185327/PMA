@@ -33,9 +33,9 @@ namespace PMA.Domain.Interfaces.ViewModels.Controls
         string Description { get; }
 
         /// <summary>
-        /// Gets or sets the selected term index.
+        /// Gets or sets the selected term.
         /// </summary>
-        int SelectedIndex { get; set; }
+        string SelectedTerm { get; set; }
 
         /// <summary>
         /// Gets the collection of alternative property term entries.

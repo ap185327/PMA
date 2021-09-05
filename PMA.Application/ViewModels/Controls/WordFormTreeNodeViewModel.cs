@@ -2,19 +2,19 @@
 //     Copyright 2017-2021 Andrey Pospelov. All rights reserved.
 // </copyright>
 
-using MediatR;
 using Microsoft.Extensions.Logging;
+using Microsoft.Toolkit.Mvvm.Messaging;
 using PMA.Application.Extensions;
 using PMA.Application.ViewModels.Controls.Base;
+using PMA.Domain.Enums;
 using PMA.Domain.Interfaces.Interactors.Primary;
 using PMA.Domain.Interfaces.Locators;
 using PMA.Domain.Interfaces.ViewModels.Controls;
-using PMA.Domain.Interfaces.ViewModels.Controls.Base;
+using PMA.Domain.Messages;
 using PMA.Domain.Models;
-using PMA.Domain.Notifications;
-using PMA.Utils.Extensions;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 
 namespace PMA.Application.ViewModels.Controls
 {
@@ -24,33 +24,88 @@ namespace PMA.Application.ViewModels.Controls
     public sealed class WordFormTreeNodeViewModel : TreeNodeViewModelBase<WordFormTreeNodeViewModel>, IWordFormTreeNodeViewModel
     {
         /// <summary>
+        /// The wordform.
+        /// </summary>
+        private readonly WordForm _wordForm;
+
+        /// <summary>
         /// Initializes the new instance of <see cref="WordFormTreeNodeViewModel"/> class.
         /// </summary>
         /// <param name="parent">The parent tree node view model.</param>
         /// <param name="wordForm">The wordform.</param>
         /// <param name="interactor">The tree node view model interactor.</param>
         /// <param name="serviceLocator">The service locator.</param>
-        /// <param name="mediator">The mediator.</param>
-        /// <param name="solutionLogger">The solution logger.</param>
         /// <param name="logger">The logger.</param>
-        public WordFormTreeNodeViewModel(ITreeNodeViewModel parent,
+        /// <param name="messenger">The messenger.</param>
+        public WordFormTreeNodeViewModel(ISolutionTreeNodeViewModel parent,
             WordForm wordForm,
             ITreeNodeInteractor interactor,
             IServiceLocator serviceLocator,
-            IMediator mediator,
-            ILogger<SolutionTreeNodeViewModel> solutionLogger,
-            ILogger<WordFormTreeNodeViewModel> logger) : base(parent,
-            wordForm,
+            ILogger<WordFormTreeNodeViewModel> logger,
+            IMessenger messenger) : base(parent,
             interactor,
             serviceLocator,
-            mediator,
-            logger)
+            logger,
+            messenger)
         {
-            foreach (var solution in wordForm.Solutions)
-            {
-                SolutionNodes.Add(new SolutionTreeNodeViewModel(this, solution, Interactor, ServiceLocator, Mediator, logger, solutionLogger));
-            }
+            _wordForm = wordForm;
         }
+
+        #region Overrides of ObservableRecipient
+
+        /// <summary>
+        /// Raised whenever the <see cref="P:Microsoft.Toolkit.Mvvm.ComponentModel.ObservableRecipient.IsActive" /> property is set to <see langword="true" />.
+        /// Use this method to register to messages and do other initialization for this instance.
+        /// </summary>
+        /// <remarks>
+        /// The base implementation registers all messages for this recipients that have been declared
+        /// explicitly through the <see cref="T:Microsoft.Toolkit.Mvvm.Messaging.IRecipient`1" /> interface, using the default channel.
+        /// For more details on how this works, see the <see cref="M:Microsoft.Toolkit.Mvvm.Messaging.IMessengerExtensions.RegisterAll(Microsoft.Toolkit.Mvvm.Messaging.IMessenger,System.Object)" /> method.
+        /// If you need more fine tuned control, want to register messages individually or just prefer
+        /// the lambda-style syntax for message registration, override this method and register manually.
+        /// </remarks>
+        protected override async void OnActivated()
+        {
+            base.OnActivated();
+
+            _cancellationTokenSource = new CancellationTokenSource();
+
+            var groups = _wordForm.Solutions.Select(solution => new SolutionTreeNodeViewModelGroup
+            {
+                Parent = this,
+                Solution = solution
+            }).ToList();
+
+            var result = await Interactor.GetSolutionTreeNodesAsync(groups, _cancellationTokenSource.Token);
+
+            if (!IsOperationResultSuccess(result)) return;
+
+            SolutionNodes = result.Result;
+        }
+
+        /// <summary>
+        /// Raised whenever the <see cref="P:Microsoft.Toolkit.Mvvm.ComponentModel.ObservableRecipient.IsActive" /> property is set to <see langword="false" />.
+        /// Use this method to unregister from messages and do general cleanup for this instance.
+        /// </summary>
+        /// <remarks>
+        /// The base implementation unregisters all messages for this recipient. It does so by
+        /// invoking <see cref="M:Microsoft.Toolkit.Mvvm.Messaging.IMessenger.UnregisterAll(System.Object)" />, which removes all registered
+        /// handlers for a given subscriber, regardless of what token was used to register them.
+        /// That is, all registered handlers across all subscription channels will be removed.
+        /// </remarks>
+        protected override void OnDeactivated()
+        {
+            base.OnDeactivated();
+
+            if (!_cancellationTokenSource.IsCancellationRequested)
+            {
+                _cancellationTokenSource.Cancel();
+            }
+
+            _cancellationTokenSource = null;
+        }
+
+        #endregion
 
         #region Overrides of TreeNodeViewModelBase<WordFormTreeNodeViewModel>
 
@@ -75,14 +130,26 @@ namespace PMA.Application.ViewModels.Controls
         public override string SandhiLine => GetSandhiLine();
 
         /// <summary>
+        /// Gets a tag object.
+        /// </summary>
+        public override object Tag => _wordForm;
+
+        /// <summary>
+        /// Gets whether tree node has child nodes.
+        /// </summary>
+        public override bool HasChildren => SolutionNodes.Count > 0;
+
+        /// <summary>
         /// Selects the node.
         /// </summary>
         protected override void Select()
         {
-            Mediator.Publish(new MorphEntryNotification
+            var message = new MorphEntryMessage
             {
-                MorphEntry = ((WordForm)Tag).GetMorphEntry()
-            });
+                MorphEntry = _wordForm.GetMorphEntry()
+            };
+
+            Messenger.Send(message);
         }
 
         #endregion
@@ -92,9 +159,20 @@ namespace PMA.Application.ViewModels.Controls
         /// <summary>
         /// Gets a collection of solution node view models.
         /// </summary>
-        public IList<ISolutionTreeNodeViewModel> SolutionNodes { get; } = new List<ISolutionTreeNodeViewModel>();
+        public IList<ISolutionTreeNodeViewModel> SolutionNodes { get; private set; }
 
         #endregion
+
+        #region Private Fields
+
+        /// <summary>
+        /// The cancellation token source.
+        /// </summary>
+        private CancellationTokenSource _cancellationTokenSource;
+
+        #endregion
+
+        #region Private Methods
 
         /// <summary>
         /// Gets the node text from the wordform.
@@ -102,27 +180,21 @@ namespace PMA.Application.ViewModels.Controls
         /// <returns>The node text.</returns>
         private string GetNodeText()
         {
-            string nodeText = null;
+            string nodeText;
 
-            if (Tag is null)
+            if (_wordForm is null)
             {
                 nodeText = "?";
             }
             else if (Parent is null)
             {
-                var result = Interactor.GetLayerForFirstNode();
+                var result = Interactor.GetLayerForFirstNodeAsync(_cancellationTokenSource.Token).Result;
 
-                if (!result.Success)
-                {
-                    Logger.LogErrors(result.Messages);
-                    ShowErrorModalDialog(result.Messages);
-                }
-                else
-                {
-                    nodeText = ServiceLocator.TranslateService.Translate("WordFormTreeNodeViewModel.FirstTreeNode",
-                        GetFullEntry(),
-                        result.Result);
-                }
+                if (!IsOperationResultSuccess(result)) return string.Empty;
+
+                nodeText = ServiceLocator.TranslateService.Translate("WordFormTreeNodeViewModel.FirstTreeNode",
+                    GetFullEntry(),
+                    result.Result);
             }
             else
             {
@@ -138,10 +210,10 @@ namespace PMA.Application.ViewModels.Controls
         /// <returns>The sandhi text.</returns>
         private string GetSandhiText()
         {
-            string sandhiText = Tag is null
+            string sandhiText = _wordForm is null
                 ? "?"
                 : Parent != null && ((Solution)Parent.Tag).Content.Id != 0 &&
-                  !((WordForm)Tag).IsFromDict((Solution)Parent.Tag)
+                  !_wordForm.IsFromDict((Solution)Parent.Tag)
                     ? GetFullEntry() + "?"
                     : GetFullEntry();
 
@@ -163,16 +235,16 @@ namespace PMA.Application.ViewModels.Controls
         /// <returns>The wordform entry with specific symbol (root).</returns>
         private string GetFullEntry()
         {
-            var wordForm = (WordForm)Tag;
-
-            var morphEntry = wordForm.GetMorphEntry();
+            var morphEntry = _wordForm.GetMorphEntry();
 
             byte rootTermId = ServiceLocator.SettingService.GetValue<byte>("Options.RootTermId");
 
-            string fullEntry = morphEntry is null ? wordForm.Entry :
-                morphEntry.Parameters.Any(x => x == rootTermId) ? "√" + wordForm.Entry : wordForm.Entry;
+            string fullEntry = morphEntry is null ? _wordForm.Entry :
+                morphEntry.Parameters.Any(x => x == rootTermId) ? "√" + _wordForm.Entry : _wordForm.Entry;
 
             return fullEntry;
         }
+
+        #endregion
     }
 }

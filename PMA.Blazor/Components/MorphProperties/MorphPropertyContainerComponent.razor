@@ -1,0 +1,43 @@
+﻿<MudDrawer Open="_isVisible" Anchor="Anchor.Right" Variant="@DrawerVariant.Persistent" Width="450px" Fixed="false" Elevation="25" Style="@_containerStyle">
+    <div class="mud-height-full" style="height: 100%; padding: 15px">
+        <div class="d-flex">
+            <div class="mt-1" style="width: 150px">
+                <StartButtonComponent/>
+            </div>
+            <EntryTextFieldComponent/>
+        </div>
+        <div class="d-flex mb-4">
+            <div style="width: 150px">
+                <LockEntryIdSwitchComponent/>
+            </div>
+            <div style="width: 100%">
+                <MorphBaseSelectComponent/>
+            </div>
+        </div>
+        <div class="d-flex">
+            <div style="width: 150px">
+                <LeftEntrySwitchComponent/>
+            </div>
+            <LeftEntryTextFieldComponent/>
+        </div>
+        <div class="d-flex">
+            <div style="width: 150px">
+                <RightEntrySwitchComponent/>
+            </div>
+            <RightEntryTextFieldComponent/>
+        </div>
+        <div>
+            <MorphPropertyPanelComponent/>
+        </div>
+        <div class="d-flex justify-space-between align-center mt-4">
+            <IsVirtualCheckboxComponent/>
+            <MudButtonGroup Color="Color.Primary" Variant="Variant.Outlined">
+                <ResetButtonComponent/>
+                <SaveButtonComponent/>
+                <DeleteButtonComponent/>
+            </MudButtonGroup>
+        </div>
+    </div>
+</MudDrawer>
+
+<GetEntryIdContainerComponent ViewModel="ViewModel.GetEntryIdViewModel" />

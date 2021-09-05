@@ -21,11 +21,6 @@ namespace PMA.WinForms.Forms
         private readonly IMainViewModel _mainViewModel;
 
         /// <summary>
-        /// The translate service.
-        /// </summary>
-        private readonly ITranslateService _translateService;
-
-        /// <summary>
         /// The setting service.
         /// </summary>
         private readonly ISettingService _settingService;
@@ -56,25 +51,21 @@ namespace PMA.WinForms.Forms
         private ToolStripNumberControl _depthToolStripNumberControl;
 
         /// <summary>
-        /// Whether morphological analysis has been started or not.
-        /// </summary>
-        private bool _isStarted;
-
-        /// <summary>
         /// Initializes a new instance of the <see cref="MainForm"/> class.
         /// </summary>
         public MainForm()
         {
             _mainViewModel = Program.Scope.Resolve<IMainViewModel>();
-            _translateService = Program.Scope.Resolve<ITranslateService>();
             _settingService = Program.Scope.Resolve<ISettingService>();
+
+            _mainViewModel.IsActive = true;
 
             InitializeComponent();
             OverrideStrings();
             CreateChildForms();
             SetDefaultValues();
-            SetSettings();
             SubscribeEvents();
+            SetSettings();
         }
 
         #region Initialization methods
@@ -84,25 +75,25 @@ namespace PMA.WinForms.Forms
         /// </summary>
         private void OverrideStrings()
         {
-            Text = _translateService.Translate(Name, Program.Version);
-            FileToolStripMenuItem.Text = _translateService.Translate($"{Name}.{FileToolStripMenuItem.Name}");
-            ExitToolStripMenuItem.Text = _translateService.Translate($"{Name}.{ExitToolStripMenuItem.Name}");
-            ToolsToolStripMenuItem.Text = _translateService.Translate($"{Name}.{ToolsToolStripMenuItem.Name}");
-            ImportEntriesToolStripMenuItem.Text = _translateService.Translate($"{Name}.{ImportEntriesToolStripMenuItem.Name}");
-            ImportCatalogsToolStripMenuItem.Text = _translateService.Translate($"{Name}.{ImportCatalogsToolStripMenuItem.Name}");
-            OptionsToolStripMenuItem.Text = _translateService.Translate($"{Name}.{OptionsToolStripMenuItem.Name}");
-            WindowsToolStripMenuItem.Text = _translateService.Translate($"{Name}.{WindowsToolStripMenuItem.Name}");
-            ShowMorphSolutionsToolStripMenuItem.Text = _translateService.Translate($"{Name}.{ShowMorphSolutionsToolStripMenuItem.Name}");
-            ShowMorphPropertiesToolStripMenuItem.Text = _translateService.Translate($"{Name}.{ShowMorphPropertiesToolStripMenuItem.Name}");
-            ShowMorphRuleInfoToolStripMenuItem.Text = _translateService.Translate($"{Name}.{ShowMorphRuleInfoToolStripMenuItem.Name}");
-            HelpToolStripMenuItem.Text = _translateService.Translate($"{Name}.{HelpToolStripMenuItem.Name}");
-            AboutToolStripMenuItem.Text = _translateService.Translate($"{Name}.{AboutToolStripMenuItem.Name}");
-            StartToolStripSplitButton.Text = _translateService.Translate($"{Name}.{StartToolStripSplitButton.Name}");
-            MorphologicalToolStripMenuItem.Text = _translateService.Translate($"{Name}.{MorphologicalToolStripMenuItem.Name}");
-            SyntacticToolStripMenuItem.Text = _translateService.Translate($"{Name}.{SyntacticToolStripMenuItem.Name}");
-            LayerToolStripLabel.Text = _translateService.Translate($"{Name}.{LayerToolStripLabel.Name}");
-            DepthToolStripLabel.Text = _translateService.Translate($"{Name}.{DepthToolStripLabel.Name}");
-            AutoSymbolReplaceStripButton.ToolTipText = _translateService.Translate($"{Name}.{AutoSymbolReplaceStripButton.Name}.ToolTipText");
+            Text = string.Format(Properties.Resources.ResourceManager.GetString("MainForm.Title")!, Program.Version);
+            FileToolStripMenuItem.Text = Properties.Resources.ResourceManager.GetString("MainForm.FileToolStripMenuItem");
+            ExitToolStripMenuItem.Text = Properties.Resources.ResourceManager.GetString("MainForm.ExitToolStripMenuItem");
+            ToolsToolStripMenuItem.Text = Properties.Resources.ResourceManager.GetString("MainForm.ToolsToolStripMenuItem");
+            ImportEntriesToolStripMenuItem.Text = Properties.Resources.ResourceManager.GetString("MainForm.ImportEntriesToolStripMenuItem");
+            ImportCatalogsToolStripMenuItem.Text = Properties.Resources.ResourceManager.GetString("MainForm.ImportCatalogsToolStripMenuItem");
+            OptionsToolStripMenuItem.Text = Properties.Resources.ResourceManager.GetString("MainForm.OptionsToolStripMenuItem");
+            WindowsToolStripMenuItem.Text = Properties.Resources.ResourceManager.GetString("MainForm.WindowsToolStripMenuItem");
+            ShowMorphSolutionsToolStripMenuItem.Text = Properties.Resources.ResourceManager.GetString("MainForm.ShowMorphSolutionsToolStripMenuItem");
+            ShowMorphPropertiesToolStripMenuItem.Text = Properties.Resources.ResourceManager.GetString("MainForm.ShowMorphPropertiesToolStripMenuItem");
+            ShowMorphRuleInfoToolStripMenuItem.Text = Properties.Resources.ResourceManager.GetString("MainForm.ShowMorphRuleInfoToolStripMenuItem");
+            HelpToolStripMenuItem.Text = Properties.Resources.ResourceManager.GetString("MainForm.HelpToolStripMenuItem");
+            AboutToolStripMenuItem.Text = Properties.Resources.ResourceManager.GetString("MainForm.AboutToolStripMenuItem");
+            StartToolStripSplitButton.Text = Properties.Resources.ResourceManager.GetString("MainForm.StartToolStripSplitButton");
+            MorphologicalToolStripMenuItem.Text = Properties.Resources.ResourceManager.GetString("MainForm.MorphologicalToolStripMenuItem");
+            SyntacticToolStripMenuItem.Text = Properties.Resources.ResourceManager.GetString("MainForm.SyntacticToolStripMenuItem");
+            LayerToolStripLabel.Text = Properties.Resources.ResourceManager.GetString("MainForm.LayerToolStripLabel");
+            DepthToolStripLabel.Text = Properties.Resources.ResourceManager.GetString("MainForm.DepthToolStripLabel");
+            AutoSymbolReplaceStripButton.ToolTipText = Properties.Resources.ResourceManager.GetString("MainForm.AutoSymbolReplaceStripButton.ToolTipText");
         }
 
         /// <summary>
@@ -133,17 +124,17 @@ namespace PMA.WinForms.Forms
         {
             StateToolStripStatusLabel.Text = _mainViewModel.StatusLabel;
 
-            LayerToolStripComboBox.Items.Add(_translateService.Translate($"{Name}.Layer.Auto"));
-            LayerToolStripComboBox.Items.Add(_translateService.Translate($"{Name}.Layer.1"));
-            LayerToolStripComboBox.Items.Add(_translateService.Translate($"{Name}.Layer.2"));
-            LayerToolStripComboBox.Items.Add(_translateService.Translate($"{Name}.Layer.3"));
-            LayerToolStripComboBox.Items.Add(_translateService.Translate($"{Name}.Layer.4"));
-            LayerToolStripComboBox.Items.Add(_translateService.Translate($"{Name}.Layer.5"));
-            LayerToolStripComboBox.Items.Add(_translateService.Translate($"{Name}.Layer.6"));
-            LayerToolStripComboBox.Items.Add(_translateService.Translate($"{Name}.Layer.7"));
-            LayerToolStripComboBox.Items.Add(_translateService.Translate($"{Name}.Layer.8"));
+            LayerToolStripComboBox.Items.Add(Properties.Resources.ResourceManager.GetString("MainForm.Layer.Auto")!);
+            LayerToolStripComboBox.Items.Add(Properties.Resources.ResourceManager.GetString("MainForm.Layer.1")!);
+            LayerToolStripComboBox.Items.Add(Properties.Resources.ResourceManager.GetString("MainForm.Layer.2")!);
+            LayerToolStripComboBox.Items.Add(Properties.Resources.ResourceManager.GetString("MainForm.Layer.3")!);
+            LayerToolStripComboBox.Items.Add(Properties.Resources.ResourceManager.GetString("MainForm.Layer.4")!);
+            LayerToolStripComboBox.Items.Add(Properties.Resources.ResourceManager.GetString("MainForm.Layer.5")!);
+            LayerToolStripComboBox.Items.Add(Properties.Resources.ResourceManager.GetString("MainForm.Layer.6")!);
+            LayerToolStripComboBox.Items.Add(Properties.Resources.ResourceManager.GetString("MainForm.Layer.7")!);
+            LayerToolStripComboBox.Items.Add(Properties.Resources.ResourceManager.GetString("MainForm.Layer.8")!);
 
-            _depthToolStripNumberControl = new ToolStripNumberControl()
+            _depthToolStripNumberControl = new ToolStripNumberControl
             {
                 Name = "DepthToolStripNumberControl",
             };
@@ -152,7 +143,7 @@ namespace PMA.WinForms.Forms
 
             StartToolStripSplitButton.Enabled = false;
 
-            _enterToolStripTextBox = new ToolStripSpringTextBox(_mainViewModel.InputWatermark, _mainViewModel.AutoSymbolReplace)
+            _enterToolStripTextBox = new ToolStripSpringTextBox(_mainViewModel.InputWatermark)
             {
                 Name = "EnterToolStripTextBox",
                 CharacterCasing = CharacterCasing.Lower
@@ -167,32 +158,30 @@ namespace PMA.WinForms.Forms
         /// </summary>
         private void SetSettings()
         {
-            _mainViewModel.OnAppearing();
+            Height = _settingService.GetValue<int>("WinForms.MainForm.Height");
+            Width = _settingService.GetValue<int>("WinForms.MainForm.Width");
 
-            Height = _settingService.GetValue<int>($"{Name}.Height");
-            Width = _settingService.GetValue<int>($"{Name}.Width");
-
-            ShowMorphSolutionsToolStripMenuItem.Checked = _settingService.GetValue<bool>($"{Name}.{ShowMorphSolutionsToolStripMenuItem.Name}.Checked");
-            ShowMorphPropertiesToolStripMenuItem.Checked = _settingService.GetValue<bool>($"{Name}.{ShowMorphPropertiesToolStripMenuItem.Name}.Checked");
-            ShowMorphRuleInfoToolStripMenuItem.Checked = _settingService.GetValue<bool>($"{Name}.{ShowMorphRuleInfoToolStripMenuItem.Name}.Checked");
+            ShowMorphSolutionsToolStripMenuItem.Checked = _settingService.GetValue<bool>("WinForms.MainForm.ShowMorphSolutionsToolStripMenuItem.Checked");
+            ShowMorphPropertiesToolStripMenuItem.Checked = _settingService.GetValue<bool>("WinForms.MainForm.ShowMorphPropertiesToolStripMenuItem.Checked");
+            ShowMorphRuleInfoToolStripMenuItem.Checked = _settingService.GetValue<bool>("WinForms.MainForm.ShowMorphRuleInfoToolStripMenuItem.Checked");
 
             // MorphSolutionForm
-            _morphSolutionForm.Height = _settingService.GetValue<int>($"{_morphSolutionForm.Name}.Height");
-            _morphSolutionForm.Width = _settingService.GetValue<int>($"{_morphSolutionForm.Name}.Width");
-            _morphSolutionForm.Left = _settingService.GetValue<int>($"{_morphSolutionForm.Name}.Left");
-            _morphSolutionForm.Top = _settingService.GetValue<int>($"{_morphSolutionForm.Name}.Top");
+            _morphSolutionForm.Height = _settingService.GetValue<int>("WinForms.MorphSolutionForm.Height");
+            _morphSolutionForm.Width = _settingService.GetValue<int>("WinForms.MorphSolutionForm.Width");
+            _morphSolutionForm.Left = _settingService.GetValue<int>("WinForms.MorphSolutionForm.Left");
+            _morphSolutionForm.Top = _settingService.GetValue<int>("WinForms.MorphSolutionForm.Top");
 
             // MorphPropertyForm
-            _morphPropertyForm.Height = _settingService.GetValue<int>($"{_morphPropertyForm.Name}.Height");
-            _morphPropertyForm.Width = _settingService.GetValue<int>($"{_morphPropertyForm.Name}.Width");
-            _morphPropertyForm.Left = _settingService.GetValue<int>($"{_morphPropertyForm.Name}.Left");
-            _morphPropertyForm.Top = _settingService.GetValue<int>($"{_morphPropertyForm.Name}.Top");
+            _morphPropertyForm.Height = _settingService.GetValue<int>("WinForms.MorphPropertyForm.Height");
+            _morphPropertyForm.Width = _settingService.GetValue<int>("WinForms.MorphPropertyForm.Width");
+            _morphPropertyForm.Left = _settingService.GetValue<int>("WinForms.MorphPropertyForm.Left");
+            _morphPropertyForm.Top = _settingService.GetValue<int>("WinForms.MorphPropertyForm.Top");
 
             // MorphRuleInfoForm
-            _morphRuleInfoForm.Height = _settingService.GetValue<int>($"{_morphRuleInfoForm.Name}.Height");
-            _morphRuleInfoForm.Width = _settingService.GetValue<int>($"{_morphRuleInfoForm.Name}.Width");
-            _morphRuleInfoForm.Left = _settingService.GetValue<int>($"{_morphRuleInfoForm.Name}.Left");
-            _morphRuleInfoForm.Top = _settingService.GetValue<int>($"{_morphRuleInfoForm.Name}.Top");
+            _morphRuleInfoForm.Height = _settingService.GetValue<int>("WinForms.MorphRuleInfoForm.Height");
+            _morphRuleInfoForm.Width = _settingService.GetValue<int>("WinForms.MorphRuleInfoForm.Width");
+            _morphRuleInfoForm.Left = _settingService.GetValue<int>("WinForms.MorphRuleInfoForm.Left");
+            _morphRuleInfoForm.Top = _settingService.GetValue<int>("WinForms.MorphRuleInfoForm.Top");
 
             LayerToolStripComboBox.SelectedIndex = _mainViewModel.Layer;
 
@@ -227,69 +216,59 @@ namespace PMA.WinForms.Forms
             {
                 switch (e.PropertyName)
                 {
-                    case "AutoSymbolReplace":
+                    case nameof(IMainViewModel.AutoSymbolReplace):
+                        _enterToolStripTextBox.AutoSymbolReplace = _mainViewModel.AutoSymbolReplace;
+                        break;
+                    case nameof(IMainViewModel.InputWatermark):
+                        _enterToolStripTextBox.Watermark = _mainViewModel.InputWatermark;
+                        break;
+                    case nameof(IMainViewModel.InputText):
+                        _enterToolStripTextBox.Text = _mainViewModel.InputText;
+                        break;
+                    case nameof(IMainViewModel.IsBusy):
+                        if (_mainViewModel.IsBusy)
                         {
-                            _enterToolStripTextBox.AutoSymbolReplace = _mainViewModel.AutoSymbolReplace;
-                            break;
+                            MorphologicalToolStripMenuItem.Image = Properties.Resources.stop;
+                            StartToolStripSplitButton.Image = Properties.Resources.stop;
+
+                            // to avoid incorrect display of the element _enterToolStripTextBox
+                            // after changing the image of the element StartToolStripSplitButton.
+                            ToolStrip.Width++;
+                            ToolStrip.Width--;
+
+                            AnimToolStripStatusLabel.Enabled = true;
+                            LayerToolStripComboBox.Enabled = false;
+                            _depthToolStripNumberControl.Enabled = false;
                         }
-                    case "InputWatermark":
+                        else
                         {
-                            _enterToolStripTextBox.Watermark = _mainViewModel.InputWatermark;
-                            break;
+                            MorphologicalToolStripMenuItem.Image = Properties.Resources.start;
+                            StartToolStripSplitButton.Image = Properties.Resources.start;
+
+                            // to avoid incorrect display of the element _enterToolStripTextBox
+                            // after changing the image of the element StartToolStripSplitButton.
+                            ToolStrip.Width++;
+                            ToolStrip.Width--;
+
+                            AnimToolStripStatusLabel.Enabled = false;
+                            LayerToolStripComboBox.Enabled = true;
+                            _depthToolStripNumberControl.Enabled = true;
                         }
-                    case "IsBusy":
+
+                        break;
+                    case nameof(IMainViewModel.ExecuteCommandDisabled):
+                        if (_mainViewModel.ExecuteCommandDisabled)
                         {
-                            if (_mainViewModel.IsBusy)
-                            {
-                                if (_isStarted)
-                                {
-                                    MorphologicalToolStripMenuItem.Image = Properties.Resources.stop;
-                                    StartToolStripSplitButton.Image = Properties.Resources.stop;
-
-                                    // to avoid incorrect display of the element _enterToolStripTextBox
-                                    // after changing the image of the element StartToolStripSplitButton.
-                                    ToolStrip.Width++;
-                                    ToolStrip.Width--;
-                                }
-                                else
-                                {
-                                    StartToolStripSplitButton.Enabled = false;
-                                }
-                                
-                                AnimToolStripStatusLabel.Enabled = true;
-                                LayerToolStripComboBox.Enabled = false;
-                                _depthToolStripNumberControl.Enabled = false;
-                            }
-                            else
-                            {
-
-                                if (_isStarted)
-                                {
-                                    _isStarted = false;
-
-                                    MorphologicalToolStripMenuItem.Image = Properties.Resources.start;
-                                    StartToolStripSplitButton.Image = Properties.Resources.start;
-
-                                    // to avoid incorrect display of the element _enterToolStripTextBox
-                                    // after changing the image of the element StartToolStripSplitButton.
-                                    ToolStrip.Width++;
-                                    ToolStrip.Width--;
-                                }
-
-                                AnimToolStripStatusLabel.Enabled = false;
-                                LayerToolStripComboBox.Enabled = true;
-                                _depthToolStripNumberControl.Enabled = true;
-
-                                StartToolStripSplitButton.Enabled = !_enterToolStripTextBox.IsWatermarkShown;
-                            }
-
-                            break;
+                            StartToolStripSplitButton.Enabled = false;
                         }
-                    case "StatusLabel":
+                        else
                         {
-                            StateToolStripStatusLabel.Text = _mainViewModel.StatusLabel;
-                            break;
+                            StartToolStripSplitButton.Enabled = !_enterToolStripTextBox.IsWatermarkShown;
                         }
+                        break;
+                    case nameof(IMainViewModel.StatusLabel):
+                        StateToolStripStatusLabel.Text = _mainViewModel.StatusLabel;
+                        break;
                 }
             });
         }
@@ -301,7 +280,7 @@ namespace PMA.WinForms.Forms
         /// <param name="e">Event arguments.</param>
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
-            _mainViewModel.OnDisappearing();
+            _mainViewModel.IsActive = false;
 
             SaveSettings();
 
@@ -362,12 +341,11 @@ namespace PMA.WinForms.Forms
             if (_mainViewModel.IsBusy)
             {
                 StartToolStripSplitButton.Enabled = false;
-                _mainViewModel.StopCommand.Execute(null);
+                _mainViewModel.ExecuteCommand.Execute(false);
             }
             else
             {
-                _isStarted = true;
-                _mainViewModel.StartCommand.Execute(null);
+                _mainViewModel.ExecuteCommand.Execute(true);
             }
         }
 
@@ -381,12 +359,11 @@ namespace PMA.WinForms.Forms
             if (_mainViewModel.IsBusy)
             {
                 StartToolStripSplitButton.Enabled = false;
-                _mainViewModel.StopCommand.Execute(null);
+                _mainViewModel.ExecuteCommand.Execute(false);
             }
             else
             {
-                _isStarted = true;
-                _mainViewModel.StartCommand.Execute(null);
+                _mainViewModel.ExecuteCommand.Execute(true);
             }
         }
 
@@ -630,29 +607,29 @@ namespace PMA.WinForms.Forms
         /// </summary>
         private void SaveSettings()
         {
-            _settingService.SetValue($"{Name}.Height", Height);
-            _settingService.SetValue($"{Name}.Width", Width);
-            _settingService.SetValue($"{Name}.{ShowMorphSolutionsToolStripMenuItem.Name}.Checked", ShowMorphSolutionsToolStripMenuItem.Checked);
-            _settingService.SetValue($"{Name}.{ShowMorphPropertiesToolStripMenuItem.Name}.Checked", ShowMorphPropertiesToolStripMenuItem.Checked);
-            _settingService.SetValue($"{Name}.{ShowMorphRuleInfoToolStripMenuItem.Name}.Checked", ShowMorphRuleInfoToolStripMenuItem.Checked);
+            _settingService.SetValue("WinForms.MainForm.Height", Height);
+            _settingService.SetValue("WinForms.MainForm.Width", Width);
+            _settingService.SetValue("WinForms.MainForm.ShowMorphSolutionsToolStripMenuItem.Checked", ShowMorphSolutionsToolStripMenuItem.Checked);
+            _settingService.SetValue("WinForms.MainForm.ShowMorphPropertiesToolStripMenuItem.Checked", ShowMorphPropertiesToolStripMenuItem.Checked);
+            _settingService.SetValue("WinForms.MainForm.ShowMorphRuleInfoToolStripMenuItem.Checked", ShowMorphRuleInfoToolStripMenuItem.Checked);
 
             // MorphSolutionForm
-            _settingService.SetValue($"{_morphSolutionForm.Name}.Height", _morphSolutionForm.Height);
-            _settingService.SetValue($"{_morphSolutionForm.Name}.Width", _morphSolutionForm.Width);
-            _settingService.SetValue($"{_morphSolutionForm.Name}.Left", _morphSolutionForm.Left);
-            _settingService.SetValue($"{_morphSolutionForm.Name}.Top", _morphSolutionForm.Top);
+            _settingService.SetValue("WinForms.MorphSolutionForm.Height", _morphSolutionForm.Height);
+            _settingService.SetValue("WinForms.MorphSolutionForm.Width", _morphSolutionForm.Width);
+            _settingService.SetValue("WinForms.MorphSolutionForm.Left", _morphSolutionForm.Left);
+            _settingService.SetValue("WinForms.MorphSolutionForm.Top", _morphSolutionForm.Top);
 
             // MorphPropertyForm
-            _settingService.SetValue($"{_morphPropertyForm.Name}.Height", _morphPropertyForm.Height);
-            _settingService.SetValue($"{_morphPropertyForm.Name}.Width", _morphPropertyForm.Width);
-            _settingService.SetValue($"{_morphPropertyForm.Name}.Left", _morphPropertyForm.Left);
-            _settingService.SetValue($"{_morphPropertyForm.Name}.Top", _morphPropertyForm.Top);
+            _settingService.SetValue("WinForms.MorphPropertyForm.Height", _morphPropertyForm.Height);
+            _settingService.SetValue("WinForms.MorphPropertyForm.Width", _morphPropertyForm.Width);
+            _settingService.SetValue("WinForms.MorphPropertyForm.Left", _morphPropertyForm.Left);
+            _settingService.SetValue("WinForms.MorphPropertyForm.Top", _morphPropertyForm.Top);
 
             // MorphRuleInfoForm
-            _settingService.SetValue($"{_morphRuleInfoForm.Name}.Height", _morphRuleInfoForm.Height);
-            _settingService.SetValue($"{_morphRuleInfoForm.Name}.Width", _morphRuleInfoForm.Width);
-            _settingService.SetValue($"{_morphRuleInfoForm.Name}.Left", _morphRuleInfoForm.Left);
-            _settingService.SetValue($"{_morphRuleInfoForm.Name}.Top", _morphRuleInfoForm.Top);
+            _settingService.SetValue("WinForms.MorphRuleInfoForm.Height", _morphRuleInfoForm.Height);
+            _settingService.SetValue("WinForms.MorphRuleInfoForm.Width", _morphRuleInfoForm.Width);
+            _settingService.SetValue("WinForms.MorphRuleInfoForm.Left", _morphRuleInfoForm.Left);
+            _settingService.SetValue("WinForms.MorphRuleInfoForm.Top", _morphRuleInfoForm.Top);
 
             _settingService.Commit();
         }

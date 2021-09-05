@@ -1,0 +1,15 @@
+﻿<MudSelect @ref="_mudSelect"
+           @bind-Value="ViewModel.SelectedTerm"
+           OffsetY="true"
+           Variant="Variant.Outlined"
+           Margin="Margin.Dense"
+           Dense="true"
+           Adornment="Adornment.End"
+           AdornmentText="@PropertyName"
+           Disabled="@_disabled"
+           FullWidth="true">
+    @foreach(string value in ViewModel.TermEntries)
+    {
+        <MudSelectItem Style="@GetPropertyValueStyle(value)" Value="@value" />
+    }
+</MudSelect>

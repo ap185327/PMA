@@ -3,7 +3,6 @@
 // </copyright>
 
 using Autofac;
-using PMA.Domain.Interfaces.Services;
 using PMA.Domain.Interfaces.ViewModels;
 using PMA.Domain.Interfaces.ViewModels.Controls;
 using PMA.Domain.Interfaces.ViewModels.Controls.Base;
@@ -28,17 +27,11 @@ namespace PMA.WinForms.Forms
         private readonly IMorphSolutionViewModel _morphSolutionViewModel;
 
         /// <summary>
-        /// The translate service.
-        /// </summary>
-        private readonly ITranslateService _translateService;
-
-        /// <summary>
         /// Initializes a new instance of the MorphSolutionForm class.
         /// </summary>
         public MorphSolutionForm()
         {
             _morphSolutionViewModel = Program.Scope.Resolve<IMorphSolutionViewModel>();
-            _translateService = Program.Scope.Resolve<ITranslateService>();
 
             InitializeComponent();
             OverrideStrings();
@@ -53,7 +46,7 @@ namespace PMA.WinForms.Forms
         /// </summary>
         private void OverrideStrings()
         {
-            Text = _translateService.Translate(Name);
+            Text = Properties.Resources.ResourceManager.GetString("MorphSolutionForm.Title");
         }
 
         /// <summary>
@@ -226,14 +219,7 @@ namespace PMA.WinForms.Forms
         /// <param name="e">Event arguments.</param>
         private void MorphSolutionForm_VisibleChanged(object sender, EventArgs e)
         {
-            if (Visible)
-            {
-                _morphSolutionViewModel.OnAppearing();
-            }
-            else
-            {
-                _morphSolutionViewModel.OnDisappearing();
-            }
+            _morphSolutionViewModel.IsActive = Visible;
         }
     }
 }

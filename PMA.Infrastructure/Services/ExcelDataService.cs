@@ -5,9 +5,9 @@
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Spreadsheet;
 using Microsoft.Extensions.Logging;
-using PMA.Domain.Exceptions;
 using PMA.Domain.Interfaces.Services;
 using PMA.Infrastructure.Services.Base;
+using PMA.Utils.Exceptions;
 using PMA.Utils.Extensions;
 using System.Data;
 using System.Linq;

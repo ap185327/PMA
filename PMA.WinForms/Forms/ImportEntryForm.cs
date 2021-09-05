@@ -22,11 +22,6 @@ namespace PMA.WinForms.Forms
         private readonly IImportMorphEntryViewModel _importMorphEntryViewModel;
 
         /// <summary>
-        /// The translate service.
-        /// </summary>
-        private readonly ITranslateService _translateService;
-
-        /// <summary>
         /// The setting service.
         /// </summary>
         private readonly ISettingService _settingService;
@@ -52,7 +47,6 @@ namespace PMA.WinForms.Forms
         public ImportEntryForm()
         {
             _importMorphEntryViewModel = Program.Scope.Resolve<IImportMorphEntryViewModel>();
-            _translateService = Program.Scope.Resolve<ITranslateService>();
             _settingService = Program.Scope.Resolve<ISettingService>();
             _logMessageService = Program.Scope.Resolve<ILogMessageService>();
 
@@ -68,18 +62,18 @@ namespace PMA.WinForms.Forms
         /// </summary>
         private void OverrideStrings()
         {
-            Text = _translateService.Translate(Name);
-            AnalyzeBeforeImportCheckBox.Text = _translateService.Translate($"{Name}.{AnalyzeBeforeImportCheckBox.Name}");
-            OpenFileLabel.Text = _translateService.Translate($"{Name}.{OpenFileLabel.Name}");
-            LogLabel.Text = _translateService.Translate($"{Name}.{LogLabel.Name}");
-            TimeColumnHeader.Text = _translateService.Translate($"{Name}.TimeColumnHeader");
-            EventColumnHeader.Text = _translateService.Translate($"{Name}.EventColumnHeader");
-            DescriptionColumnHeader.Text = _translateService.Translate($"{Name}.DescriptionColumnHeader");
-            StartButton.Text = _translateService.Translate($"{Name}.{StartButton.Name}");
-            CloseButton.Text = _translateService.Translate($"{Name}.{CloseButton.Name}");
-            ResetButton.Text = _translateService.Translate($"{Name}.{ResetButton.Name}");
-            OpenFileButton.Text = _translateService.Translate($"{Name}.{OpenFileButton.Name}");
-            ClearLogButton.Text = _translateService.Translate($"{Name}.{ClearLogButton.Name}");
+            Text = Properties.Resources.ResourceManager.GetString("ImportEntryForm.Title");
+            AnalyzeBeforeImportCheckBox.Text = Properties.Resources.ResourceManager.GetString("ImportEntryForm.AnalyzeBeforeImportCheckBox");
+            OpenFileLabel.Text = Properties.Resources.ResourceManager.GetString("ImportEntryForm.OpenFileLabel");
+            LogLabel.Text = Properties.Resources.ResourceManager.GetString("ImportEntryForm.LogLabel");
+            TimeColumnHeader.Text = Properties.Resources.ResourceManager.GetString("ImportEntryForm.TimeColumnHeader");
+            EventColumnHeader.Text = Properties.Resources.ResourceManager.GetString("ImportEntryForm.EventColumnHeader");
+            DescriptionColumnHeader.Text = Properties.Resources.ResourceManager.GetString("ImportEntryForm.DescriptionColumnHeader");
+            StartButton.Text = Properties.Resources.ResourceManager.GetString("ImportEntryForm.StartButton");
+            CloseButton.Text = Properties.Resources.ResourceManager.GetString("ImportEntryForm.CloseButton");
+            ResetButton.Text = Properties.Resources.ResourceManager.GetString("ImportEntryForm.ResetButton");
+            OpenFileButton.Text = Properties.Resources.ResourceManager.GetString("ImportEntryForm.OpenFileButton");
+            ClearLogButton.Text = Properties.Resources.ResourceManager.GetString("ImportEntryForm.ClearLogButton");
         }
 
         /// <summary>
@@ -168,12 +162,12 @@ namespace PMA.WinForms.Forms
                             if (!_importMorphEntryViewModel.IsBusy)
                             {
                                 StartButton.Enabled = true;
-                                StartButton.Text = _translateService.Translate($"{Name}.StartButton");
+                                StartButton.Text = Properties.Resources.ResourceManager.GetString("ImportEntryForm.StartButton");
                                 _importMorphEntryViewModel.DataFilePath = _openFileComboBox.Text;
                             }
                             else
                             {
-                                StartButton.Text = _translateService.Translate($"{Name}.StopButton");
+                                StartButton.Text = Properties.Resources.ResourceManager.GetString("ImportEntryForm.StopButton");
                             }
 
                             break;
@@ -189,7 +183,7 @@ namespace PMA.WinForms.Forms
         /// <param name="e">Event arguments.</param>
         private void LogMessageService_MessageReceived(object sender, LogMessageEventArgs e)
         {
-            _logListView.AddItem(e.Message.Level, _translateService.Translate(e.Message.Level), e.Message.Text);
+            _logListView.AddItem(e.Message.Level, Properties.Resources.ResourceManager.GetString($"MessageLevel.{e.Message.Level}"), e.Message.Text);
         }
 
         /// <summary>
@@ -199,7 +193,7 @@ namespace PMA.WinForms.Forms
         /// <param name="e">Event arguments.</param>
         private void StartButton_Click(object sender, EventArgs e)
         {
-            if (StartButton.Text == _translateService.Translate($"{Name}.StartButton"))
+            if (StartButton.Text == Properties.Resources.ResourceManager.GetString("ImportEntryForm.StartButton"))
             {
                 _importMorphEntryViewModel.IsAnalyzeBeforeImportChecked = AnalyzeBeforeImportCheckBox.Checked;
                 _importMorphEntryViewModel.DataFilePath = _openFileComboBox.Text;
@@ -233,7 +227,7 @@ namespace PMA.WinForms.Forms
         /// <param name="e">Event arguments.</param>
         private void OpenFileButton_Click(object sender, EventArgs e)
         {
-            _openFileComboBox.OpenFile(_translateService.Translate($"{Name}.OpenFileTitle"), _translateService.Translate($"{Name}.OpenFileFilter"));
+            _openFileComboBox.OpenFile(Properties.Resources.ResourceManager.GetString("ImportEntryForm.OpenFileTitle"), Properties.Resources.ResourceManager.GetString("ImportEntryForm.OpenFileFilter"));
         }
 
         /// <summary>
@@ -275,7 +269,7 @@ namespace PMA.WinForms.Forms
         {
             if (Visible)
             {
-                _importMorphEntryViewModel.OnAppearing();
+                _importMorphEntryViewModel.IsActive = true;
                 SetSettings();
                 SubscribeEvents();
             }
@@ -283,7 +277,7 @@ namespace PMA.WinForms.Forms
             {
                 SaveSettings();
                 UnsubscribeEvents();
-                _importMorphEntryViewModel.OnDisappearing();
+                _importMorphEntryViewModel.IsActive = false;
             }
         }
 
@@ -292,7 +286,7 @@ namespace PMA.WinForms.Forms
         /// </summary>
         private void SetSettings()
         {
-            Height = _settingService.GetValue<int>($"{Name}.Height");
+            Height = _settingService.GetValue<int>("WinForms.ImportEntryForm.Height");
 
             _openFileComboBox.Items.Add(_importMorphEntryViewModel.DataFilePath);
             _openFileComboBox.Text = _importMorphEntryViewModel.DataFilePath;
@@ -314,7 +308,7 @@ namespace PMA.WinForms.Forms
         /// </summary>
         private void SaveSettings()
         {
-            _settingService.SetValue($"{Name}.Height", Height);
+            _settingService.SetValue("WinForms.ImportEntryForm.Height", Height);
         }
 
         /// <summary>

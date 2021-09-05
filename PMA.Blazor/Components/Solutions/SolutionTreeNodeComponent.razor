@@ -1,0 +1,30 @@
+﻿@if (IsFromDict)
+{
+    <MudTreeViewItem @ref="_mudTreeViewItem"
+                     Value="@ViewModel"
+                     ExpandedIcon="@ExpandedIcon"
+                     ExpandedIconColor="Color.Default"
+                     Command="@ViewModel.SelectCommand"
+                     Style="@Style">
+        <Content>
+            <MudTreeViewItemToggleButton Loading="_mudTreeViewItem.Loading"
+                                         Expanded="_mudTreeViewItem.Expanded"
+                                         ExpandedChanged="OnItemExpanded"
+                                         Visible="true"
+                                         ExpandedIcon="@ExpandedIcon"
+                                         ExpandedIconColor="_mudTreeViewItem.ExpandedIconColor"
+                                         LoadingIcon="@_mudTreeViewItem.LoadingIcon"
+                                         LoadingIconColor="@_mudTreeViewItem.LoadingIconColor"></MudTreeViewItemToggleButton>
+            <MudText><b>@ViewModel.Text</b></MudText>
+        </Content>
+    </MudTreeViewItem>
+}
+else
+{
+    <MudTreeViewItem Value="@ViewModel"
+                     ExpandedIcon="@ExpandedIcon"
+                     ExpandedIconColor="Color.Default"
+                     Command="@ViewModel.SelectCommand"
+                     Text="@ViewModel.Text"
+                     Style="@Style" />
+}

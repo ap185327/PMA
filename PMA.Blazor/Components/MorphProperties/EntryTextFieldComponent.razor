@@ -1,0 +1,12 @@
+﻿<MudTextField @ref="_mudTextField"
+              @bind-Value="TextValue"
+              Label="@Label"
+              HelperText="@HelperText"
+              Immediate="true"
+              Adornment="Adornment.End"
+              AdornmentIcon="@Icons.Filled.Search"
+              AdornmentColor="Color.Inherit"
+              OnAdornmentClick="@((string.IsNullOrEmpty(ViewModel.Entry) ? null : OnAdornmentClick)!)"
+              Margin="Margin.Dense"
+              Variant="Variant.Outlined"
+              FullWidth="true" />

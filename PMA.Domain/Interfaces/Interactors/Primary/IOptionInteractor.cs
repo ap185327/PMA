@@ -6,6 +6,8 @@ using PMA.Domain.DataContracts;
 using PMA.Domain.InputPorts;
 using PMA.Domain.Interfaces.Interactors.Base;
 using PMA.Domain.OutputPorts;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace PMA.Domain.Interfaces.Interactors.Primary
 {
@@ -17,14 +19,16 @@ namespace PMA.Domain.Interfaces.Interactors.Primary
         /// <summary>
         /// Gets current option values.
         /// </summary>
-        /// <returns>The operation result.</returns>
-        OperationResult<OptionValueOutputPort> GetCurrentOptionValues();
+        /// <param name="token">The cancellation token.</param>
+        /// <returns>The option value output port.</returns>
+        Task<OperationResult<OptionValueOutputPort>> GetCurrentOptionValuesAsync(CancellationToken token = default);
 
         /// <summary>
         /// Saves option values.
         /// </summary>
         /// <param name="inputData">Options values.</param>
+        /// <param name="token">The cancellation token.</param>
         /// <returns>The operation result.</returns>
-        OperationResult SaveOptionValues(OptionValueInputPort inputData);
+        Task<OperationResult> SaveOptionValuesAsync(OptionValueInputPort inputData, CancellationToken token = default);
     }
 }

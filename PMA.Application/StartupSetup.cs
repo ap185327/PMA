@@ -5,41 +5,35 @@
 using Autofac;
 using Autofac.Extras.DynamicProxy;
 using MediatR;
+using Microsoft.Toolkit.Mvvm.Messaging;
 using PMA.Application.UseCases.Primary;
 using PMA.Application.UseCases.Secondary;
 using PMA.Application.ViewModels;
+using PMA.Application.ViewModels.Controls;
 using PMA.Domain.Interfaces.Interceptors;
 using PMA.Domain.Interfaces.UseCases.Primary;
 using PMA.Domain.Interfaces.UseCases.Secondary;
 using PMA.Domain.Interfaces.ViewModels;
-using PMA.Domain.Models;
+using PMA.Domain.Interfaces.ViewModels.Controls;
 using PMA.Domain.Notifications;
-using PMA.Domain.Requests;
-using System;
 using System.Reflection;
-using System.Threading.Tasks;
 
 namespace PMA.Application
 {
     /// <summary>
-    /// The extension for startup DI configuration.
+    /// The extension for startup configuration.
     /// </summary>
     public static class StartupSetup
     {
         /// <summary>
-        /// Registers application types.
+        /// Adds application services.
         /// </summary>
-        /// <param name="builder">This DI container.</param>
-        public static void RegisterApplicationTypes(this ContainerBuilder builder)
+        /// <param name="builder">This DI container builder.</param>
+        public static void AddApplicationServices(this ContainerBuilder builder)
         {
-            // Configurations
-            builder.RegisterType<ParallelOptions>().SingleInstance();
-            builder.RegisterType<Mediator>().As<IMediator>().SingleInstance();
-            builder.Register<ServiceFactory>(context =>
-            {
-                var c = context.Resolve<IComponentContext>();
-                return t => c.Resolve(t);
-            });
+            // Messenger
+            builder.RegisterType<StrongReferenceMessenger>().As<IMessenger>()
+                .SingleInstance();
 
             var dataAccess = Assembly.GetExecutingAssembly();
 
@@ -54,11 +48,25 @@ namespace PMA.Application
                 .EnableInterfaceInterceptors()
                 .InterceptedBy(typeof(ILoggerInterceptor))
                 .SingleInstance();
+            builder.RegisterType<GetEntryIdControlViewModelsUseCase>().As<IGetEntryIdControlViewModelsUseCase>()
+                .SingleInstance();
+            builder.RegisterType<GetEntryIdViewModelUseCase>().As<IGetEntryIdViewModelUseCase>()
+                .EnableInterfaceInterceptors()
+                .InterceptedBy(typeof(ILoggerInterceptor))
+                .SingleInstance();
+            builder.RegisterType<GetMorphCategoryControlViewModelsUseCase>().As<IGetMorphCategoryControlViewModelsUseCase>()
+                .EnableInterfaceInterceptors()
+                .InterceptedBy(typeof(ILoggerInterceptor))
+                .SingleInstance();
             builder.RegisterType<GetLayerForFirstNodeUseCase>().As<IGetLayerForFirstNodeUseCase>()
                 .EnableInterfaceInterceptors()
                 .InterceptedBy(typeof(ILoggerInterceptor))
                 .SingleInstance();
-            builder.RegisterType<GetMorphEntriesByMorphEntryUseCase>().As<IGetMorphEntriesByMorphEntryUseCase>()
+            builder.RegisterType<GetMorphPropertyControlViewModelsUseCase>().As<IGetMorphPropertyControlViewModelsUseCase>()
+                .EnableInterfaceInterceptors()
+                .InterceptedBy(typeof(ILoggerInterceptor))
+                .SingleInstance();
+            builder.RegisterType<GetMorphRuleInfoItemViewModelsUseCase>().As<IGetMorphRuleInfoItemViewModelsUseCase>()
                 .EnableInterfaceInterceptors()
                 .InterceptedBy(typeof(ILoggerInterceptor))
                 .SingleInstance();
@@ -66,13 +74,21 @@ namespace PMA.Application
                 .EnableInterfaceInterceptors()
                 .InterceptedBy(typeof(ILoggerInterceptor))
                 .SingleInstance();
+            builder.RegisterType<GetSandhiRuleInfoItemViewModelsUseCase>().As<IGetSandhiRuleInfoItemViewModelsUseCase>()
+                .EnableInterfaceInterceptors()
+                .InterceptedBy(typeof(ILoggerInterceptor))
+                .SingleInstance();
             builder.RegisterType<GetSimilarMorphEntryIdsUseCase>().As<IGetSimilarMorphEntryIdsUseCase>()
                 .EnableInterfaceInterceptors()
                 .InterceptedBy(typeof(ILoggerInterceptor))
                 .SingleInstance();
+            builder.RegisterType<GetSolutionTreeNodesUseCase>().As<IGetSolutionTreeNodesUseCase>()
+                .SingleInstance();
             builder.RegisterType<GetTermEntriesByIdsUseCase>().As<IGetTermEntriesByIdsUseCase>()
                 .EnableInterfaceInterceptors()
                 .InterceptedBy(typeof(ILoggerInterceptor))
+                .SingleInstance();
+            builder.RegisterType<GetWordFormTreeNodeUseCase>().As<IGetWordFormTreeNodeUseCase>()
                 .SingleInstance();
             builder.RegisterType<SaveOptionValuesUseCase>().As<ISaveOptionValuesUseCase>()
                 .EnableInterfaceInterceptors()
@@ -87,21 +103,6 @@ namespace PMA.Application
                 .InterceptedBy(typeof(ILoggerInterceptor))
                 .SingleInstance();
             builder.RegisterType<StartMorphAnalysisUseCase>().As<IStartMorphAnalysisUseCase>()
-                .EnableInterfaceInterceptors()
-                .InterceptedBy(typeof(ILoggerInterceptor))
-                .SingleInstance();
-            builder.RegisterType<StopDbUpdatingUseCase>().As<IStopDbUpdatingUseCase>()
-                .As<INotificationHandler<CancellationTokenResourceNotification>>()
-                .EnableInterfaceInterceptors()
-                .InterceptedBy(typeof(ILoggerInterceptor))
-                .SingleInstance();
-            builder.RegisterType<StopImportMorphEntriesUseCase>().As<IStopImportMorphEntriesUseCase>()
-                .As<INotificationHandler<CancellationTokenResourceNotification>>()
-                .EnableInterfaceInterceptors()
-                .InterceptedBy(typeof(ILoggerInterceptor))
-                .SingleInstance();
-            builder.RegisterType<StopMorphAnalysisUseCase>().As<IStopMorphAnalysisUseCase>()
-                .As<INotificationHandler<CancellationTokenResourceNotification>>()
                 .EnableInterfaceInterceptors()
                 .InterceptedBy(typeof(ILoggerInterceptor))
                 .SingleInstance();
@@ -127,16 +128,26 @@ namespace PMA.Application
                 .SingleInstance();
 
             // Secondary UseCases
-            builder.RegisterType<ClearCacheUseCase>().As<IClearCacheUseCase>().SingleInstance();
-            builder.RegisterType<CollapseSolutionUseCase>().As<ICollapseSolutionUseCase>().SingleInstance();
-            builder.RegisterType<ParseMorphEntryUseCase>().As<IParseMorphEntryUseCase>().SingleInstance();
-            builder.RegisterType<RemoveDuplicateUseCase>().As<IRemoveDuplicateUseCase>().SingleInstance();
-            builder.RegisterType<RemoveSolutionWithExcessiveDepthUseCase>().As<IRemoveSolutionWithExcessiveDepthUseCase>().SingleInstance();
-            builder.RegisterType<RemoveUnsuitableDerivativeSolutionUseCase>().As<IRemoveUnsuitableDerivativeSolutionUseCase>().SingleInstance();
-            builder.RegisterType<RemoveUnsuitableSolutionUseCase>().As<IRemoveUnsuitableSolutionUseCase>().SingleInstance();
-            builder.RegisterType<SortSolutionUseCase>().As<ISortSolutionUseCase>().SingleInstance();
-            builder.RegisterType<UpdateSolutionUseCase>().As<IUpdateSolutionUseCase>().SingleInstance();
-            builder.RegisterType<ValidateSolutionUseCase>().As<IValidateSolutionUseCase>().SingleInstance();
+            builder.RegisterType<ClearCacheUseCase>().As<IClearCacheUseCase>()
+                .SingleInstance();
+            builder.RegisterType<CollapseSolutionUseCase>().As<ICollapseSolutionUseCase>()
+                .SingleInstance();
+            builder.RegisterType<ParseMorphEntryUseCase>().As<IParseMorphEntryUseCase>()
+                .SingleInstance();
+            builder.RegisterType<RemoveDuplicateUseCase>().As<IRemoveDuplicateUseCase>()
+                .SingleInstance();
+            builder.RegisterType<RemoveSolutionWithExcessiveDepthUseCase>().As<IRemoveSolutionWithExcessiveDepthUseCase>()
+                .SingleInstance();
+            builder.RegisterType<RemoveUnsuitableDerivativeSolutionUseCase>().As<IRemoveUnsuitableDerivativeSolutionUseCase>()
+                .SingleInstance();
+            builder.RegisterType<RemoveUnsuitableSolutionUseCase>().As<IRemoveUnsuitableSolutionUseCase>()
+                .SingleInstance();
+            builder.RegisterType<SortSolutionUseCase>().As<ISortSolutionUseCase>()
+                .SingleInstance();
+            builder.RegisterType<UpdateSolutionUseCase>().As<IUpdateSolutionUseCase>()
+                .SingleInstance();
+            builder.RegisterType<ValidateSolutionUseCase>().As<IValidateSolutionUseCase>()
+                .SingleInstance();
 
             // Primary & Secondary Interactors
             builder.RegisterAssemblyTypes(dataAccess).Where(x => x.Name.EndsWith("Interactor")).AsImplementedInterfaces()
@@ -146,7 +157,7 @@ namespace PMA.Application
             builder.RegisterType<GetEntryIdViewModel>().As<IGetEntryIdViewModel>()
                 .EnableInterfaceInterceptors()
                 .InterceptedBy(typeof(ILoggerInterceptor))
-                .SingleInstance();
+                .InstancePerDependency();
             builder.RegisterType<ImportMorphEntryViewModel>().As<IImportMorphEntryViewModel>()
                 .As<INotificationHandler<ImportMorphEntryNotification>>()
                 .EnableInterfaceInterceptors()
@@ -159,15 +170,11 @@ namespace PMA.Application
                 .InterceptedBy(typeof(ILoggerInterceptor))
                 .SingleInstance();
             builder.RegisterType<MorphPropertyViewModel>().As<IMorphPropertyViewModel>()
-                .As<INotificationHandler<SettingChangeNotification>>()
                 .As<INotificationHandler<MorphParserNotification>>()
-                .As<INotificationHandler<MorphEntryNotification>>()
-                .As<IRequestHandler<GetMorphEntryRequest, MorphEntry>>()
                 .EnableInterfaceInterceptors()
                 .InterceptedBy(typeof(ILoggerInterceptor))
                 .SingleInstance();
             builder.RegisterType<MorphRuleInfoViewModel>().As<IMorphRuleInfoViewModel>()
-                .As<INotificationHandler<MorphRuleNotification>>()
                 .EnableInterfaceInterceptors()
                 .InterceptedBy(typeof(ILoggerInterceptor))
                 .SingleInstance();
@@ -176,12 +183,27 @@ namespace PMA.Application
                 .EnableInterfaceInterceptors()
                 .InterceptedBy(typeof(ILoggerInterceptor))
                 .SingleInstance();
-            builder.RegisterType<OptionViewModel>().As<IOptionViewModel>().SingleInstance();
+            builder.RegisterType<OptionViewModel>().As<IOptionViewModel>()
+                .SingleInstance();
             builder.RegisterType<UpdateDbViewModel>().As<IUpdateDbViewModel>()
                 .As<INotificationHandler<UpdateDbNotification>>()
                 .EnableInterfaceInterceptors()
                 .InterceptedBy(typeof(ILoggerInterceptor))
                 .SingleInstance();
+
+            // ViewModel Controls
+            builder.RegisterType<GetEntryIdControlViewModel>().As<IGetEntryIdControlViewModel>()
+                .InstancePerDependency();
+            builder.RegisterType<MorphCategoryControlViewModel>().As<IMorphCategoryControlViewModel>()
+                .InstancePerDependency();
+            builder.RegisterType<MorphPropertyControlViewModel>().As<IMorphPropertyControlViewModel>()
+                .InstancePerDependency();
+            builder.RegisterType<RuleInfoItemViewModel>().As<IRuleInfoItemViewModel>()
+                .InstancePerDependency();
+            builder.RegisterType<SolutionTreeNodeViewModel>().As<ISolutionTreeNodeViewModel>()
+                .InstancePerDependency();
+            builder.RegisterType<WordFormTreeNodeViewModel>().As<IWordFormTreeNodeViewModel>()
+                .InstancePerDependency();
         }
     }
 }

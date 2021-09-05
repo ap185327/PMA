@@ -2,7 +2,6 @@
 //     Copyright 2017-2021 Andrey Pospelov. All rights reserved.
 // </copyright>
 
-using MediatR;
 using Microsoft.Extensions.Logging;
 using PMA.Application.Extensions;
 using PMA.Application.UseCases.Base;
@@ -13,8 +12,10 @@ using PMA.Domain.InputPorts;
 using PMA.Domain.Interfaces.UseCases.Secondary;
 using PMA.Domain.Models;
 using PMA.Utils.Extensions;
+using System;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace PMA.Application.UseCases.Secondary
@@ -24,6 +25,11 @@ namespace PMA.Application.UseCases.Secondary
     /// </summary>
     public sealed class RemoveUnsuitableDerivativeSolutionUseCase : UseCaseBase<RemoveUnsuitableDerivativeSolutionUseCase, MorphParserInputPort>, IRemoveUnsuitableDerivativeSolutionUseCase
     {
+        /// <summary>
+        /// Options that configure the operation of methods on the <see cref="Parallel"/> class.
+        /// </summary>
+        private readonly ParallelOptions _parallelOptions = new();
+
         /// <summary>
         /// Maximum number of solutions for current thread.
         /// </summary>
@@ -37,12 +43,9 @@ namespace PMA.Application.UseCases.Secondary
         /// <summary>
         /// Initializes a new instance of <see cref="RemoveUnsuitableDerivativeSolutionUseCase"/> class.
         /// </summary>
-        /// <param name="mediator">The mediator.</param>
-        /// <param name="parallelOptions">Options that configure the operation of methods on the <see cref="Parallel"/> class.</param>
         /// <param name="logger">The logger.</param>
-        public RemoveUnsuitableDerivativeSolutionUseCase(IMediator mediator, ParallelOptions parallelOptions, ILogger<RemoveUnsuitableDerivativeSolutionUseCase> logger) : base(mediator, parallelOptions, logger)
+        public RemoveUnsuitableDerivativeSolutionUseCase(ILogger<RemoveUnsuitableDerivativeSolutionUseCase> logger) : base(logger)
         {
-            Logger.LogInit();
         }
 
         #region Overrides of UseCaseBase<RemoveUnsuitableDerivativeSolutionUseCase,MorphParserInputPort>
@@ -50,38 +53,47 @@ namespace PMA.Application.UseCases.Secondary
         /// <summary>
         /// Executes an action.
         /// </summary>
-        /// <param name="inputData">The input data.</param>
+        /// <param name="inputPort">The input data.</param>
         /// <returns>The result of action execution.</returns>
-        public override OperationResult Execute(MorphParserInputPort inputData)
+        public override OperationResult Execute(MorphParserInputPort inputPort)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Executes an action.
+        /// </summary>
+        /// <param name="inputPort">The input data.</param>
+        /// <param name="token">The cancellation token.</param>
+        /// <returns>The result of action execution.</returns>
+        public override async Task<OperationResult> ExecuteAsync(MorphParserInputPort inputPort, CancellationToken token = default)
         {
             Logger.LogEntry();
 
-            if (inputData is null)
+            token.ThrowIfCancellationRequested();
+
+            _parallelOptions.CancellationToken = token;
+
+            if (inputPort is null)
             {
-                Logger.LogError(ErrorMessageConstants.ValueIsNull, nameof(inputData));
+                Logger.LogError(ErrorMessageConstants.ValueIsNull, nameof(inputPort));
                 Logger.LogExit();
-                return OperationResult.FailureResult(ErrorMessageConstants.ValueIsNull, nameof(inputData));
+                return OperationResult.FailureResult(ErrorMessageConstants.ValueIsNull, nameof(inputPort));
             }
 
-            if (inputData.WordForm is null)
+            if (inputPort.WordForm is null)
             {
-                Logger.LogError(ErrorMessageConstants.ValueIsNull, nameof(inputData.WordForm));
+                Logger.LogError(ErrorMessageConstants.ValueIsNull, nameof(inputPort.WordForm));
                 Logger.LogExit();
-                return OperationResult.FailureResult(ErrorMessageConstants.ValueIsNull, nameof(inputData.WordForm));
+                return OperationResult.FailureResult(ErrorMessageConstants.ValueIsNull, nameof(inputPort.WordForm));
             }
 
-            if (inputData.ParsingType == MorphParsingType.Debug || ParallelOptions.CancellationToken.IsCancellationRequested)
-            {
-                Logger.LogExit();
-                return OperationResult.SuccessResult();
-            }
-
-            _inputData = inputData;
+            _inputData = inputPort;
 
             var time = new Stopwatch();
 
             time.Start();
-            InternalExecute(_inputData.WordForm);
+            await Task.Run(() => InternalExecute(_inputData.WordForm), token);
             time.Stop();
 
 #if DEBUG
@@ -135,8 +147,10 @@ namespace PMA.Application.UseCases.Secondary
             }
             else
             {
-                Parallel.ForEach(solutions, ParallelOptions, solution =>
+                Parallel.ForEach(solutions, _parallelOptions, solution =>
                 {
+                    _parallelOptions.CancellationToken.ThrowIfCancellationRequested();
+
                     InternalExecute(solution.Left);
                     InternalExecute(solution.Right);
                 });

@@ -2,7 +2,6 @@
 //     Copyright 2017-2021 Andrey Pospelov. All rights reserved.
 // </copyright>
 
-using MediatR;
 using Microsoft.Extensions.Logging;
 using PMA.Application.Extensions;
 using PMA.Application.Factories;
@@ -16,10 +15,10 @@ using PMA.Domain.Interfaces.Services;
 using PMA.Domain.Interfaces.UseCases.Primary;
 using PMA.Domain.Models;
 using PMA.Domain.OutputPorts;
-using PMA.Utils.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace PMA.Application.UseCases.Primary
@@ -56,25 +55,17 @@ namespace PMA.Application.UseCases.Primary
         /// <param name="morphEntryManager">The morphological entry manager.</param>
         /// <param name="morphCombinationManager">The morphological combination manager.</param>
         /// <param name="translateService">The translate service.</param>
-        /// <param name="mediator">The mediator.</param>
-        /// <param name="parallelOptions">Options that configure the operation of methods on the <see cref="Parallel"/> class.</param>
         /// <param name="logger">The logger.</param>
         public TryToUpdateMorphEntryUseCase(IMorphEntryDbProvider morphEntryDbProvider,
             IMorphEntryManager morphEntryManager,
             IMorphCombinationManager morphCombinationManager,
             ITranslateService translateService,
-            IMediator mediator,
-            ParallelOptions parallelOptions,
-            ILogger<TryToUpdateMorphEntryUseCase> logger) : base(mediator,
-            parallelOptions,
-            logger)
+            ILogger<TryToUpdateMorphEntryUseCase> logger) : base(logger)
         {
             _morphEntryDbProvider = morphEntryDbProvider;
             _morphEntryManager = morphEntryManager;
             _morphCombinationManager = morphCombinationManager;
             _translateService = translateService;
-
-            Logger.LogInit();
         }
 
         #region Overrides of UseCaseWithResultBase<TryToUpdateMorphEntryUseCase,MorphEntry,UpdateMorphEntryOutputPort>
@@ -177,6 +168,17 @@ namespace PMA.Application.UseCases.Primary
                 Logger.LogError(exception.Message);
                 return OperationResult<UpdateMorphEntryOutputPort>.ExceptionResult(exception);
             }
+        }
+
+        /// <summary>
+        /// Executes an action.
+        /// </summary>
+        /// <param name="inputPort">The input data.</param>
+        /// <param name="token">The cancellation token.</param>
+        /// <returns>The result of action execution.</returns>
+        public override Task<OperationResult<UpdateMorphEntryOutputPort>> ExecuteAsync(MorphEntry inputPort, CancellationToken token = default)
+        {
+            return Task.FromResult(Execute(inputPort));
         }
 
         #endregion

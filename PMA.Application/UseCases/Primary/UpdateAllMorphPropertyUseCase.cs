@@ -2,7 +2,6 @@
 //     Copyright 2017-2021 Andrey Pospelov. All rights reserved.
 // </copyright>
 
-using MediatR;
 using Microsoft.Extensions.Logging;
 using PMA.Application.UseCases.Base;
 using PMA.Domain.Constants;
@@ -10,8 +9,8 @@ using PMA.Domain.DataContracts;
 using PMA.Domain.InputPorts;
 using PMA.Domain.Interfaces.Managers;
 using PMA.Domain.Interfaces.UseCases.Primary;
-using PMA.Utils.Extensions;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace PMA.Application.UseCases.Primary
@@ -30,14 +29,10 @@ namespace PMA.Application.UseCases.Primary
         /// Initializes a new instance of <see cref="UpdateAllMorphPropertyUseCase"/> class.
         /// </summary>
         /// <param name="morphCombinationManager">The morphological combination manager.</param>
-        /// <param name="mediator">The mediator.</param>
-        /// <param name="parallelOptions">Options that configure the operation of methods on the <see cref="Parallel"/> class.</param>
         /// <param name="logger">The logger.</param>
-        public UpdateAllMorphPropertyUseCase(IMorphCombinationManager morphCombinationManager, IMediator mediator, ParallelOptions parallelOptions, ILogger<UpdateAllMorphPropertyUseCase> logger) : base(mediator, parallelOptions, logger)
+        public UpdateAllMorphPropertyUseCase(IMorphCombinationManager morphCombinationManager, ILogger<UpdateAllMorphPropertyUseCase> logger) : base(logger)
         {
             _morphCombinationManager = morphCombinationManager;
-
-            Logger.LogInit();
         }
 
         #region Overrides of UseCaseBase<UpdateAllMorphPropertyUseCase,UpdateMorphPropertyInputPort>
@@ -45,31 +40,31 @@ namespace PMA.Application.UseCases.Primary
         /// <summary>
         /// Executes an action.
         /// </summary>
-        /// <param name="inputData">The input data.</param>
+        /// <param name="inputPort">The input data.</param>
         /// <returns>The result of action execution.</returns>
-        public override OperationResult Execute(UpdateMorphPropertyInputPort inputData)
+        public override OperationResult Execute(UpdateMorphPropertyInputPort inputPort)
         {
-            if (inputData is null)
+            if (inputPort is null)
             {
-                Logger.LogError(ErrorMessageConstants.ValueIsNull, nameof(inputData));
-                return OperationResult.FailureResult(ErrorMessageConstants.ValueIsNull, nameof(inputData));
+                Logger.LogError(ErrorMessageConstants.ValueIsNull, nameof(inputPort));
+                return OperationResult.FailureResult(ErrorMessageConstants.ValueIsNull, nameof(inputPort));
             }
 
-            if (inputData.Properties is null)
+            if (inputPort.Properties is null)
             {
-                Logger.LogError(ErrorMessageConstants.ValueIsNull, nameof(inputData.Properties));
-                return OperationResult.FailureResult(ErrorMessageConstants.ValueIsNull, nameof(inputData.Properties));
+                Logger.LogError(ErrorMessageConstants.ValueIsNull, nameof(inputPort.Properties));
+                return OperationResult.FailureResult(ErrorMessageConstants.ValueIsNull, nameof(inputPort.Properties));
             }
 
-            if (inputData.StartIndex is >= MorphConstants.ParameterCount or < 0)
+            if (inputPort.StartIndex is >= MorphConstants.ParameterCount or < 0)
             {
-                Logger.LogError(ErrorMessageConstants.MorphParameterIndexOutOfRange, inputData.StartIndex);
-                return OperationResult.FailureResult(ErrorMessageConstants.MorphParameterIndexOutOfRange, inputData.StartIndex);
+                Logger.LogError(ErrorMessageConstants.MorphParameterIndexOutOfRange, inputPort.StartIndex);
+                return OperationResult.FailureResult(ErrorMessageConstants.MorphParameterIndexOutOfRange, inputPort.StartIndex);
             }
 
-            for (int i = inputData.StartIndex; i < MorphConstants.ParameterCount; i++)
+            for (int i = inputPort.StartIndex; i < MorphConstants.ParameterCount; i++)
             {
-                byte[] parameters = inputData.Properties.Where(x => x.Index < i).OrderBy(x => x.Index).Select(x => x.TermIds[x.SelectedIndex]).ToArray();
+                byte[] parameters = inputPort.Properties.Where(x => x.Index < i).OrderBy(x => x.Index).Select(x => x.TermIds[x.TermEntries.IndexOf(x.SelectedTerm)]).ToArray();
 
                 var combinations = _morphCombinationManager.GetValidParameters(parameters);
 
@@ -80,10 +75,21 @@ namespace PMA.Application.UseCases.Primary
                     values.Add(MorphConstants.UnknownTermId);
                 }
 
-                inputData.Properties[i].TermIds = values.OrderBy(x => x).ToList();
+                inputPort.Properties[i].TermIds = values.OrderBy(x => x).ToList();
             }
 
             return OperationResult.SuccessResult();
+        }
+
+        /// <summary>
+        /// Executes an action.
+        /// </summary>
+        /// <param name="inputPort">The input data.</param>
+        /// <param name="token">The cancellation token.</param>
+        /// <returns>The result of action execution.</returns>
+        public override Task<OperationResult> ExecuteAsync(UpdateMorphPropertyInputPort inputPort, CancellationToken token = default)
+        {
+            return Task.FromResult(Execute(inputPort));
         }
 
         #endregion

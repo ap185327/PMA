@@ -1,0 +1,18 @@
+﻿@if (ViewModel.IsBusy)
+{
+    <MudButton StartIcon="@Icons.Filled.Stop"
+               Command="ViewModel.ExecuteCommand"
+               CommandParameter="false"
+               Disabled="ViewModel.ExecuteCommandDisabled"
+               Color="Color.Primary"
+               Variant="Variant.Outlined">@StopButtonText</MudButton>
+}
+else
+{
+    <MudButton StartIcon="@Icons.Filled.PlayArrow"
+               Command="ViewModel.ExecuteCommand"
+               CommandParameter="true"
+               Disabled="ViewModel.ExecuteCommandDisabled"
+               Color="Color.Primary"
+               Variant="Variant.Outlined">@StartButtonText</MudButton>
+}

@@ -6,7 +6,6 @@ using AutoMapper;
 using Microsoft.Extensions.Logging;
 using PMA.Domain.Constants;
 using PMA.Domain.Enums;
-using PMA.Domain.Exceptions;
 using PMA.Domain.Interfaces.Loaders;
 using PMA.Domain.Interfaces.Locators;
 using PMA.Infrastructure.Constants;
@@ -15,6 +14,7 @@ using PMA.Infrastructure.Entities;
 using PMA.Infrastructure.Extensions;
 using PMA.Infrastructure.Loaders.Base;
 using PMA.Infrastructure.Models;
+using PMA.Utils.Exceptions;
 using PMA.Utils.Extensions;
 using System;
 using System.Collections.Concurrent;
@@ -23,6 +23,7 @@ using System.Data;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace PMA.Infrastructure.Loaders
@@ -35,7 +36,7 @@ namespace PMA.Infrastructure.Loaders
         /// <summary>
         /// Options that configure the operation of methods on the <see cref="Parallel"/> class.
         /// </summary>
-        private readonly ParallelOptions _parallelOptions;
+        private readonly ParallelOptions _parallelOptions = new();
 
         /// <summary>
         /// The raw data.
@@ -45,16 +46,12 @@ namespace PMA.Infrastructure.Loaders
         /// <summary>
         /// Initializes the new instance of <see cref="MorphRuleLoader"/> class.
         /// </summary>
-        /// <param name="parallelOptions">Options that configure the operation of methods on the <see cref="Parallel"/> class.</param>
         /// <param name="serviceLocator">The service locator.</param>
         /// <param name="context">The database context.</param>
         /// <param name="mapper">The mapper.</param>
         /// <param name="logger">The logger.</param>
-        public MorphRuleLoader(ParallelOptions parallelOptions, IServiceLocator serviceLocator, SqLiteDbContext context, IMapperBase mapper, ILogger<MorphRuleLoader> logger) : base(serviceLocator, context, mapper, logger)
+        public MorphRuleLoader(IServiceLocator serviceLocator, SqLiteDbContext context, IMapperBase mapper, ILogger<MorphRuleLoader> logger) : base(serviceLocator, context, mapper, logger)
         {
-            _parallelOptions = parallelOptions;
-
-            Logger.LogInit();
         }
 
         #region Overrides of LoaderBase<MorphRuleLoader>
@@ -113,6 +110,17 @@ namespace PMA.Infrastructure.Loaders
             result = ValidateDataTableValuesByTertiaryRules();
 
             return result;
+        }
+
+        /// <summary>
+        /// Validates and formats raw data.
+        /// </summary>
+        /// <returns>True if the raw data has been validated; otherwise - False.</returns>
+        public override Task<bool> ValidateAndFormatRawDataAsync(CancellationToken token = default)
+        {
+            _parallelOptions.CancellationToken = token;
+
+            return Task.FromResult(ValidateAndFormatRawData());
         }
 
         /// <summary>
@@ -527,6 +535,8 @@ namespace PMA.Infrastructure.Loaders
 
             Parallel.ForEach(_rawData.AsEnumerable(), _parallelOptions, row =>
             {
+                _parallelOptions.CancellationToken.ThrowIfCancellationRequested();
+
                 var filteredMorphCombinations = morphCombinations;
 
                 for (int i = 0; i < MorphConstants.ParameterCount; i++)

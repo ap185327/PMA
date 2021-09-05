@@ -2,15 +2,14 @@
 //     Copyright 2017-2021 Andrey Pospelov. All rights reserved.
 // </copyright>
 
-using MediatR;
 using Microsoft.Extensions.Logging;
 using PMA.Domain.Constants;
-using PMA.Domain.Exceptions;
+using PMA.Domain.EventArguments;
 using PMA.Domain.Interfaces.Services;
 using PMA.Domain.Models;
-using PMA.Domain.Notifications;
 using PMA.Infrastructure.DbContexts;
 using PMA.Infrastructure.Services.Base;
+using PMA.Utils.Exceptions;
 using PMA.Utils.Extensions;
 using System;
 using System.Collections.Generic;
@@ -20,11 +19,6 @@ namespace PMA.Infrastructure.Services
 {
     public class SettingService : ServiceBase<SettingService>, ISettingService
     {
-        /// <summary>
-        /// The mediator.
-        /// </summary>
-        private readonly IMediator _mediator;
-
         /// <summary>
         /// The database context.
         /// </summary>
@@ -38,12 +32,10 @@ namespace PMA.Infrastructure.Services
         /// <summary>
         /// Initializes the new instance of <see cref="SettingService"/> class.
         /// </summary>
-        /// <param name="mediator">The mediator.</param>
         /// <param name="context">The database context.</param>
         /// <param name="logger">The logger.</param>
-        public SettingService(IMediator mediator, SqLiteDbContext context, ILogger<SettingService> logger) : base(logger)
+        public SettingService(SqLiteDbContext context, ILogger<SettingService> logger) : base(logger)
         {
-            _mediator = mediator;
             _context = context;
 
             Logger.LogInit();
@@ -56,6 +48,11 @@ namespace PMA.Infrastructure.Services
         }
 
         #region Implementation of ISettingService
+
+        /// <summary>
+        ///  The event that the setting was changed.
+        /// </summary>
+        public event EventHandler<SettingEventArgs> SettingChanged;
 
         /// <summary>
         /// Gets a setting value by name.
@@ -105,7 +102,7 @@ namespace PMA.Infrastructure.Services
 
             _settings[name] = newValue;
 
-            _mediator.Publish(new SettingChangeNotification
+            SettingChanged?.Invoke(this, new SettingEventArgs
             {
                 SettingName = name
             });

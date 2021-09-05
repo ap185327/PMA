@@ -1,0 +1,55 @@
+﻿<MudTable T="@Domain.Interfaces.ViewModels.Controls.IGetEntryIdControlViewModel"
+          Items="@ViewModel.MorphEntries"
+          @bind-SelectedItem="SelectedItem"
+          SortLabel="@SortLabel"
+          Filter="new Func<Domain.Interfaces.ViewModels.Controls.IGetEntryIdControlViewModel, bool>(FilterBySearchString)"
+          RowsPerPage="@_pageSizeOptions[0]"
+          Loading="@ViewModel.IsBusy"
+          Dense="true"
+          Height="400px"
+          Elevation="0"
+          Hover="true">
+    <ToolBarContent>
+        <SearchTextFieldComponent @bind-TextValue="_searchString" />
+    </ToolBarContent>
+    <HeaderContent>
+        <MudTh>
+            <MudTableSortLabel InitialDirection="SortDirection.Ascending" SortBy="new Func<Domain.Interfaces.ViewModels.Controls.IGetEntryIdControlViewModel, object>(x => x.Id)">@IdColumnHeader</MudTableSortLabel>
+        </MudTh>
+        <MudTh>
+            <MudTableSortLabel SortBy="new Func<Domain.Interfaces.ViewModels.Controls.IGetEntryIdControlViewModel, object>(x => x.Entry)">@EntryColumnHeader</MudTableSortLabel>
+        </MudTh>
+        <MudTh>
+            <MudTableSortLabel SortBy="new Func<Domain.Interfaces.ViewModels.Controls.IGetEntryIdControlViewModel, object>(x => x.Parameters)">@ParameterColumnHeader</MudTableSortLabel>
+        </MudTh>
+        <MudTh>
+            <MudTableSortLabel SortBy="new Func<Domain.Interfaces.ViewModels.Controls.IGetEntryIdControlViewModel, object>(x => x.Base)">@BaseColumnHeader</MudTableSortLabel>
+        </MudTh>
+        <MudTh>
+            <MudTableSortLabel SortBy="new Func<Domain.Interfaces.ViewModels.Controls.IGetEntryIdControlViewModel, object>(x => x.Left)">@LeftColumnHeader</MudTableSortLabel>
+        </MudTh>
+        <MudTh>
+            <MudTableSortLabel SortBy="new Func<Domain.Interfaces.ViewModels.Controls.IGetEntryIdControlViewModel, object>(x => x.Right)">@RightColumnHeader</MudTableSortLabel>
+        </MudTh>
+        <MudTh>
+            <MudTableSortLabel SortBy="new Func<Domain.Interfaces.ViewModels.Controls.IGetEntryIdControlViewModel, object>(x => x.IsVirtual)">@IsVirtualColumnHeader</MudTableSortLabel>
+        </MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="@IdColumnHeader">@context.Id</MudTd>
+        <MudTd DataLabel="@EntryColumnHeader">@context.Entry</MudTd>
+        <MudTd DataLabel="@ParameterColumnHeader">
+            <MudText Typo="Typo.caption">@context.Parameters</MudText>
+        </MudTd>
+        <MudTd DataLabel="@BaseColumnHeader">@context.Base</MudTd>
+        <MudTd DataLabel="@LeftColumnHeader">@context.Left</MudTd>
+        <MudTd DataLabel="@RightColumnHeader">@context.Right</MudTd>
+        <MudTd DataLabel="@IsVirtualColumnHeader">@context.IsVirtual</MudTd>
+    </RowTemplate>
+    <NoRecordsContent>
+        <MudText>@NoRecords</MudText>
+    </NoRecordsContent>
+    <PagerContent>
+        <MudTablePager RowsPerPageString="@RowsPerPageString" InfoFormat="@InfoFormat" PageSizeOptions="@_pageSizeOptions" />
+    </PagerContent>
+</MudTable>

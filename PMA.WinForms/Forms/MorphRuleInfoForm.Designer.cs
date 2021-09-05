@@ -84,7 +84,6 @@
             this.StartPosition = System.Windows.Forms.FormStartPosition.Manual;
             this.Text = "Morphological Rule Information";
             this.LocationChanged += new System.EventHandler(this.MorphRuleInfoForm_LocationChanged);
-            this.VisibleChanged += new System.EventHandler(this.MorphRuleInfoForm_VisibleChanged);
             this.ResumeLayout(false);
 
         }

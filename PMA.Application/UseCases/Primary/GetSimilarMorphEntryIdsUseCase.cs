@@ -2,18 +2,16 @@
 //     Copyright 2017-2021 Andrey Pospelov. All rights reserved.
 // </copyright>
 
-using MediatR;
 using Microsoft.Extensions.Logging;
 using PMA.Application.UseCases.Base;
-using PMA.Domain.Constants;
 using PMA.Domain.DataContracts;
 using PMA.Domain.Interfaces.Managers;
 using PMA.Domain.Interfaces.UseCases.Primary;
 using PMA.Domain.Models;
-using PMA.Utils.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace PMA.Application.UseCases.Primary
@@ -32,14 +30,10 @@ namespace PMA.Application.UseCases.Primary
         /// Initializes a new instance of <see cref="GetSimilarMorphEntryIdsUseCase"/> class.
         /// </summary>
         /// <param name="morphEntryManager">The morphological entry manager.</param>
-        /// <param name="mediator">The mediator.</param>
-        /// <param name="parallelOptions">Options that configure the operation of methods on the <see cref="Parallel"/> class.</param>
         /// <param name="logger">The logger.</param>
-        public GetSimilarMorphEntryIdsUseCase(IMorphEntryManager morphEntryManager, IMediator mediator, ParallelOptions parallelOptions, ILogger<GetSimilarMorphEntryIdsUseCase> logger) : base(mediator, parallelOptions, logger)
+        public GetSimilarMorphEntryIdsUseCase(IMorphEntryManager morphEntryManager, ILogger<GetSimilarMorphEntryIdsUseCase> logger) : base(logger)
         {
             _morphEntryManager = morphEntryManager;
-
-            Logger.LogInit();
         }
 
         #region Overrides of UseCaseWithResultBase<GetSimilarMorphEntryIdsUseCase,MorphEntry,IList<int>>
@@ -51,12 +45,6 @@ namespace PMA.Application.UseCases.Primary
         /// <returns>The result of action execution.</returns>
         public override OperationResult<IList<int>> Execute(MorphEntry inputData)
         {
-            if (inputData is null)
-            {
-                Logger.LogError(ErrorMessageConstants.ValueIsNull, nameof(inputData));
-                return OperationResult<IList<int>>.FailureResult(ErrorMessageConstants.ValueIsNull, nameof(inputData));
-            }
-
             try
             {
                 var morphEntries = _morphEntryManager.GetValues(
@@ -76,6 +64,17 @@ namespace PMA.Application.UseCases.Primary
                 Logger.LogError(exception.Message);
                 return OperationResult<IList<int>>.ExceptionResult(exception);
             }
+        }
+
+        /// <summary>
+        /// Executes an action.
+        /// </summary>
+        /// <param name="inputPort">The input data.</param>
+        /// <param name="token">The cancellation token.</param>
+        /// <returns>The result of action execution.</returns>
+        public override Task<OperationResult<IList<int>>> ExecuteAsync(MorphEntry inputPort, CancellationToken token = default)
+        {
+            return Task.FromResult(Execute(inputPort));
         }
 
         #endregion

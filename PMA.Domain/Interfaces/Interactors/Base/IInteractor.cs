@@ -2,12 +2,14 @@
 //     Copyright 2017-2021 Andrey Pospelov. All rights reserved.
 // </copyright>
 
+using System;
+
 namespace PMA.Domain.Interfaces.Interactors.Base
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="IInteractor"/> interfacing class.
     /// </summary>
-    public interface IInteractor
+    public interface IInteractor : IDisposable
     {
     }
 }

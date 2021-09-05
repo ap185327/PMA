@@ -5,6 +5,7 @@
 using System;
 using System.Drawing;
 using System.Windows.Forms;
+using DocumentFormat.OpenXml.InkML;
 
 namespace PMA.WinForms.Controls
 {
@@ -36,6 +37,8 @@ namespace PMA.WinForms.Controls
             get => base.Text;
             set
             {
+                int start = SelectionStart;
+
                 if (!Focused && string.IsNullOrEmpty(value))
                 {
                     base.Text = Watermark;
@@ -46,23 +49,18 @@ namespace PMA.WinForms.Controls
                 {
                     base.Text = value;
                 }
+
+                Select(start, SelectionLength);
             }
         }
-
-        /// <summary>
-        /// Gets or sets auto symbol replace option: aa -> ā, ii -> ī, etc.
-        /// </summary>
-        public bool AutoSymbolReplace { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="WatermarkTextBox">WatermarkTextBox</see> class.
         /// </summary>
         /// <param name="watermark">The watermark.</param>
-        /// <param name="autoSymbolReplace">The auto symbol replace option.</param>
-        public WatermarkTextBox(string watermark, bool autoSymbolReplace)
+        public WatermarkTextBox(string watermark)
         {
             Watermark = watermark;
-            AutoSymbolReplace = autoSymbolReplace;
 
             _watermarkFont = new Font("Segoe UI", 9F, FontStyle.Italic);
 
@@ -120,27 +118,6 @@ namespace PMA.WinForms.Controls
                 ForeColor = SystemColors.GrayText;
                 Font = _watermarkFont;
             }
-
-            if (!AutoSymbolReplace) return;
-
-            string text = Text
-                .Replace("aa", "ā")
-                .Replace("ii", "ī")
-                .Replace("uu", "ū")
-                .Replace("~n", "ñ")
-                .Replace(".n", "ṇ")
-                .Replace(".d", "ḍ")
-                .Replace(".l", "ḷ")
-                .Replace(".m", "ṃ")
-                .Replace(".t", "ṭ")
-                .Replace("\"n", "ṅ");
-
-            if (text == Text) return;
-
-            int start = SelectionStart;
-            int length = SelectionLength;
-            Text = text;
-            Select(start - 1, length);
         }
 
         /// <summary>

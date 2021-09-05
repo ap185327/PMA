@@ -12,17 +12,19 @@ using PMA.Domain.DataContracts;
 using PMA.Domain.Enums;
 using PMA.Domain.InputPorts;
 using PMA.Domain.Interfaces.Managers;
+using PMA.Domain.Interfaces.Services;
 using PMA.Domain.Interfaces.UseCases.Secondary;
 using PMA.Domain.Models;
 using PMA.Domain.Notifications;
 using PMA.Utils.Extensions;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
-using PMA.Domain.Interfaces.Services;
 
 namespace PMA.Application.UseCases.Secondary
 {
@@ -31,6 +33,11 @@ namespace PMA.Application.UseCases.Secondary
     /// </summary>
     public sealed class ParseMorphEntryUseCase : UseCaseBase<ParseMorphEntryUseCase, MorphParserInputPort>, IParseMorphEntryUseCase
     {
+        /// <summary>
+        /// Options that configure the operation of methods on the <see cref="Parallel"/> class.
+        /// </summary>
+        private readonly ParallelOptions _parallelOptions = new();
+
         /// <summary>
         /// Maximum number of solutions for current thread.
         /// </summary>
@@ -62,6 +69,11 @@ namespace PMA.Application.UseCases.Secondary
         private readonly ISettingService _settingService;
 
         /// <summary>
+        /// The mediator.
+        /// </summary>
+        private readonly IMediator _mediator;
+
+        /// <summary>
         /// The input data.
         /// </summary>
         private MorphParserInputPort _inputData;
@@ -85,7 +97,7 @@ namespace PMA.Application.UseCases.Secondary
                 {
                     _currentDepthLevel = value;
 
-                    Mediator.Publish(new DepthLevelNotification
+                    _mediator.Publish(new DepthLevelNotification
                     {
                         CurrentDepthLevel = _currentDepthLevel
                     });
@@ -101,22 +113,19 @@ namespace PMA.Application.UseCases.Secondary
         /// <param name="morphCombinationManager">The morphological combination manager.</param>
         /// <param name="settingService">The setting service.</param>
         /// <param name="mediator">The mediator.</param>
-        /// <param name="parallelOptions">Options that configure the operation of methods on the <see cref="Parallel"/> class.</param>
         /// <param name="logger">The logger.</param>
         public ParseMorphEntryUseCase(IMorphEntryManager morphEntryManager,
             IMorphRuleManager morphRuleManager,
             IMorphCombinationManager morphCombinationManager,
             ISettingService settingService,
             IMediator mediator,
-            ParallelOptions parallelOptions,
-            ILogger<ParseMorphEntryUseCase> logger) : base(mediator, parallelOptions, logger)
+            ILogger<ParseMorphEntryUseCase> logger) : base(logger)
         {
             _morphEntryManager = morphEntryManager;
             _morphRuleManager = morphRuleManager;
             _morphCombinationManager = morphCombinationManager;
             _settingService = settingService;
-
-            Logger.LogInit();
+            _mediator = mediator;
         }
 
         #region Overrides of UseCaseBase<ParseMorphEntryUseCase,MorphParserInputPort>
@@ -128,45 +137,58 @@ namespace PMA.Application.UseCases.Secondary
         /// <returns>The result of action execution.</returns>
         public override OperationResult Execute(MorphParserInputPort inputData)
         {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Executes an action.
+        /// </summary>
+        /// <param name="inputPort">The input data.</param>
+        /// <param name="token">The cancellation token.</param>
+        /// <returns>The result of action execution.</returns>
+        public override async Task<OperationResult> ExecuteAsync(MorphParserInputPort inputPort, CancellationToken token = default)
+        {
             Logger.LogEntry();
 
-            if (inputData is null)
+            token.ThrowIfCancellationRequested();
+
+            _parallelOptions.CancellationToken = token;
+
+            if (inputPort is null)
             {
-                Logger.LogError(ErrorMessageConstants.ValueIsNull, nameof(inputData));
+                Logger.LogError(ErrorMessageConstants.ValueIsNull, nameof(inputPort));
                 Logger.LogExit();
-                return OperationResult.FailureResult(ErrorMessageConstants.ValueIsNull, nameof(inputData));
+                return OperationResult.FailureResult(ErrorMessageConstants.ValueIsNull, nameof(inputPort));
             }
 
-            if (inputData.MorphEntry is null)
+            if (inputPort.MorphEntry is null)
             {
-                Logger.LogError(ErrorMessageConstants.ValueIsNull, nameof(inputData.MorphEntry));
+                Logger.LogError(ErrorMessageConstants.ValueIsNull, nameof(inputPort.MorphEntry));
                 Logger.LogExit();
-                return OperationResult.FailureResult(ErrorMessageConstants.ValueIsNull, nameof(inputData.MorphEntry));
+                return OperationResult.FailureResult(ErrorMessageConstants.ValueIsNull, nameof(inputPort.MorphEntry));
             }
 
-            if (ParallelOptions.CancellationToken.IsCancellationRequested)
-            {
-                Logger.LogExit();
-                return OperationResult.SuccessResult();
-            }
-
-            _inputData = inputData;
+            _inputData = inputPort;
             _maxDepthLevel = _settingService.GetValue<int>("Options.MaxDepthLevel");
             CurrentDepthLevel = 0;
 
             var time = new Stopwatch();
 
             time.Start();
-            _inputData.WordForm = _inputData.MorphEntry.Id > 0
-                ? GetWordFormFromMorphEntry(_inputData.MorphEntry, 0)
-                : GetWordFormFromParameters(_inputData.MorphEntry.Entry,
-                    _inputData.MorphEntry.Parameters,
-                    _inputData.MorphEntry.IsVirtual,
-                    _inputData.MorphEntry.Base,
-                    _inputData.MorphEntry.Left,
-                    _inputData.MorphEntry.Right,
-                    string.Empty,
-                    0);
+            await Task.Run(() =>
+            {
+                _inputData.WordForm = _inputData.MorphEntry.Id > 0
+                    ? GetWordFormFromMorphEntry(_inputData.MorphEntry, 0)
+                    : GetWordFormFromParameters(_inputData.MorphEntry.Entry,
+                        _inputData.MorphEntry.Parameters,
+                        _inputData.MorphEntry.IsVirtual,
+                        _inputData.MorphEntry.Base,
+                        _inputData.MorphEntry.Left,
+                        _inputData.MorphEntry.Right,
+                        string.Empty,
+                        0);
+            }, token);
+
             time.Stop();
 
 #if DEBUG
@@ -454,8 +476,10 @@ namespace PMA.Application.UseCases.Secondary
             {
                 var newSolutionBag = new ConcurrentBag<Solution>();
 
-                Parallel.ForEach(morphRules, ParallelOptions, morphRule =>
+                Parallel.ForEach(morphRules, _parallelOptions, morphRule =>
                 {
+                    _parallelOptions.CancellationToken.ThrowIfCancellationRequested();
+
                     var list = GetSolutionCollectionFromMorphRule(draftSolution, entry, morphRule, currentDepthLevel);
 
                     for (int i = 0; i < list.Count; i++)

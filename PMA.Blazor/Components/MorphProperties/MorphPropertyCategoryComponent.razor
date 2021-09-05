@@ -1,0 +1,16 @@
+﻿<MudExpansionPanel Style="@Style">
+    <TitleContent>
+        <div class="d-flex">
+            <MudText>@Name</MudText>
+            <div class="d-flex align-center ml-2">
+                <MudText Typo="Typo.caption">@Terms</MudText>
+            </div>
+        </div>
+    </TitleContent>
+    <ChildContent>
+        @foreach (var item in ViewModel.Properties)
+        {
+            <MorphPropertyComponent ViewModel="@item" />
+        }
+    </ChildContent>
+</MudExpansionPanel>

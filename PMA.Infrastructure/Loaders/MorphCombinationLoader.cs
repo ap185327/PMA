@@ -6,7 +6,6 @@ using AutoMapper;
 using Microsoft.Extensions.Logging;
 using PMA.Domain.Constants;
 using PMA.Domain.Enums;
-using PMA.Domain.Exceptions;
 using PMA.Domain.Interfaces.Loaders;
 using PMA.Domain.Interfaces.Locators;
 using PMA.Infrastructure.Constants;
@@ -15,11 +14,14 @@ using PMA.Infrastructure.Entities;
 using PMA.Infrastructure.Extensions;
 using PMA.Infrastructure.Loaders.Base;
 using PMA.Infrastructure.Models;
+using PMA.Utils.Exceptions;
 using PMA.Utils.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace PMA.Infrastructure.Loaders
 {
@@ -42,7 +44,6 @@ namespace PMA.Infrastructure.Loaders
         /// <param name="logger">The logger.</param>
         public MorphCombinationLoader(IServiceLocator serviceLocator, SqLiteDbContext context, IMapperBase mapper, ILogger<MorphCombinationLoader> logger) : base(serviceLocator, context, mapper, logger)
         {
-            Logger.LogInit();
         }
 
         #region Overrides of LoaderBase<MorphCombinationLoader>
@@ -93,6 +94,15 @@ namespace PMA.Infrastructure.Loaders
             result = ValidateValuesByTerm(columnNames);
 
             return result;
+        }
+
+        /// <summary>
+        /// Validates and formats raw data.
+        /// </summary>
+        /// <returns>True if the raw data has been validated; otherwise - False.</returns>
+        public override Task<bool> ValidateAndFormatRawDataAsync(CancellationToken token = default)
+        {
+            return Task.FromResult(ValidateAndFormatRawData());
         }
 
         /// <summary>

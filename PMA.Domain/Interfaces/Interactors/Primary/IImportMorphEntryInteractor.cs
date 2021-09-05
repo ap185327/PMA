@@ -5,6 +5,8 @@
 using PMA.Domain.DataContracts;
 using PMA.Domain.InputPorts;
 using PMA.Domain.Interfaces.Interactors.Base;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace PMA.Domain.Interfaces.Interactors.Primary
 {
@@ -17,11 +19,8 @@ namespace PMA.Domain.Interfaces.Interactors.Primary
         /// Starts the import morphological entries process.
         /// </summary>
         /// <param name="inputData">The import morphological entry input data.</param>
-        OperationResult StartImportMorphEntries(ImportMorphEntryInputPort inputData);
-
-        /// <summary>
-        /// Stops the import morphological entries process.
-        /// </summary>
-        OperationResult StopImportMorphEntries();
+        /// <param name="token">The cancellation token.</param>
+        /// <returns>The operation result.</returns>
+        Task<OperationResult> StartImportMorphEntriesAsync(ImportMorphEntryInputPort inputData, CancellationToken token = default);
     }
 }

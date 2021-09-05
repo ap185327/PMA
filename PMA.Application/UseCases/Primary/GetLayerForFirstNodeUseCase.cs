@@ -2,14 +2,13 @@
 //     Copyright 2017-2021 Andrey Pospelov. All rights reserved.
 // </copyright>
 
-using MediatR;
 using Microsoft.Extensions.Logging;
 using PMA.Application.UseCases.Base;
 using PMA.Domain.DataContracts;
 using PMA.Domain.Interfaces.Managers;
 using PMA.Domain.Interfaces.UseCases.Primary;
-using PMA.Utils.Extensions;
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace PMA.Application.UseCases.Primary
@@ -28,14 +27,10 @@ namespace PMA.Application.UseCases.Primary
         /// Initializes a new instance of <see cref="GetLayerForFirstNodeUseCase"/> class.
         /// </summary>
         /// <param name="freqRatingManager">The frequency rating manager.</param>
-        /// <param name="mediator">The mediator.</param>
-        /// <param name="parallelOptions">Options that configure the operation of methods on the <see cref="Parallel"/> class.</param>
         /// <param name="logger">The logger.</param>
-        public GetLayerForFirstNodeUseCase(IFreqRatingManager freqRatingManager, IMediator mediator, ParallelOptions parallelOptions, ILogger<GetLayerForFirstNodeUseCase> logger) : base(mediator, parallelOptions, logger)
+        public GetLayerForFirstNodeUseCase(IFreqRatingManager freqRatingManager, ILogger<GetLayerForFirstNodeUseCase> logger) : base(logger)
         {
             _freqRatingManager = freqRatingManager;
-
-            Logger.LogInit();
         }
 
         #region Overrides of UseCaseWithResultBase<GetLayerForFirstNodeUseCase,int>
@@ -57,6 +52,16 @@ namespace PMA.Application.UseCases.Primary
                 Logger.LogError(exception.Message);
                 return OperationResult<uint>.ExceptionResult(exception);
             }
+        }
+
+        /// <summary>
+        /// Executes an action.
+        /// </summary>
+        /// <param name="token">The cancellation token.</param>
+        /// <returns>The result of action execution.</returns>
+        public override Task<OperationResult<uint>> ExecuteAsync(CancellationToken token = default)
+        {
+            return Task.FromResult(Execute());
         }
 
         #endregion

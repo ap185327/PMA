@@ -1,0 +1,15 @@
+﻿@inherits LayoutComponentBase
+
+<MudThemeProvider Theme="_currentTheme" />
+<MudDialogProvider MaxWidth="MaxWidth.Medium" />
+<MudSnackbarProvider />
+
+<CascadingValue Value="_currentTheme" Name="Theme">
+    <MudLayout Style="overflow: hidden">
+        <MudAppBar Elevation="25">
+            <MainToolStripComponent @bind-DarkMode="DarkMode" />
+        </MudAppBar>
+        <MudMainContent Style="@_pageStyle">@Body</MudMainContent>
+        <StatusStripComponent />
+    </MudLayout>
+</CascadingValue>

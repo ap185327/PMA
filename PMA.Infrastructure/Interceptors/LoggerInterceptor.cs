@@ -52,6 +52,9 @@ namespace PMA.Infrastructure.Interceptors
 
             var watch = Stopwatch.StartNew();
 
+#if DEBUG
+            invocation.Proceed();
+#else
             try
             {
                 invocation.Proceed();
@@ -61,6 +64,7 @@ namespace PMA.Infrastructure.Interceptors
                 _logger.LogError(exception.ToString());
                 throw;
             }
+#endif
 
             watch.Stop();
 
@@ -76,6 +80,6 @@ namespace PMA.Infrastructure.Interceptors
                 : $"-{name} => return: {invocation.ReturnValue} ({executionTime} ms)");
         }
 
-        #endregion
+#endregion
     }
 }

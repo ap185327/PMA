@@ -1,0 +1,16 @@
+﻿<MudTable Items="ViewModel.Rules"
+          GroupBy="_groupDefinition"
+          Dense="true"
+          Elevation="0">
+    <HeaderContent>
+        <MudTh>@IdColumnHeader</MudTh>
+        <MudTh>@DescriptionColumnHeader</MudTh>
+    </HeaderContent>
+    <GroupHeaderTemplate>
+        <MudTh colspan="2">@GetRuleTypeValue(context.Key)</MudTh>
+    </GroupHeaderTemplate>
+    <RowTemplate>
+        <MudTd DataLabel="@IdColumnHeader">@context.Id</MudTd>
+        <MudTd DataLabel="@DescriptionColumnHeader">@context.Description</MudTd>
+    </RowTemplate>
+</MudTable>

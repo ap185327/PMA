@@ -2,17 +2,15 @@
 //     Copyright 2017-2021 Andrey Pospelov. All rights reserved.
 // </copyright>
 
-using MediatR;
 using Microsoft.Extensions.Logging;
 using PMA.Application.UseCases.Base;
-using PMA.Domain.Constants;
 using PMA.Domain.DataContracts;
 using PMA.Domain.Interfaces.Providers;
 using PMA.Domain.Interfaces.UseCases.Primary;
 using PMA.Domain.OutputPorts;
-using PMA.Utils.Extensions;
 using System;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace PMA.Application.UseCases.Primary
@@ -31,14 +29,10 @@ namespace PMA.Application.UseCases.Primary
         /// Initializes a new instance of <see cref="TryToDeleteMorphEntryUseCase"/> class.
         /// </summary>
         /// <param name="morphEntryDbProvider">The morphological entry database provider.</param>
-        /// <param name="mediator">The mediator.</param>
-        /// <param name="parallelOptions">Options that configure the operation of methods on the <see cref="Parallel"/> class.</param>
         /// <param name="logger">The logger.</param>
-        public TryToDeleteMorphEntryUseCase(IMorphEntryDbProvider morphEntryDbProvider, IMediator mediator, ParallelOptions parallelOptions, ILogger<TryToDeleteMorphEntryUseCase> logger) : base(mediator, parallelOptions, logger)
+        public TryToDeleteMorphEntryUseCase(IMorphEntryDbProvider morphEntryDbProvider, ILogger<TryToDeleteMorphEntryUseCase> logger) : base(logger)
         {
             _morphEntryDbProvider = morphEntryDbProvider;
-
-            Logger.LogInit();
         }
 
         #region Overrides of UseCaseWithResultBase<TryToDeleteMorphEntryUseCase,int,DeleteMorphEntryOutputPort>
@@ -46,19 +40,13 @@ namespace PMA.Application.UseCases.Primary
         /// <summary>
         /// Executes an action.
         /// </summary>
-        /// <param name="inputData">The input data.</param>
+        /// <param name="inputPort">The input data.</param>
         /// <returns>The result of action execution.</returns>
-        public override OperationResult<DeleteMorphEntryOutputPort> Execute(int inputData)
+        public override OperationResult<DeleteMorphEntryOutputPort> Execute(int inputPort)
         {
-            if (inputData < 0)
-            {
-                Logger.LogError(ErrorMessageConstants.MorphParameterIndexOutOfRange, inputData);
-                return OperationResult<DeleteMorphEntryOutputPort>.FailureResult(ErrorMessageConstants.MorphParameterIndexOutOfRange, inputData);
-            }
-
             try
             {
-                var morphEntry = _morphEntryDbProvider.GetValues().Single(x => x.Id == inputData);
+                var morphEntry = _morphEntryDbProvider.GetValues().Single(x => x.Id == inputPort);
                 var parentMorphEntries = _morphEntryDbProvider.GetValues()
                     .Where(x => x.Left == morphEntry || x.Right == morphEntry).ToList();
 
@@ -66,7 +54,7 @@ namespace PMA.Application.UseCases.Primary
                 {
                     return OperationResult<DeleteMorphEntryOutputPort>.SuccessResult(new DeleteMorphEntryOutputPort
                     {
-                        Id = inputData,
+                        Id = inputPort,
                         IsDeleted = false,
                         MorphEntries = parentMorphEntries
                     });
@@ -76,7 +64,7 @@ namespace PMA.Application.UseCases.Primary
 
                 return OperationResult<DeleteMorphEntryOutputPort>.SuccessResult(new DeleteMorphEntryOutputPort
                 {
-                    Id = inputData,
+                    Id = inputPort,
                     IsDeleted = true
                 });
             }
@@ -85,6 +73,17 @@ namespace PMA.Application.UseCases.Primary
                 Logger.LogError(exception.Message);
                 return OperationResult<DeleteMorphEntryOutputPort>.ExceptionResult(exception);
             }
+        }
+
+        /// <summary>
+        /// Executes an action.
+        /// </summary>
+        /// <param name="inputPort">The input data.</param>
+        /// <param name="token">The cancellation token.</param>
+        /// <returns>The result of action execution.</returns>
+        public override Task<OperationResult<DeleteMorphEntryOutputPort>> ExecuteAsync(int inputPort, CancellationToken token = default)
+        {
+            return Task.FromResult(Execute(inputPort));
         }
 
         #endregion

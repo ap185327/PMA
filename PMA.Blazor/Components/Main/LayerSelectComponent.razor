@@ -1,0 +1,16 @@
+﻿<MudTooltip Text="@TooltipText">
+    <MudSelect T="int"
+               @bind-Value="ViewModel.Layer"
+               Label="@Label"
+               OffsetY="true"
+               Variant="Variant.Outlined"
+               Margin="Margin.Dense"
+               Dense="true"
+               Style="Width: 100px">
+        @for (int i = 0; i <= 8; i++)
+        {
+            int layer = i;
+            <MudSelectItem Value="@layer">@GetLayerValue(layer)</MudSelectItem>
+        }
+    </MudSelect>
+</MudTooltip>

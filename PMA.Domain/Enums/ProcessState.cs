@@ -20,11 +20,6 @@ namespace PMA.Domain.Enums
         InProgress,
 
         /// <summary>
-        /// The process is canceling.
-        /// </summary>
-        Canceling,
-
-        /// <summary>
         /// The process is canceled.
         /// </summary>
         Canceled,

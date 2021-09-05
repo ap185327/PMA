@@ -20,6 +20,11 @@ namespace PMA.Domain.Constants
         public const byte UnknownTermId = 0;
 
         /// <summary>
+        /// The None term ID.
+        /// </summary>
+        public const byte NoneTermId = 1;
+
+        /// <summary>
         /// The alternative unknown term ID.
         /// </summary>
         public const byte AlternativeUnknownTermId = 255;

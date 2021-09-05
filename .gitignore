@@ -15,3 +15,5 @@
 /PMA.Utils/obj
 /PMA.WinForms/bin
 /PMA.WinForms/obj
+/PMA.Blazor/bin
+/PMA.Blazor/obj

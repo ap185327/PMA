@@ -14,7 +14,6 @@ using PMA.Domain.Interfaces.Providers;
 using PMA.Domain.Interfaces.Services;
 using PMA.Domain.Interfaces.UseCases.Primary;
 using PMA.Domain.Notifications;
-using PMA.Utils.Extensions;
 using System;
 using System.IO;
 using System.Threading;
@@ -73,6 +72,11 @@ namespace PMA.Application.UseCases.Primary
         private readonly IExcelDataService _excelDataService;
 
         /// <summary>
+        /// The mediator.
+        /// </summary>
+        private readonly IMediator _mediator;
+
+        /// <summary>
         /// Initializes a new instance of <see cref="StartDbUpdatingUseCase"/> class.
         /// </summary>
         /// <param name="morphCombinationLoader">The morphological combination loader.</param>
@@ -85,7 +89,6 @@ namespace PMA.Application.UseCases.Primary
         /// <param name="logMessageService">The log message service.</param>
         /// <param name="excelDataService">The excel data service.</param>
         /// <param name="mediator">The mediator.</param>
-        /// <param name="parallelOptions">Options that configure the operation of methods on the <see cref="Parallel"/> class.</param>
         /// <param name="logger">The logger.</param>
         public StartDbUpdatingUseCase(IMorphCombinationLoader morphCombinationLoader,
             ISandhiGroupLoader sandhiGroupLoader,
@@ -97,10 +100,7 @@ namespace PMA.Application.UseCases.Primary
             ILogMessageService logMessageService,
             IExcelDataService excelDataService,
             IMediator mediator,
-            ParallelOptions parallelOptions,
-            ILogger<StartDbUpdatingUseCase> logger) : base(mediator,
-            parallelOptions,
-            logger)
+            ILogger<StartDbUpdatingUseCase> logger) : base(logger)
         {
             _morphCombinationLoader = morphCombinationLoader;
             _sandhiGroupLoader = sandhiGroupLoader;
@@ -111,8 +111,7 @@ namespace PMA.Application.UseCases.Primary
             _translateService = translateService;
             _logMessageService = logMessageService;
             _excelDataService = excelDataService;
-
-            Logger.LogInit();
+            _mediator = mediator;
         }
 
         #region Overrides of UseCaseBase<StartDbUpdatingUseCase,UpdateDbInputPort>
@@ -124,151 +123,162 @@ namespace PMA.Application.UseCases.Primary
         /// <returns>The result of action execution.</returns>
         public override OperationResult Execute(UpdateDbInputPort inputData)
         {
-            if (inputData is null)
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Executes an action.
+        /// </summary>
+        /// <param name="inputPort">The input data.</param>
+        /// <param name="token">The cancellation token.</param>
+        /// <returns>The result of action execution.</returns>
+        public override async Task<OperationResult> ExecuteAsync(UpdateDbInputPort inputPort, CancellationToken token = default)
+        {
+            if (inputPort is null)
             {
-                Logger.LogError(ErrorMessageConstants.ValueIsNull, nameof(inputData));
-                return OperationResult.FailureResult(ErrorMessageConstants.ValueIsNull, nameof(inputData));
+                Logger.LogError(ErrorMessageConstants.ValueIsNull, nameof(inputPort));
+                return OperationResult.FailureResult(ErrorMessageConstants.ValueIsNull, nameof(inputPort));
             }
 
-            if (string.IsNullOrEmpty(inputData.DataFilePath))
+            if (string.IsNullOrEmpty(inputPort.DataFilePath))
             {
                 Logger.LogError(ErrorMessageConstants.FilePathIsEmpty);
                 return OperationResult.FailureResult(ErrorMessageConstants.FilePathIsEmpty);
             }
 
-            if (!File.Exists(inputData.DataFilePath))
+            if (!File.Exists(inputPort.DataFilePath))
             {
-                Logger.LogError(ErrorMessageConstants.FileNotFound, inputData.DataFilePath);
-                return OperationResult.FailureResult(ErrorMessageConstants.FileNotFound, inputData.DataFilePath);
+                Logger.LogError(ErrorMessageConstants.FileNotFound, inputPort.DataFilePath);
+                return OperationResult.FailureResult(ErrorMessageConstants.FileNotFound, inputPort.DataFilePath);
             }
 
-            if (!inputData.IsMorphCombinationDbTableChecked &&
-                !inputData.IsMorphRuleDbTableChecked &&
-                !inputData.IsSandhiGroupDbTableChecked &&
-                !inputData.IsSandhiRuleDbTableChecked)
+            if (!inputPort.IsMorphCombinationDbTableChecked &&
+                !inputPort.IsMorphRuleDbTableChecked &&
+                !inputPort.IsSandhiGroupDbTableChecked &&
+                !inputPort.IsSandhiRuleDbTableChecked)
             {
                 return OperationResult.SuccessResult();
             }
 
-            var cancellationTokenSource = new CancellationTokenSource();
-
-            // ReSharper disable once MethodSupportsCancellation
-            Mediator.Publish(new CancellationTokenResourceNotification
+            try
             {
-                CancellationTokenSource = cancellationTokenSource
-            });
-
-            ParallelOptions.CancellationToken = cancellationTokenSource.Token;
-
-            Task.Run(() =>
-            {
-                // ReSharper disable once MethodSupportsCancellation
-                Mediator.Publish(new UpdateDbNotification
+                await Task.Run(() =>
                 {
-                    State = ProcessState.InProgress
-                });
-
-                _logMessageService.SendMessage(_translateService.Translate(LogMessageType.ImportStart));
-                _logMessageService.SendMessage(_translateService.Translate(LogMessageType.DataFileOpening));
-
-                try
-                {
-                    _excelDataService.Open(inputData.DataFilePath);
-                }
-                catch (FileNotFoundException exception)
-                {
-                    _logMessageService.SendMessage(MessageLevel.Error, _translateService.Translate(LogMessageType.DataFileDoesNotExist, inputData.DataFilePath));
-                    _logMessageService.SendMessage(_translateService.Translate(LogMessageType.ImportEnd));
-
-                    Logger.LogError(exception.Message);
-
-                    // ReSharper disable once MethodSupportsCancellation
-                    Mediator.Publish(new UpdateDbNotification
+                    _mediator.Publish(new UpdateDbNotification
                     {
-                        State = ProcessState.Error
-                    });
+                        State = ProcessState.InProgress
+                    }, token);
 
-                    return;
-                }
-                catch (Exception exception)
-                {
-                    _logMessageService.SendMessage(MessageLevel.Error, _translateService.Translate(LogMessageType.DataFileOpenError, exception.Message));
-                    _logMessageService.SendMessage(_translateService.Translate(LogMessageType.ImportEnd));
+                    _logMessageService.SendMessage(_translateService.Translate(LogMessageType.ImportStart));
+                    _logMessageService.SendMessage(_translateService.Translate(LogMessageType.DataFileOpening));
 
-                    Logger.LogError(exception.Message);
-
-                    // ReSharper disable once MethodSupportsCancellation
-                    Mediator.Publish(new UpdateDbNotification
+                    try
                     {
-                        State = ProcessState.Error
-                    });
-
-                    return;
-                }
-
-                bool isSuccess = true;
-
-                if (inputData.IsMorphCombinationDbTableChecked)
-                {
-                    isSuccess = UpdateMorphCombinationDbTable();
-
-                    if (isSuccess)
-                    {
-                        ReloadMorphCombinationDbProvider();
+                        _excelDataService.Open(inputPort.DataFilePath);
                     }
-                }
+                    catch (FileNotFoundException exception)
+                    {
+                        _logMessageService.SendMessage(MessageLevel.Error, _translateService.Translate(LogMessageType.DataFileDoesNotExist, inputPort.DataFilePath));
+                        _logMessageService.SendMessage(_translateService.Translate(LogMessageType.ImportEnd));
 
-                if (isSuccess && inputData.IsSandhiGroupDbTableChecked)
-                {
-                    isSuccess = UpdateSandhiGroupDbTable();
-                }
+                        Logger.LogError(exception.Message);
 
-                if (isSuccess && inputData.IsSandhiRuleDbTableChecked)
-                {
-                    isSuccess = UpdateSandhiRuleDbTable();
-                }
+                        _mediator.Publish(new UpdateDbNotification
+                        {
+                            State = ProcessState.Error
+                        }, token);
 
-                if (isSuccess && inputData.IsMorphRuleDbTableChecked)
-                {
-                    isSuccess = UpdateMorphRuleDbTable();
-                }
+                        return;
+                    }
+                    catch (Exception exception)
+                    {
+                        _logMessageService.SendMessage(MessageLevel.Error, _translateService.Translate(LogMessageType.DataFileOpenError, exception.Message));
+                        _logMessageService.SendMessage(_translateService.Translate(LogMessageType.ImportEnd));
 
-                if (isSuccess &&
-                    (inputData.IsMorphRuleDbTableChecked ||
-                    inputData.IsSandhiGroupDbTableChecked ||
-                    inputData.IsSandhiRuleDbTableChecked))
-                {
-                    ReloadMorphRuleDbProvider();
-                }
+                        Logger.LogError(exception.Message);
 
-                _logMessageService.SendMessage(_translateService.Translate(LogMessageType.DataFileClosing));
+                        _mediator.Publish(new UpdateDbNotification
+                        {
+                            State = ProcessState.Error
+                        }, token);
 
-                try
-                {
-                    _excelDataService.Close();
-                }
-                catch (Exception exception)
-                {
-                    _logMessageService.SendMessage(MessageLevel.Error, _translateService.Translate(LogMessageType.DataFileCloseError, exception.Message));
-                }
+                        return;
+                    }
 
-                _logMessageService.SendMessage(ParallelOptions.CancellationToken.IsCancellationRequested
-                    ? _translateService.Translate(LogMessageType.ImportCanceled)
-                    : _translateService.Translate(LogMessageType.ImportCompleted));
+                    bool isSuccess = true;
 
+                    if (inputPort.IsMorphCombinationDbTableChecked)
+                    {
+                        isSuccess = UpdateMorphCombinationDbTable(token);
+
+                        if (isSuccess)
+                        {
+                            ReloadMorphCombinationDbProvider();
+                        }
+                    }
+
+                    if (isSuccess && inputPort.IsSandhiGroupDbTableChecked)
+                    {
+                        isSuccess = UpdateSandhiGroupDbTable(token);
+                    }
+
+                    if (isSuccess && inputPort.IsSandhiRuleDbTableChecked)
+                    {
+                        isSuccess = UpdateSandhiRuleDbTable(token);
+                    }
+
+                    if (isSuccess && inputPort.IsMorphRuleDbTableChecked)
+                    {
+                        isSuccess = UpdateMorphRuleDbTable(token);
+                    }
+
+                    if (isSuccess &&
+                        (inputPort.IsMorphRuleDbTableChecked ||
+                         inputPort.IsSandhiGroupDbTableChecked ||
+                         inputPort.IsSandhiRuleDbTableChecked))
+                    {
+                        ReloadMorphRuleDbProvider();
+                    }
+
+                    _logMessageService.SendMessage(_translateService.Translate(LogMessageType.DataFileClosing));
+
+                    try
+                    {
+                        _excelDataService.Close();
+                    }
+                    catch (Exception exception)
+                    {
+                        _logMessageService.SendMessage(MessageLevel.Error, _translateService.Translate(LogMessageType.DataFileCloseError, exception.Message));
+                    }
+
+                    _logMessageService.SendMessage(_translateService.Translate(LogMessageType.ImportCompleted));
+                    _logMessageService.SendMessage(_translateService.Translate(LogMessageType.ImportEnd));
+
+                    _mediator.Publish(new UpdateDbNotification
+                    {
+                        State = ProcessState.Completed
+                    }, token);
+
+                }, token);
+
+                return OperationResult.SuccessResult();
+            }
+            catch (OperationCanceledException)
+            {
+                _logMessageService.SendMessage(_translateService.Translate(LogMessageType.ImportCanceled));
                 _logMessageService.SendMessage(_translateService.Translate(LogMessageType.ImportEnd));
 
-                // ReSharper disable once MethodSupportsCancellation
-                Mediator.Publish(new UpdateDbNotification
+                await _mediator.Publish(new UpdateDbNotification
                 {
-                    State = ParallelOptions.CancellationToken.IsCancellationRequested
-                        ? ProcessState.Completed
-                        : ProcessState.Canceled
-                });
+                    State = ProcessState.Canceled
+                }, CancellationToken.None);
 
-            }, cancellationTokenSource.Token);
-
-            return OperationResult.SuccessResult();
+                return OperationResult.SuccessResult();
+            }
+            catch (Exception exception)
+            {
+                return OperationResult.ExceptionResult(exception);
+            }
         }
 
         #endregion
@@ -276,10 +286,11 @@ namespace PMA.Application.UseCases.Primary
         /// <summary>
         /// Updates morphological combination database table.
         /// </summary>
+        /// <param name="token">The cancellation token.</param>
         /// <returns>True if the operation is completed; otherwise - False.</returns>
-        private bool UpdateMorphCombinationDbTable()
+        private bool UpdateMorphCombinationDbTable(CancellationToken token)
         {
-            if (ParallelOptions.CancellationToken.IsCancellationRequested) return false;
+            token.ThrowIfCancellationRequested();
 
             if (!_morphCombinationLoader.ReadRawData())
             {
@@ -287,11 +298,7 @@ namespace PMA.Application.UseCases.Primary
                 return false;
             }
 
-            if (ParallelOptions.CancellationToken.IsCancellationRequested)
-            {
-                _morphCombinationLoader.Clear();
-                return false;
-            }
+            token.ThrowIfCancellationRequested();
 
             if (!_morphCombinationLoader.ValidateAndFormatRawData())
             {
@@ -299,11 +306,7 @@ namespace PMA.Application.UseCases.Primary
                 return false;
             }
 
-            if (ParallelOptions.CancellationToken.IsCancellationRequested)
-            {
-                _morphCombinationLoader.Clear();
-                return false;
-            }
+            token.ThrowIfCancellationRequested();
 
             if (!_morphCombinationLoader.LoadData())
             {
@@ -318,10 +321,11 @@ namespace PMA.Application.UseCases.Primary
         /// <summary>
         /// Updates sandhi group database table.
         /// </summary>
+        /// <param name="token">The cancellation token.</param>
         /// <returns>True if the operation is completed; otherwise - False.</returns>
-        private bool UpdateSandhiGroupDbTable()
+        private bool UpdateSandhiGroupDbTable(CancellationToken token)
         {
-            if (ParallelOptions.CancellationToken.IsCancellationRequested) return false;
+            token.ThrowIfCancellationRequested();
 
             if (!_sandhiGroupLoader.ReadRawData())
             {
@@ -329,11 +333,7 @@ namespace PMA.Application.UseCases.Primary
                 return false;
             }
 
-            if (ParallelOptions.CancellationToken.IsCancellationRequested)
-            {
-                _sandhiGroupLoader.Clear();
-                return false;
-            }
+            token.ThrowIfCancellationRequested();
 
             if (!_sandhiGroupLoader.ValidateAndFormatRawData())
             {
@@ -341,11 +341,7 @@ namespace PMA.Application.UseCases.Primary
                 return false;
             }
 
-            if (ParallelOptions.CancellationToken.IsCancellationRequested)
-            {
-                _sandhiGroupLoader.Clear();
-                return false;
-            }
+            token.ThrowIfCancellationRequested();
 
             if (!_sandhiGroupLoader.LoadData())
             {
@@ -361,9 +357,9 @@ namespace PMA.Application.UseCases.Primary
         /// Updates sandhi rule database table.
         /// </summary>
         /// <returns>True if the operation is completed; otherwise - False.</returns>
-        private bool UpdateSandhiRuleDbTable()
+        private bool UpdateSandhiRuleDbTable(CancellationToken token)
         {
-            if (ParallelOptions.CancellationToken.IsCancellationRequested) return false;
+            token.ThrowIfCancellationRequested();
 
             if (!_sandhiRuleLoader.ReadRawData())
             {
@@ -371,11 +367,7 @@ namespace PMA.Application.UseCases.Primary
                 return false;
             }
 
-            if (ParallelOptions.CancellationToken.IsCancellationRequested)
-            {
-                _sandhiRuleLoader.Clear();
-                return false;
-            }
+            token.ThrowIfCancellationRequested();
 
             if (!_sandhiRuleLoader.ValidateAndFormatRawData())
             {
@@ -383,11 +375,7 @@ namespace PMA.Application.UseCases.Primary
                 return false;
             }
 
-            if (ParallelOptions.CancellationToken.IsCancellationRequested)
-            {
-                _sandhiRuleLoader.Clear();
-                return false;
-            }
+            token.ThrowIfCancellationRequested();
 
             if (!_sandhiRuleLoader.LoadData())
             {
@@ -402,10 +390,11 @@ namespace PMA.Application.UseCases.Primary
         /// <summary>
         /// Updates morphological rule database table.
         /// </summary>
+        /// <param name="token">The cancellation token.</param>
         /// <returns>True if the operation is completed; otherwise - False.</returns>
-        private bool UpdateMorphRuleDbTable()
+        private bool UpdateMorphRuleDbTable(CancellationToken token)
         {
-            if (ParallelOptions.CancellationToken.IsCancellationRequested) return false;
+            token.ThrowIfCancellationRequested();
 
             if (!_morphRuleLoader.ReadRawData())
             {
@@ -413,25 +402,19 @@ namespace PMA.Application.UseCases.Primary
                 return false;
             }
 
-            if (ParallelOptions.CancellationToken.IsCancellationRequested)
+            token.ThrowIfCancellationRequested();
+
+            if (!_morphRuleLoader.ValidateAndFormatRawDataAsync(token).Result)
             {
                 _morphRuleLoader.Clear();
                 return false;
             }
 
-            if (!_morphRuleLoader.ValidateAndFormatRawData())
-            {
-                _morphRuleLoader.Clear();
-                return false;
-            }
+            token.ThrowIfCancellationRequested();
 
-            if (ParallelOptions.CancellationToken.IsCancellationRequested)
-            {
-                _morphRuleLoader.Clear();
-                return false;
-            }
+            bool result = _morphRuleLoader.LoadData();
 
-            if (!_morphRuleLoader.LoadData())
+            if (!result)
             {
                 _morphRuleLoader.Clear();
                 return false;

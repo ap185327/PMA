@@ -3,7 +3,6 @@
 // </copyright>
 
 using Autofac;
-using PMA.Domain.Interfaces.Services;
 using PMA.Domain.Interfaces.ViewModels;
 using System;
 using System.Collections.Specialized;
@@ -19,17 +18,11 @@ namespace PMA.WinForms.Forms
         private readonly IOptionViewModel _optionViewModel;
 
         /// <summary>
-        /// The translate service.
-        /// </summary>
-        private readonly ITranslateService _translateService;
-
-        /// <summary>
         /// Initializes a new instance of the <see cref="OptionForm"/> class.
         /// </summary>
         public OptionForm()
         {
             _optionViewModel = Program.Scope.Resolve<IOptionViewModel>();
-            _translateService = Program.Scope.Resolve<ITranslateService>();
 
             InitializeComponent();
             OverrideStrings();
@@ -43,17 +36,16 @@ namespace PMA.WinForms.Forms
         /// </summary>
         private void OverrideStrings()
         {
-            Text = _translateService.Translate(Name);
-            TermGoupBox.Text = _translateService.Translate($"{Name}.{TermGoupBox.Name}");
-            AvailableTermLabel.Text = _translateService.Translate($"{Name}.{AvailableTermLabel.Name}");
-            ShownTermLabel.Text = _translateService.Translate($"{Name}.{ShownTermLabel.Name}");
-            AddButton.Text = _translateService.Translate($"{Name}.{AddButton.Name}");
-            RemoveButton.Text = _translateService.Translate($"{Name}.{RemoveButton.Name}");
-            RootTermLabel.Text = _translateService.Translate($"{Name}.{RootTermLabel.Name}");
-            ModeLabel.Text = _translateService.Translate($"{Name}.{ModeLabel.Name}");
-            RatingGroupBox.Text = _translateService.Translate($"{Name}.{ RatingGroupBox.Name}");
-            OkButton.Text = _translateService.Translate($"{Name}.{OkButton.Name}");
-            CancelButton.Text = _translateService.Translate($"{Name}.{CancelButton.Name}");
+            Text = Properties.Resources.ResourceManager.GetString("OptionForm.Title");
+            TermGroupBox.Text = Properties.Resources.ResourceManager.GetString("OptionForm.TermGroupBox");
+            AvailableTermLabel.Text = Properties.Resources.ResourceManager.GetString("OptionForm.AvailableTermLabel");
+            ShownTermLabel.Text = Properties.Resources.ResourceManager.GetString("OptionForm.ShownTermLabel");
+            AddButton.Text = Properties.Resources.ResourceManager.GetString("OptionForm.AddButton");
+            RemoveButton.Text = Properties.Resources.ResourceManager.GetString("OptionForm.RemoveButton");
+            ModeLabel.Text = Properties.Resources.ResourceManager.GetString("OptionForm.ModeLabel");
+            RatingGroupBox.Text = Properties.Resources.ResourceManager.GetString("OptionForm.RatingGroupBox");
+            OkButton.Text = Properties.Resources.ResourceManager.GetString("OptionForm.OkButton");
+            CancelButton.Text = Properties.Resources.ResourceManager.GetString("OptionForm.CancelButton");
         }
 
         /// <summary>
@@ -61,8 +53,8 @@ namespace PMA.WinForms.Forms
         /// </summary>
         private void SetDefaultValues()
         {
-            ModeComboBox.Items.Add(_translateService.Translate($"{Name}.Mode.Debug"));
-            ModeComboBox.Items.Add(_translateService.Translate($"{Name}.Mode.Release"));
+            ModeComboBox.Items.Add(Properties.Resources.ResourceManager.GetString("OptionForm.Mode.Debug")!);
+            ModeComboBox.Items.Add(Properties.Resources.ResourceManager.GetString("OptionForm.Mode.Release")!);
 
             AvailableListBox.Items.Clear();
             ShownListBox.Items.Clear();
@@ -208,8 +200,8 @@ namespace PMA.WinForms.Forms
         /// <param name="e">Event arguments.</param>
         private void RatingTrackBar_Scroll(object sender, EventArgs e)
         {
-            MorphRuleRatingLabel.Text = _translateService.Translate($"{Name}.{MorphRuleRatingLabel.Name}", (double)RatingTrackBar.Value / RatingTrackBar.Maximum * 100);
-            FdictRatingLabel.Text = _translateService.Translate($"{Name}.{FdictRatingLabel.Name}", (double)(RatingTrackBar.Maximum - RatingTrackBar.Value) / RatingTrackBar.Maximum * 100);
+            MorphRuleRatingLabel.Text = string.Format(Properties.Resources.ResourceManager.GetString("OptionForm.MorphRuleRatingLabel")!, (double)RatingTrackBar.Value / RatingTrackBar.Maximum * 100);
+            FdictRatingLabel.Text = string.Format(Properties.Resources.ResourceManager.GetString("OptionForm.FdictRatingLabel")!, (double)(RatingTrackBar.Maximum - RatingTrackBar.Value) / RatingTrackBar.Maximum * 100);
         }
 
         /// <summary>
@@ -218,7 +210,6 @@ namespace PMA.WinForms.Forms
         private void SaveSettings()
         {
             _optionViewModel.DebugMode = ModeComboBox.SelectedIndex == 0;
-            _optionViewModel.SelectedRootTermIndex = RootTermComboBox.SelectedIndex;
             _optionViewModel.FreqRatingRatio = Math.Round((double)(RatingTrackBar.Maximum - RatingTrackBar.Value) / RatingTrackBar.Maximum, 2);
 
             _optionViewModel.SaveCommand.Execute(null);
@@ -231,16 +222,16 @@ namespace PMA.WinForms.Forms
         /// <param name="e">Event arguments.</param>
         private void OptionForm_VisibleChanged(object sender, EventArgs e)
         {
+            _optionViewModel.IsActive = Visible;
+
             if (Visible)
             {
-                _optionViewModel.OnAppearing();
                 SetSettings();
                 SubscribeEvents();
             }
             else
             {
                 UnsubscribeEvents();
-                _optionViewModel.OnDisappearing();
             }
         }
 
@@ -251,11 +242,9 @@ namespace PMA.WinForms.Forms
         {
             AvailableListBox.DataSource = null;
             ShownListBox.DataSource = null;
-            RootTermComboBox.DataSource = null;
 
             AvailableListBox.DataSource = _optionViewModel.AvailableTerms;
             ShownListBox.DataSource = _optionViewModel.ShownTerms;
-            RootTermComboBox.DataSource = _optionViewModel.RootTerms;
 
             if (AvailableListBox.Items.Count == 0)
             {
@@ -275,13 +264,11 @@ namespace PMA.WinForms.Forms
                 ShownListBox.SetSelected(0, true);
             }
 
-            RootTermComboBox.SelectedIndex = _optionViewModel.SelectedRootTermIndex;
-
             ModeComboBox.SelectedIndex = _optionViewModel.DebugMode ? 0 : 1;
 
             RatingTrackBar.Value = Convert.ToInt32(RatingTrackBar.Maximum * (1 - _optionViewModel.FreqRatingRatio));
-            MorphRuleRatingLabel.Text = _translateService.Translate($"{Name}.{MorphRuleRatingLabel.Name}", (1 - _optionViewModel.FreqRatingRatio) * 100);
-            FdictRatingLabel.Text = _translateService.Translate($"{Name}.{FdictRatingLabel.Name}", _optionViewModel.FreqRatingRatio * 100);
+            MorphRuleRatingLabel.Text = string.Format(Properties.Resources.ResourceManager.GetString("OptionForm.MorphRuleRatingLabel")!, (1 - _optionViewModel.FreqRatingRatio) * 100);
+            FdictRatingLabel.Text = string.Format(Properties.Resources.ResourceManager.GetString("OptionForm.FdictRatingLabel")!, _optionViewModel.FreqRatingRatio * 100);
         }
 
         /// <summary>

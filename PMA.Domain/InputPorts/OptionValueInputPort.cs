@@ -17,16 +17,6 @@ namespace PMA.Domain.InputPorts
         public bool DebugMode { get; init; }
 
         /// <summary>
-        /// Gets or sets a collection of root terms.
-        /// </summary>
-        public IList<string> RootTerms { get; init; }
-
-        /// <summary>
-        /// Gets or sets s selected root term index.
-        /// </summary>
-        public int SelectedRootTermIndex { get; init; }
-
-        /// <summary>
         /// Gets or sets a collection of available terms.
         /// </summary>
         public IEnumerable<string> AvailableTerms { get; init; }

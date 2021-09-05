@@ -43,13 +43,13 @@ namespace PMA.Domain.Interfaces.ViewModels
         bool AutoSymbolReplace { get; set; }
 
         /// <summary>
-        /// Gets the command to start analysis.
+        /// Gets whether the execute command is disabled.
         /// </summary>
-        ICommand StartCommand { get; }
+        bool ExecuteCommandDisabled { get; }
 
         /// <summary>
-        /// Gets the command to stop analysis.
+        /// Gets the command to start or stop analysis.
         /// </summary>
-        ICommand StopCommand { get; }
+        ICommand ExecuteCommand { get; }
     }
 }

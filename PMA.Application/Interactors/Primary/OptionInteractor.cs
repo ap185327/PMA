@@ -9,7 +9,8 @@ using PMA.Domain.InputPorts;
 using PMA.Domain.Interfaces.Interactors.Primary;
 using PMA.Domain.Interfaces.UseCases.Primary;
 using PMA.Domain.OutputPorts;
-using PMA.Utils.Extensions;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace PMA.Application.Interactors.Primary
 {
@@ -40,43 +41,29 @@ namespace PMA.Application.Interactors.Primary
         {
             _getCurrentOptionValuesUseCase = getCurrentOptionValuesUseCase;
             _saveOptionValuesUseCase = saveOptionValuesUseCase;
-
-            Logger.LogInit();
         }
 
-        #region Implementation of IOptionViewModelInteractor
+        #region Implementation of IOptionInteractor
 
         /// <summary>
         /// Gets current option values.
         /// </summary>
-        /// <returns>The operation result.</returns>
-        public OperationResult<OptionValueOutputPort> GetCurrentOptionValues()
+        /// <param name="token">The cancellation token.</param>
+        /// <returns>The option value output port.</returns>
+        public async Task<OperationResult<OptionValueOutputPort>> GetCurrentOptionValuesAsync(CancellationToken token = default)
         {
-            var result = _getCurrentOptionValuesUseCase.Execute();
-
-            if (!result.Success)
-            {
-                Logger.LogErrors(result.Messages);
-            }
-
-            return result;
+            return await _getCurrentOptionValuesUseCase.ExecuteAsync(token);
         }
 
         /// <summary>
         /// Saves option values.
         /// </summary>
         /// <param name="inputData">Options values.</param>
+        /// <param name="token">The cancellation token.</param>
         /// <returns>The operation result.</returns>
-        public OperationResult SaveOptionValues(OptionValueInputPort inputData)
+        public async Task<OperationResult> SaveOptionValuesAsync(OptionValueInputPort inputData, CancellationToken token = default)
         {
-            var result = _saveOptionValuesUseCase.Execute(inputData);
-
-            if (!result.Success)
-            {
-                Logger.LogErrors(result.Messages);
-            }
-
-            return result;
+            return await _saveOptionValuesUseCase.ExecuteAsync(inputData, token);
         }
 
         #endregion

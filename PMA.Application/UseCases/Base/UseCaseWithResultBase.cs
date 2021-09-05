@@ -2,10 +2,11 @@
 //     Copyright 2017-2021 Andrey Pospelov. All rights reserved.
 // </copyright>
 
-using MediatR;
 using Microsoft.Extensions.Logging;
 using PMA.Domain.DataContracts;
 using PMA.Domain.Interfaces.UseCases.Base;
+using PMA.Utils.Extensions;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace PMA.Application.UseCases.Base
@@ -18,16 +19,6 @@ namespace PMA.Application.UseCases.Base
     public abstract class UseCaseWithResultBase<T, TResult> : IUseCaseWithResult<TResult> where T : class
     {
         /// <summary>
-        /// The mediator.
-        /// </summary>
-        protected readonly IMediator Mediator;
-
-        /// <summary>
-        /// Options that configure the operation of methods on the <see cref="Parallel"/> class.
-        /// </summary>
-        protected readonly ParallelOptions ParallelOptions;
-
-        /// <summary>
         /// The logger.
         /// </summary>
         protected readonly ILogger<T> Logger;
@@ -35,14 +26,12 @@ namespace PMA.Application.UseCases.Base
         /// <summary>
         /// Initializes a new instance of <see cref="UseCaseWithResultBase{T, TResult}"/> class.
         /// </summary>
-        /// <param name="mediator">The mediator.</param>
-        /// <param name="parallelOptions">Options that configure the operation of methods on the <see cref="Parallel"/> class.</param>
         /// <param name="logger">The logger.</param>
-        protected UseCaseWithResultBase(IMediator mediator, ParallelOptions parallelOptions, ILogger<T> logger)
+        protected UseCaseWithResultBase(ILogger<T> logger)
         {
-            Mediator = mediator;
-            ParallelOptions = parallelOptions;
             Logger = logger;
+
+            Logger.LogInit();
         }
 
         #region Implementation of IUseCaseWithResult
@@ -52,6 +41,25 @@ namespace PMA.Application.UseCases.Base
         /// </summary>
         /// <returns>The result of action execution.</returns>
         public abstract OperationResult<TResult> Execute();
+
+        /// <summary>
+        /// Executes an action.
+        /// </summary>
+        /// <param name="token">The cancellation token.</param>
+        /// <returns>The result of action execution.</returns>
+        public abstract Task<OperationResult<TResult>> ExecuteAsync(CancellationToken token = default);
+
+        #endregion
+
+        #region IDisposable
+
+        /// <summary>
+        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+        /// </summary>
+        public void Dispose()
+        {
+            Logger.LogDispose();
+        }
 
         #endregion
     }
@@ -65,16 +73,6 @@ namespace PMA.Application.UseCases.Base
     public abstract class UseCaseWithResultBase<T, TInput, TResult> : IUseCaseWithResult<TInput, TResult> where T : class
     {
         /// <summary>
-        /// The mediator.
-        /// </summary>
-        protected readonly IMediator Mediator;
-
-        /// <summary>
-        /// Options that configure the operation of methods on the <see cref="Parallel"/> class.
-        /// </summary>
-        protected readonly ParallelOptions ParallelOptions;
-
-        /// <summary>
         /// The logger.
         /// </summary>
         protected readonly ILogger<T> Logger;
@@ -82,14 +80,12 @@ namespace PMA.Application.UseCases.Base
         /// <summary>
         /// Initializes a new instance of <see cref="UseCaseWithResultBase{T, TInput, TResult}"/> class.
         /// </summary>
-        /// <param name="mediator">The mediator.</param>
-        /// <param name="parallelOptions">Options that configure the operation of methods on the <see cref="Parallel"/> class.</param>
         /// <param name="logger">The logger.</param>
-        protected UseCaseWithResultBase(IMediator mediator, ParallelOptions parallelOptions, ILogger<T> logger)
+        protected UseCaseWithResultBase(ILogger<T> logger)
         {
-            Mediator = mediator;
-            ParallelOptions = parallelOptions;
             Logger = logger;
+
+            Logger.LogInit();
         }
 
         #region Implementation of IUseCaseWithResult<in TInput>
@@ -97,9 +93,29 @@ namespace PMA.Application.UseCases.Base
         /// <summary>
         /// Executes an action.
         /// </summary>
-        /// <param name="inputData">The input data.</param>
+        /// <param name="inputPort">The input data.</param>
         /// <returns>The result of action execution.</returns>
-        public abstract OperationResult<TResult> Execute(TInput inputData);
+        public abstract OperationResult<TResult> Execute(TInput inputPort);
+
+        /// <summary>
+        /// Executes an action.
+        /// </summary>
+        /// <param name="inputPort">The input data.</param>
+        /// <param name="token">The cancellation token.</param>
+        /// <returns>The result of action execution.</returns>
+        public abstract Task<OperationResult<TResult>> ExecuteAsync(TInput inputPort, CancellationToken token = default);
+
+        #endregion
+
+        #region IDisposable
+
+        /// <summary>
+        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+        /// </summary>
+        public void Dispose()
+        {
+            Logger.LogDispose();
+        }
 
         #endregion
     }

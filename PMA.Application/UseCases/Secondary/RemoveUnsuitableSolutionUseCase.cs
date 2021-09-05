@@ -2,7 +2,6 @@
 //     Copyright 2017-2021 Andrey Pospelov. All rights reserved.
 // </copyright>
 
-using MediatR;
 using Microsoft.Extensions.Logging;
 using PMA.Application.Extensions;
 using PMA.Application.UseCases.Base;
@@ -12,7 +11,9 @@ using PMA.Domain.InputPorts;
 using PMA.Domain.Interfaces.UseCases.Secondary;
 using PMA.Domain.Models;
 using PMA.Utils.Extensions;
+using System;
 using System.Diagnostics;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace PMA.Application.UseCases.Secondary
@@ -25,12 +26,9 @@ namespace PMA.Application.UseCases.Secondary
         /// <summary>
         /// Initializes a new instance of <see cref="RemoveUnsuitableSolutionUseCase"/> class.
         /// </summary>
-        /// <param name="mediator">The mediator.</param>
-        /// <param name="parallelOptions">Options that configure the operation of methods on the <see cref="Parallel"/> class.</param>
         /// <param name="logger">The logger.</param>
-        public RemoveUnsuitableSolutionUseCase(IMediator mediator, ParallelOptions parallelOptions, ILogger<RemoveUnsuitableSolutionUseCase> logger) : base(mediator, parallelOptions, logger)
+        public RemoveUnsuitableSolutionUseCase(ILogger<RemoveUnsuitableSolutionUseCase> logger) : base(logger)
         {
-            Logger.LogInit();
         }
 
         #region Overrides of UseCaseBase<RemoveUnsuitableSolutionUseCase,MorphParserInputPort>
@@ -38,47 +36,54 @@ namespace PMA.Application.UseCases.Secondary
         /// <summary>
         /// Executes an action.
         /// </summary>
-        /// <param name="inputData">The input data.</param>
+        /// <param name="inputPort">The input data.</param>
         /// <returns>The result of action execution.</returns>
-        public override OperationResult Execute(MorphParserInputPort inputData)
+        public override OperationResult Execute(MorphParserInputPort inputPort)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Executes an action.
+        /// </summary>
+        /// <param name="inputPort">The input data.</param>
+        /// <param name="token">The cancellation token.</param>
+        /// <returns>The result of action execution.</returns>
+        public override async Task<OperationResult> ExecuteAsync(MorphParserInputPort inputPort, CancellationToken token = default)
         {
             Logger.LogEntry();
 
-            if (inputData is null)
+            token.ThrowIfCancellationRequested();
+
+            if (inputPort is null)
             {
-                Logger.LogError(ErrorMessageConstants.ValueIsNull, nameof(inputData));
+                Logger.LogError(ErrorMessageConstants.ValueIsNull, nameof(inputPort));
                 Logger.LogExit();
-                return OperationResult.FailureResult(ErrorMessageConstants.ValueIsNull, nameof(inputData));
+                return OperationResult.FailureResult(ErrorMessageConstants.ValueIsNull, nameof(inputPort));
             }
 
-            if (inputData.WordForm is null)
+            if (inputPort.WordForm is null)
             {
-                Logger.LogError(ErrorMessageConstants.ValueIsNull, nameof(inputData.WordForm));
+                Logger.LogError(ErrorMessageConstants.ValueIsNull, nameof(inputPort.WordForm));
                 Logger.LogExit();
-                return OperationResult.FailureResult(ErrorMessageConstants.ValueIsNull, nameof(inputData.WordForm));
+                return OperationResult.FailureResult(ErrorMessageConstants.ValueIsNull, nameof(inputPort.WordForm));
             }
 
-            if (inputData.MorphEntry is null)
+            if (inputPort.MorphEntry is null)
             {
-                Logger.LogError(ErrorMessageConstants.ValueIsNull, nameof(inputData.MorphEntry));
+                Logger.LogError(ErrorMessageConstants.ValueIsNull, nameof(inputPort.MorphEntry));
                 Logger.LogExit();
-                return OperationResult.FailureResult(ErrorMessageConstants.ValueIsNull, nameof(inputData.MorphEntry));
-            }
-
-            if (ParallelOptions.CancellationToken.IsCancellationRequested)
-            {
-                Logger.LogExit();
-                return OperationResult.SuccessResult();
+                return OperationResult.FailureResult(ErrorMessageConstants.ValueIsNull, nameof(inputPort.MorphEntry));
             }
 
             var time = new Stopwatch();
 
             time.Start();
-            InternalExecute(inputData.WordForm, inputData.MorphEntry);
+            await Task.Run(() => InternalExecute(inputPort.WordForm, inputPort.MorphEntry), token);
             time.Stop();
 
 #if DEBUG
-            Trace.WriteLine($"RemoveUnsuitableSolutionUseCase.Execute() => {time.ElapsedMilliseconds} ms ({inputData.WordForm.TotalSolutionCount()})");
+            Trace.WriteLine($"RemoveUnsuitableSolutionUseCase.Execute() => {time.ElapsedMilliseconds} ms ({inputPort.WordForm.TotalSolutionCount()})");
 #endif
             Logger.LogInformation($"RemoveUnsuitableSolutionUseCase.Execute() => {time.ElapsedMilliseconds} ms");
 

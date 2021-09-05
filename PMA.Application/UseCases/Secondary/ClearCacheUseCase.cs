@@ -2,15 +2,14 @@
 //     Copyright 2017-2021 Andrey Pospelov. All rights reserved.
 // </copyright>
 
-using System;
-using System.Threading.Tasks;
-using MediatR;
 using Microsoft.Extensions.Logging;
 using PMA.Application.UseCases.Base;
 using PMA.Domain.DataContracts;
 using PMA.Domain.Interfaces.Managers;
 using PMA.Domain.Interfaces.UseCases.Secondary;
-using PMA.Utils.Extensions;
+using System;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace PMA.Application.UseCases.Secondary
 {
@@ -46,23 +45,17 @@ namespace PMA.Application.UseCases.Secondary
         /// <param name="morphEntryManager">The morphological entry manager.</param>
         /// <param name="morphRuleManager">The morphological rule manager.</param>
         /// <param name="morphCombinationManager">The morphological combination manager.</param>
-        /// <param name="mediator">The mediator.</param>
-        /// <param name="parallelOptions">Options that configure the operation of methods on the <see cref="Parallel"/> class.</param>
         /// <param name="logger">The logger.</param>
         public ClearCacheUseCase(IFreqRatingManager freqRatingManager,
             IMorphEntryManager morphEntryManager,
             IMorphRuleManager morphRuleManager,
             IMorphCombinationManager morphCombinationManager,
-            IMediator mediator,
-            ParallelOptions parallelOptions,
-            ILogger<ClearCacheUseCase> logger) : base(mediator, parallelOptions, logger)
+            ILogger<ClearCacheUseCase> logger) : base(logger)
         {
             _freqRatingManager = freqRatingManager;
             _morphEntryManager = morphEntryManager;
             _morphRuleManager = morphRuleManager;
             _morphCombinationManager = morphCombinationManager;
-
-            Logger.LogInit();
         }
 
         #region Overrides of UseCaseBase<ClearCacheUseCase>
@@ -73,16 +66,23 @@ namespace PMA.Application.UseCases.Secondary
         /// <returns>The result of action execution.</returns>
         public override OperationResult Execute()
         {
-            Logger.LogEntry();
-
             _freqRatingManager.Clear();
             _morphEntryManager.Clear();
             _morphRuleManager.Clear();
             _morphCombinationManager.Clear();
             GC.Collect();
 
-            Logger.LogExit();
             return OperationResult.SuccessResult();
+        }
+
+        /// <summary>
+        /// Executes an action.
+        /// </summary>
+        /// <param name="token">The cancellation token.</param>
+        /// <returns>The result of action execution.</returns>
+        public override Task<OperationResult> ExecuteAsync(CancellationToken token = default)
+        {
+            return Task.FromResult(Execute());
         }
 
         #endregion

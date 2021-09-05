@@ -13,23 +13,23 @@ namespace PMA.Domain.EventArguments
     public class ModalDialogEventArgs : EventArgs
     {
         /// <summary>
-        /// Gets or sets a modal dialog title.
+        /// Gets or initialize a modal dialog title.
         /// </summary>
         public string Title { get; init; }
 
         /// <summary>
-        /// Gets or sets a modal dialog message.
+        /// Gets or initialize a modal dialog message.
         /// </summary>
         public string Message { get; init; }
 
         /// <summary>
-        /// Gets or sets a modal dialog type.
+        /// Gets or initialize a modal dialog type.
         /// </summary>
         public ModalDialogType Type { get; init; }
 
         /// <summary>
-        /// Gets or sets a modal dialog buttons.
+        /// Gets or initialize a modal dialog buttons.
         /// </summary>
-        public string[] Buttons { get; init; }
+        public ModalButtonType[] Buttons { get; init; }
     }
 }

@@ -112,12 +112,12 @@
     <value>2.0</value>
   </resheader>
   <resheader name="reader">
-    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=5.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <resheader name="writer">
-    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=5.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
+  <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=5.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
   <data name="stop" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\stop.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
@@ -135,5 +135,440 @@
   </data>
   <data name="about" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\about.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="GetEntryIdForm.BaseColumnHeader" xml:space="preserve">
+    <value>Base</value>
+  </data>
+  <data name="GetEntryIdForm.DeleteToolStripMenuItem" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="GetEntryIdForm.EntryColumnHeader" xml:space="preserve">
+    <value>Entry</value>
+  </data>
+  <data name="GetEntryIdForm.IdColumnHeader" xml:space="preserve">
+    <value>ID</value>
+  </data>
+  <data name="GetEntryIdForm.InfoColumnHeader" xml:space="preserve">
+    <value>Morph-Info</value>
+  </data>
+  <data name="GetEntryIdForm.IsVirtualColumnHeader" xml:space="preserve">
+    <value>IsVirtual</value>
+  </data>
+  <data name="GetEntryIdForm.LeftColumnHeader" xml:space="preserve">
+    <value>Left</value>
+  </data>
+  <data name="GetEntryIdForm.RightColumnHeader" xml:space="preserve">
+    <value>Right</value>
+  </data>
+  <data name="GetEntryIdForm.Title" xml:space="preserve">
+    <value>Get ID for entry '{0}'</value>
+  </data>
+  <data name="ImportEntryForm.AnalyzeBeforeImportCheckBox" xml:space="preserve">
+    <value>Analyze entries before importing</value>
+  </data>
+  <data name="ImportEntryForm.ClearLogButton" xml:space="preserve">
+    <value>Clear Log</value>
+  </data>
+  <data name="ImportEntryForm.CloseButton" xml:space="preserve">
+    <value>Close</value>
+  </data>
+  <data name="ImportEntryForm.DescriptionColumnHeader" xml:space="preserve">
+    <value>Description</value>
+  </data>
+  <data name="ImportEntryForm.EventColumnHeader" xml:space="preserve">
+    <value>Event</value>
+  </data>
+  <data name="ImportEntryForm.LogLabel" xml:space="preserve">
+    <value>Log:</value>
+  </data>
+  <data name="ImportEntryForm.OpenFileButton" xml:space="preserve">
+    <value>Open File</value>
+  </data>
+  <data name="ImportEntryForm.OpenFileFilter" xml:space="preserve">
+    <value>PMA Entries files (*.xlsx)|*.xlsx</value>
+  </data>
+  <data name="ImportEntryForm.OpenFileLabel" xml:space="preserve">
+    <value>Open file with PMA entries (.xlsx):</value>
+  </data>
+  <data name="ImportEntryForm.OpenFileTitle" xml:space="preserve">
+    <value>Open PMA Entries file (.xlsx):</value>
+  </data>
+  <data name="ImportEntryForm.ResetButton" xml:space="preserve">
+    <value>Reset</value>
+  </data>
+  <data name="ImportEntryForm.StartButton" xml:space="preserve">
+    <value>Start</value>
+  </data>
+  <data name="ImportEntryForm.StopButton" xml:space="preserve">
+    <value>Stop</value>
+  </data>
+  <data name="ImportEntryForm.TimeColumnHeader" xml:space="preserve">
+    <value>Time</value>
+  </data>
+  <data name="ImportEntryForm.Title" xml:space="preserve">
+    <value>Import Entries</value>
+  </data>
+  <data name="MainForm.AboutToolStripMenuItem" xml:space="preserve">
+    <value>About</value>
+  </data>
+  <data name="MainForm.AutoSymbolReplaceStripButton.ToolTipText" xml:space="preserve">
+    <value>aa\t--&gt;\tā\nii\t--&gt;\tī\nuu\t--&gt;\tū\n~n\t--&gt;\tñ\n.n\t--&gt;\tṇ\n.d\t--&gt;\tḍ\n.l\t--&gt;\tḷ\n.m\t--&gt;\tṃ\n.t\t--&gt;\tṭ\n"n\t--&gt;\tṅ</value>
+  </data>
+  <data name="MainForm.DepthToolStripLabel" xml:space="preserve">
+    <value>Depth:</value>
+  </data>
+  <data name="MainForm.ExitToolStripMenuItem" xml:space="preserve">
+    <value>Exit</value>
+  </data>
+  <data name="MainForm.ExportToolStripMenuItem" xml:space="preserve">
+    <value>Export</value>
+  </data>
+  <data name="MainForm.FileToolStripMenuItem" xml:space="preserve">
+    <value>File</value>
+  </data>
+  <data name="MainForm.HelpToolStripMenuItem" xml:space="preserve">
+    <value>Help</value>
+  </data>
+  <data name="MainForm.ImportCatalogsToolStripMenuItem" xml:space="preserve">
+    <value>Update Data Tables</value>
+  </data>
+  <data name="MainForm.ImportEntriesToolStripMenuItem" xml:space="preserve">
+    <value>Import Entries</value>
+  </data>
+  <data name="MainForm.Layer.1" xml:space="preserve">
+    <value>1</value>
+  </data>
+  <data name="MainForm.Layer.2" xml:space="preserve">
+    <value>2</value>
+  </data>
+  <data name="MainForm.Layer.3" xml:space="preserve">
+    <value>3</value>
+  </data>
+  <data name="MainForm.Layer.4" xml:space="preserve">
+    <value>4</value>
+  </data>
+  <data name="MainForm.Layer.5" xml:space="preserve">
+    <value>5</value>
+  </data>
+  <data name="MainForm.Layer.6" xml:space="preserve">
+    <value>6</value>
+  </data>
+  <data name="MainForm.Layer.7" xml:space="preserve">
+    <value>7</value>
+  </data>
+  <data name="MainForm.Layer.8" xml:space="preserve">
+    <value>8</value>
+  </data>
+  <data name="MainForm.Layer.Auto" xml:space="preserve">
+    <value>Auto</value>
+  </data>
+  <data name="MainForm.LayerToolStripLabel" xml:space="preserve">
+    <value>Layer:</value>
+  </data>
+  <data name="MainForm.MorphologicalToolStripMenuItem" xml:space="preserve">
+    <value>Morphological</value>
+  </data>
+  <data name="MainForm.MorphologicalWatermark" xml:space="preserve">
+    <value>Enter pali-word</value>
+  </data>
+  <data name="MainForm.OptionsToolStripMenuItem" xml:space="preserve">
+    <value>Options</value>
+  </data>
+  <data name="MainForm.SaveFileFilter" xml:space="preserve">
+    <value>JSON files (*.json)|*.json</value>
+  </data>
+  <data name="MainForm.SaveFileTitle" xml:space="preserve">
+    <value>Export wordform to file</value>
+  </data>
+  <data name="MainForm.ShowMorphPropertiesToolStripMenuItem" xml:space="preserve">
+    <value>Show Morph. Properties</value>
+  </data>
+  <data name="MainForm.ShowMorphRuleInfoToolStripMenuItem" xml:space="preserve">
+    <value>Show Morph. Rule Info</value>
+  </data>
+  <data name="MainForm.ShowMorphSolutionsToolStripMenuItem" xml:space="preserve">
+    <value>Show Morph. Solutions</value>
+  </data>
+  <data name="MainForm.StartToolStripSplitButton" xml:space="preserve">
+    <value>Morphological</value>
+  </data>
+  <data name="MainForm.SyntacticToolStripMenuItem" xml:space="preserve">
+    <value>Syntactic</value>
+  </data>
+  <data name="MainForm.Title" xml:space="preserve">
+    <value>Pali Morphological Analyzer (version {0})</value>
+  </data>
+  <data name="MainForm.ToolsToolStripMenuItem" xml:space="preserve">
+    <value>Tools</value>
+  </data>
+  <data name="MainForm.WindowsToolStripMenuItem" xml:space="preserve">
+    <value>Windows</value>
+  </data>
+  <data name="MessageLevel.Error" xml:space="preserve">
+    <value>Error</value>
+  </data>
+  <data name="MessageLevel.Information" xml:space="preserve">
+    <value>Info</value>
+  </data>
+  <data name="MessageLevel.Warning" xml:space="preserve">
+    <value>Warn</value>
+  </data>
+  <data name="UpdateDbForm.ClearLogButton" xml:space="preserve">
+    <value>Clear Log</value>
+  </data>
+  <data name="UpdateDbForm.CloseButton" xml:space="preserve">
+    <value>Close</value>
+  </data>
+  <data name="UpdateDbForm.DataTableGroupBox" xml:space="preserve">
+    <value>Data tables</value>
+  </data>
+  <data name="UpdateDbForm.DescriptionColumnHeader" xml:space="preserve">
+    <value>Description</value>
+  </data>
+  <data name="UpdateDbForm.EventColumnHeader" xml:space="preserve">
+    <value>Event</value>
+  </data>
+  <data name="UpdateDbForm.ImportMorphCombinationsCheckBox" xml:space="preserve">
+    <value>Morph. combinations</value>
+  </data>
+  <data name="UpdateDbForm.ImportMorphRulesCheckBox" xml:space="preserve">
+    <value>Morph. rules</value>
+  </data>
+  <data name="UpdateDbForm.ImportSandhiGroupsCheckBox" xml:space="preserve">
+    <value>Sandhi groups</value>
+  </data>
+  <data name="UpdateDbForm.ImportSandhiRulesCheckBox" xml:space="preserve">
+    <value>Sandhi rules</value>
+  </data>
+  <data name="UpdateDbForm.LogLabel" xml:space="preserve">
+    <value>Log:</value>
+  </data>
+  <data name="UpdateDbForm.OpenFileButton" xml:space="preserve">
+    <value>Open file</value>
+  </data>
+  <data name="UpdateDbForm.OpenFileFilter" xml:space="preserve">
+    <value>PMA files (*.xlsx)|*.xlsx</value>
+  </data>
+  <data name="UpdateDbForm.OpenFileLabel" xml:space="preserve">
+    <value>Open file with PMA data tables (.xlsx):</value>
+  </data>
+  <data name="UpdateDbForm.OpenFileTitle" xml:space="preserve">
+    <value>Open file with PMA data tables</value>
+  </data>
+  <data name="UpdateDbForm.ResetButton" xml:space="preserve">
+    <value>Reset</value>
+  </data>
+  <data name="UpdateDbForm.StartButton" xml:space="preserve">
+    <value>Start</value>
+  </data>
+  <data name="UpdateDbForm.StopButton" xml:space="preserve">
+    <value>Stop</value>
+  </data>
+  <data name="UpdateDbForm.TimeColumnHeader" xml:space="preserve">
+    <value>Time</value>
+  </data>
+  <data name="UpdateDbForm.Title" xml:space="preserve">
+    <value>Update PMA data tables</value>
+  </data>
+  <data name="MorphPropertyForm.BaseLabel" xml:space="preserve">
+    <value>Base:</value>
+  </data>
+  <data name="MorphPropertyForm.DeleteButton" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="MorphPropertyForm.EntryIdLabel" xml:space="preserve">
+    <value>ID: {0}</value>
+  </data>
+  <data name="MorphPropertyForm.GetEntryIdButton" xml:space="preserve">
+    <value>Get ID</value>
+  </data>
+  <data name="MorphPropertyForm.GetLeftIdButton" xml:space="preserve">
+    <value>Get ID</value>
+  </data>
+  <data name="MorphPropertyForm.GetRightIdButton" xml:space="preserve">
+    <value>Get ID</value>
+  </data>
+  <data name="MorphPropertyForm.IsVirtualCheckBox" xml:space="preserve">
+    <value>Virtual</value>
+  </data>
+  <data name="MorphPropertyForm.LeftCheckBox" xml:space="preserve">
+    <value>Left:</value>
+  </data>
+  <data name="MorphPropertyForm.LeftIdLabel" xml:space="preserve">
+    <value>ID: {0}</value>
+  </data>
+  <data name="MorphPropertyForm.ResetButton" xml:space="preserve">
+    <value>Reset</value>
+  </data>
+  <data name="MorphPropertyForm.RightCheckBox" xml:space="preserve">
+    <value>Right:</value>
+  </data>
+  <data name="MorphPropertyForm.RightIdLabel" xml:space="preserve">
+    <value>ID: {0}</value>
+  </data>
+  <data name="MorphPropertyForm.SaveButton" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="MorphPropertyForm.StartButton" xml:space="preserve">
+    <value>Start</value>
+  </data>
+  <data name="MorphPropertyForm.StopButton" xml:space="preserve">
+    <value>Stop</value>
+  </data>
+  <data name="MorphPropertyForm.Title" xml:space="preserve">
+    <value>Morpological Properties</value>
+  </data>
+  <data name="MorphBase.Both" xml:space="preserve">
+    <value>both</value>
+  </data>
+  <data name="MorphBase.Left" xml:space="preserve">
+    <value>left</value>
+  </data>
+  <data name="MorphBase.None" xml:space="preserve">
+    <value>n/a</value>
+  </data>
+  <data name="MorphBase.Right" xml:space="preserve">
+    <value>right</value>
+  </data>
+  <data name="MorphBase.Unknown" xml:space="preserve">
+    <value>&lt;unknown&gt;</value>
+  </data>
+  <data name="MorphRuleInfoForm.DescriptionColumnHeader" xml:space="preserve">
+    <value>Description</value>
+  </data>
+  <data name="MorphRuleInfoForm.IdColumnHeader" xml:space="preserve">
+    <value>ID</value>
+  </data>
+  <data name="MorphRuleInfoForm.MorphRuleListViewGroup" xml:space="preserve">
+    <value>Morphological Rules</value>
+  </data>
+  <data name="MorphRuleInfoForm.SandhiRuleListViewGroup" xml:space="preserve">
+    <value>Sandhi Rules</value>
+  </data>
+  <data name="MorphRuleInfoForm.Title" xml:space="preserve">
+    <value>Morphological Rule Information</value>
+  </data>
+  <data name="MorphSolutionForm.Title" xml:space="preserve">
+    <value>Morphological Solutions</value>
+  </data>
+  <data name="OptionForm.AddButton" xml:space="preserve">
+    <value>Add --&gt;</value>
+  </data>
+  <data name="OptionForm.AvailableTermLabel" xml:space="preserve">
+    <value>Available terms</value>
+  </data>
+  <data name="OptionForm.CancelButton" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="OptionForm.FdictRatingLabel" xml:space="preserve">
+    <value>Freq. dictionary: {0}%</value>
+  </data>
+  <data name="OptionForm.Mode.Debug" xml:space="preserve">
+    <value>Debug</value>
+  </data>
+  <data name="OptionForm.Mode.Release" xml:space="preserve">
+    <value>Release</value>
+  </data>
+  <data name="OptionForm.ModeLabel" xml:space="preserve">
+    <value>Mode:</value>
+  </data>
+  <data name="OptionForm.MorphRuleRatingLabel" xml:space="preserve">
+    <value>Morph. rules: {0}%</value>
+  </data>
+  <data name="OptionForm.OkButton" xml:space="preserve">
+    <value>OK</value>
+  </data>
+  <data name="OptionForm.RatingGroupBox" xml:space="preserve">
+    <value>Solution rating</value>
+  </data>
+  <data name="OptionForm.RemoveButton" xml:space="preserve">
+    <value>&lt;-- Remove</value>
+  </data>
+  <data name="OptionForm.ShownTermLabel" xml:space="preserve">
+    <value>Show these terms</value>
+  </data>
+  <data name="OptionForm.TermGroupBox" xml:space="preserve">
+    <value>Morphological Solution terms</value>
+  </data>
+  <data name="OptionForm.Title" xml:space="preserve">
+    <value>Options</value>
+  </data>
+  <data name="MorphParameters.Category.Additional flags" xml:space="preserve">
+    <value>4     Additional flags</value>
+  </data>
+  <data name="MorphParameters.Category.Etymology" xml:space="preserve">
+    <value>5     Etymology</value>
+  </data>
+  <data name="MorphParameters.Category.General" xml:space="preserve">
+    <value>1     General</value>
+  </data>
+  <data name="MorphParameters.Category.Morph. Information" xml:space="preserve">
+    <value>3     Morph. Information</value>
+  </data>
+  <data name="MorphParameters.Category.Part of Speech" xml:space="preserve">
+    <value>2     Part of Speech</value>
+  </data>
+  <data name="MorphParameters.Property.Case" xml:space="preserve">
+    <value>3.7     Case</value>
+  </data>
+  <data name="MorphParameters.Property.Formation" xml:space="preserve">
+    <value>5.1     Formation</value>
+  </data>
+  <data name="MorphParameters.Property.Gender" xml:space="preserve">
+    <value>3.3     Gender</value>
+  </data>
+  <data name="MorphParameters.Property.IsIrregular" xml:space="preserve">
+    <value>4.1     IsIrregular</value>
+  </data>
+  <data name="MorphParameters.Property.IsName" xml:space="preserve">
+    <value>4.2     IsName</value>
+  </data>
+  <data name="MorphParameters.Property.IsNegative" xml:space="preserve">
+    <value>4.3     IsNegative</value>
+  </data>
+  <data name="MorphParameters.Property.Language" xml:space="preserve">
+    <value>1.1     Language</value>
+  </data>
+  <data name="MorphParameters.Property.Mode" xml:space="preserve">
+    <value>3.4     Mode</value>
+  </data>
+  <data name="MorphParameters.Property.Number" xml:space="preserve">
+    <value>3.6     Number</value>
+  </data>
+  <data name="MorphParameters.Property.Parent" xml:space="preserve">
+    <value>5.2     Parent</value>
+  </data>
+  <data name="MorphParameters.Property.Part" xml:space="preserve">
+    <value>1.2     Part</value>
+  </data>
+  <data name="MorphParameters.Property.Person" xml:space="preserve">
+    <value>3.5     Person</value>
+  </data>
+  <data name="MorphParameters.Property.PoS1" xml:space="preserve">
+    <value>2.1     PoS1</value>
+  </data>
+  <data name="MorphParameters.Property.PoS2" xml:space="preserve">
+    <value>2.2     PoS2</value>
+  </data>
+  <data name="MorphParameters.Property.PoS3" xml:space="preserve">
+    <value>2.3     PoS3</value>
+  </data>
+  <data name="MorphParameters.Property.Tense" xml:space="preserve">
+    <value>3.1     Tense</value>
+  </data>
+  <data name="MorphParameters.Property.Type1" xml:space="preserve">
+    <value>5.3     Type1</value>
+  </data>
+  <data name="MorphParameters.Property.Type2" xml:space="preserve">
+    <value>5.4     Type2</value>
+  </data>
+  <data name="MorphParameters.Property.Type3" xml:space="preserve">
+    <value>5.5     Type3</value>
+  </data>
+  <data name="MorphParameters.Property.Voice" xml:space="preserve">
+    <value>3.2     Voice</value>
+  </data>
+  <data name="MorphParameters.Property.WithAugment" xml:space="preserve">
+    <value>4.4     WithAugment</value>
   </data>
 </root>

@@ -1,0 +1,15 @@
+﻿<MudSelect @ref="_mudSelect"
+           T="@PMA.Domain.Enums.MorphBase"
+           @bind-Value="ViewModel.Base"
+           Label="@Label"
+           OffsetY="true"
+           Variant="Variant.Outlined"
+           Margin="Margin.Dense"
+           Dense="true"
+           Style="Width: 100%"
+           FullWidth="true">
+    @foreach (var item in _items)
+    {
+        <MudSelectItem Style="@GetMorphBaseValueStyle(item)" Value="@item">@GetMorphBaseValue(item)</MudSelectItem>
+    }
+</MudSelect>

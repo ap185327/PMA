@@ -15,7 +15,7 @@ namespace PMA.Domain.Interfaces.ViewModels
     public interface IGetEntryIdViewModel : IViewModel
     {
         /// <summary>
-        /// Gets a morphological entry.
+        /// Gets an entry.
         /// </summary>
         string Entry { get; }
 

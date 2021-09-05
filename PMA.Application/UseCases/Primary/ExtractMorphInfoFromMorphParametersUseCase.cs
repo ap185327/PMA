@@ -2,17 +2,16 @@
 //     Copyright 2017-2021 Andrey Pospelov. All rights reserved.
 // </copyright>
 
-using MediatR;
 using Microsoft.Extensions.Logging;
 using PMA.Application.UseCases.Base;
-using PMA.Domain.Constants;
 using PMA.Domain.DataContracts;
+using PMA.Domain.InputPorts;
 using PMA.Domain.Interfaces.Providers;
 using PMA.Domain.Interfaces.UseCases.Primary;
-using PMA.Utils.Extensions;
 using System;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace PMA.Application.UseCases.Primary
@@ -20,7 +19,7 @@ namespace PMA.Application.UseCases.Primary
     /// <summary>
     /// The extract morphological information from morphological parameters use case class.
     /// </summary>
-    public sealed class ExtractMorphInfoFromMorphParametersUseCase : UseCaseWithResultBase<ExtractMorphInfoFromMorphParametersUseCase, byte[], string>, IExtractMorphInfoFromMorphParametersUseCase
+    public sealed class ExtractMorphInfoFromMorphParametersUseCase : UseCaseWithResultBase<ExtractMorphInfoFromMorphParametersUseCase, ExtractMorphInfoInputPort, string>, IExtractMorphInfoFromMorphParametersUseCase
     {
         /// <summary>
         /// The term database provider.
@@ -37,45 +36,31 @@ namespace PMA.Application.UseCases.Primary
         /// </summary>
         /// <param name="termDbProvider">The term database provider.</param>
         /// <param name="morphParameterDbProvider">The morphological parameter database provider.</param>
-        /// <param name="mediator">The mediator.</param>
-        /// <param name="parallelOptions">Options that configure the operation of methods on the <see cref="Parallel"/> class.</param>
         /// <param name="logger">The logger.</param>
         public ExtractMorphInfoFromMorphParametersUseCase(ITermDbProvider termDbProvider,
             IMorphParameterDbProvider morphParameterDbProvider,
-            IMediator mediator,
-            ParallelOptions parallelOptions,
-            ILogger<ExtractMorphInfoFromMorphParametersUseCase> logger) : base(mediator,
-            parallelOptions,
-            logger)
+            ILogger<ExtractMorphInfoFromMorphParametersUseCase> logger) : base(logger)
         {
             _termDbProvider = termDbProvider;
             _morphParameterDbProvider = morphParameterDbProvider;
-
-            Logger.LogInit();
         }
 
-        #region Overrides of UseCaseWithResultBase<ExtractMorphInfoFromMorphParametersUseCase,byte[],string>
+        #region Overrides of UseCaseWithResultBase<ExtractMorphInfoFromMorphParametersUseCase,ExtractMorphInfoInputPort,string>
 
         /// <summary>
         /// Executes an action.
         /// </summary>
-        /// <param name="inputData">The input data.</param>
+        /// <param name="inputPort">The input data.</param>
         /// <returns>The result of action execution.</returns>
-        public override OperationResult<string> Execute(byte[] inputData)
+        public override OperationResult<string> Execute(ExtractMorphInfoInputPort inputPort)
         {
-            if (inputData is null)
-            {
-                Logger.LogError(ErrorMessageConstants.ValueIsNull, nameof(inputData));
-                return OperationResult<string>.FailureResult(ErrorMessageConstants.ValueIsNull, nameof(inputData));
-            }
-
             try
             {
                 var stringBuilder = new StringBuilder();
-                for (int i = 0; i < inputData.Length; i++)
+                for (int i = 0; i < inputPort.Parameters.Length; i++)
                 {
-                    string value = _termDbProvider.GetValues().Single(x => x.Id == inputData[i]).AltEntry;
-                    if (!string.IsNullOrEmpty(value) && _morphParameterDbProvider.GetValues().Single(x => x.Id == i).IsVisible)
+                    string value = _termDbProvider.GetValues().Single(x => x.Id == inputPort.Parameters[i]).AltEntry;
+                    if (!string.IsNullOrEmpty(value) && (!inputPort.UseVisibility || _morphParameterDbProvider.GetValues().Single(x => x.Id == i).IsVisible))
                     {
                         stringBuilder.Append(value + " ");
                     }
@@ -88,6 +73,17 @@ namespace PMA.Application.UseCases.Primary
                 Logger.LogError(exception.Message);
                 return OperationResult<string>.ExceptionResult(exception);
             }
+        }
+
+        /// <summary>
+        /// Executes an action.
+        /// </summary>
+        /// <param name="inputPort">The input data.</param>
+        /// <param name="token">The cancellation token.</param>
+        /// <returns>The result of action execution.</returns>
+        public override Task<OperationResult<string>> ExecuteAsync(ExtractMorphInfoInputPort inputPort, CancellationToken token = default)
+        {
+            return Task.FromResult(Execute(inputPort));
         }
 
         #endregion

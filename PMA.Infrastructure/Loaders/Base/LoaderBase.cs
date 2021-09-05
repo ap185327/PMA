@@ -7,6 +7,9 @@ using Microsoft.Extensions.Logging;
 using PMA.Domain.Interfaces.Loaders.Base;
 using PMA.Domain.Interfaces.Locators;
 using PMA.Infrastructure.DbContexts;
+using PMA.Utils.Extensions;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace PMA.Infrastructure.Loaders.Base
 {
@@ -52,6 +55,8 @@ namespace PMA.Infrastructure.Loaders.Base
             Context = context;
             Mapper = mapper;
             Logger = logger;
+
+            Logger.LogInit();
         }
 
         #region Implementation of ILoader
@@ -67,6 +72,12 @@ namespace PMA.Infrastructure.Loaders.Base
         /// </summary>
         /// <returns>The result of operation.</returns>
         public abstract bool ValidateAndFormatRawData();
+
+        /// <summary>
+        /// Validates and formats raw data.
+        /// </summary>
+        /// <returns>True if the raw data has been validated; otherwise - False.</returns>
+        public abstract Task<bool> ValidateAndFormatRawDataAsync(CancellationToken token = default);
 
         /// <summary>
         /// Clears temp data.

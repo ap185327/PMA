@@ -22,11 +22,6 @@ namespace PMA.WinForms.Forms
         private readonly IUpdateDbViewModel _dbUpdateViewModel;
 
         /// <summary>
-        /// The translate service.
-        /// </summary>
-        private readonly ITranslateService _translateService;
-
-        /// <summary>
         /// The setting service.
         /// </summary>
         private readonly ISettingService _settingService;
@@ -52,7 +47,6 @@ namespace PMA.WinForms.Forms
         public UpdateDbForm()
         {
             _dbUpdateViewModel = Program.Scope.Resolve<IUpdateDbViewModel>();
-            _translateService = Program.Scope.Resolve<ITranslateService>();
             _settingService = Program.Scope.Resolve<ISettingService>();
             _logMessageService = Program.Scope.Resolve<ILogMessageService>();
 
@@ -68,22 +62,22 @@ namespace PMA.WinForms.Forms
         /// </summary>
         private void OverrideStrings()
         {
-            Text = _translateService.Translate(Name);
-            DataTableGroupBox.Text = _translateService.Translate($"{Name}.{DataTableGroupBox.Name}");
-            ImportMorphCombinationsCheckBox.Text = _translateService.Translate($"{Name}.{ImportMorphCombinationsCheckBox.Name}");
-            ImportSandhiGroupsCheckBox.Text = _translateService.Translate($"{Name}.{ImportSandhiGroupsCheckBox.Name}");
-            ImportSandhiRulesCheckBox.Text = _translateService.Translate($"{Name}.{ImportSandhiRulesCheckBox.Name}");
-            ImportMorphRulesCheckBox.Text = _translateService.Translate($"{Name}.{ImportMorphRulesCheckBox.Name}");
-            OpenFileLabel.Text = _translateService.Translate($"{Name}.{OpenFileLabel.Name}");
-            LogLabel.Text = _translateService.Translate($"{Name}.{LogLabel.Name}");
-            TimeColumnHeader.Text = _translateService.Translate($"{Name}.TimeColumnHeader");
-            EventColumnHeader.Text = _translateService.Translate($"{Name}.EventColumnHeader");
-            DescriptionColumnHeader.Text = _translateService.Translate($"{Name}.DescriptionColumnHeader");
-            StartButton.Text = _translateService.Translate($"{Name}.{StartButton.Name}");
-            CloseButton.Text = _translateService.Translate($"{Name}.{CloseButton.Name}");
-            ResetButton.Text = _translateService.Translate($"{Name}.{ResetButton.Name}");
-            OpenFileButton.Text = _translateService.Translate($"{Name}.{OpenFileButton.Name}");
-            ClearLogButton.Text = _translateService.Translate($"{Name}.{ClearLogButton.Name}");
+            Text = Properties.Resources.ResourceManager.GetString("UpdateDbForm.Title");
+            DataTableGroupBox.Text = Properties.Resources.ResourceManager.GetString("UpdateDbForm.DataTableGroupBox");
+            ImportMorphCombinationsCheckBox.Text = Properties.Resources.ResourceManager.GetString("UpdateDbForm.ImportMorphCombinationsCheckBox");
+            ImportSandhiGroupsCheckBox.Text = Properties.Resources.ResourceManager.GetString("UpdateDbForm.ImportSandhiGroupsCheckBox");
+            ImportSandhiRulesCheckBox.Text = Properties.Resources.ResourceManager.GetString("UpdateDbForm.ImportSandhiRulesCheckBox");
+            ImportMorphRulesCheckBox.Text = Properties.Resources.ResourceManager.GetString("UpdateDbForm.ImportMorphRulesCheckBox");
+            OpenFileLabel.Text = Properties.Resources.ResourceManager.GetString("UpdateDbForm.OpenFileLabel");
+            LogLabel.Text = Properties.Resources.ResourceManager.GetString("UpdateDbForm.LogLabel");
+            TimeColumnHeader.Text = Properties.Resources.ResourceManager.GetString("UpdateDbForm.TimeColumnHeader");
+            EventColumnHeader.Text = Properties.Resources.ResourceManager.GetString("UpdateDbForm.EventColumnHeader");
+            DescriptionColumnHeader.Text = Properties.Resources.ResourceManager.GetString("UpdateDbForm.DescriptionColumnHeader");
+            StartButton.Text = Properties.Resources.ResourceManager.GetString("UpdateDbForm.StartButton");
+            CloseButton.Text = Properties.Resources.ResourceManager.GetString("UpdateDbForm.CloseButton");
+            ResetButton.Text = Properties.Resources.ResourceManager.GetString("UpdateDbForm.ResetButton");
+            OpenFileButton.Text = Properties.Resources.ResourceManager.GetString("UpdateDbForm.OpenFileButton");
+            ClearLogButton.Text = Properties.Resources.ResourceManager.GetString("UpdateDbForm.ClearLogButton");
         }
 
         /// <summary>
@@ -185,12 +179,12 @@ namespace PMA.WinForms.Forms
                             if (!_dbUpdateViewModel.IsBusy)
                             {
                                 StartButton.Enabled = true;
-                                StartButton.Text = _translateService.Translate($"{Name}.StartButton");
+                                StartButton.Text = Properties.Resources.ResourceManager.GetString("UpdateDbForm.StartButton");
                                 _dbUpdateViewModel.DataFilePath = _openFileComboBox.Text;
                             }
                             else
                             {
-                                StartButton.Text = _translateService.Translate($"{Name}.StopButton");
+                                StartButton.Text = Properties.Resources.ResourceManager.GetString("UpdateDbForm.StopButton");
                             }
 
                             break;
@@ -206,7 +200,7 @@ namespace PMA.WinForms.Forms
         /// <param name="e">Event arguments.</param>
         private void LogMessageService_MessageReceived(object sender, LogMessageEventArgs e)
         {
-            _logListView.AddItem(e.Message.Level, _translateService.Translate(e.Message.Level), e.Message.Text);
+            _logListView.AddItem(e.Message.Level, Properties.Resources.ResourceManager.GetString($"MessageLevel.{e.Message.Level}"), e.Message.Text);
         }
 
         /// <summary>
@@ -216,7 +210,7 @@ namespace PMA.WinForms.Forms
         /// <param name="e">Event arguments.</param>
         private void StartButton_Click(object sender, EventArgs e)
         {
-            if (StartButton.Text == _translateService.Translate($"{Name}.StartButton"))
+            if (StartButton.Text == Properties.Resources.ResourceManager.GetString("UpdateDbForm.StartButton"))
             {
                 _dbUpdateViewModel.IsSandhiGroupDbTableChecked = ImportSandhiGroupsCheckBox.Checked;
                 _dbUpdateViewModel.IsSandhiRuleDbTableChecked = ImportSandhiRulesCheckBox.Checked;
@@ -253,7 +247,7 @@ namespace PMA.WinForms.Forms
         /// <param name="e">Event arguments.</param>
         private void OpenFileButton_Click(object sender, EventArgs e)
         {
-            _openFileComboBox.OpenFile(_translateService.Translate($"{Name}.OpenFileTitle"), _translateService.Translate($"{Name}.OpenFileFilter"));
+            _openFileComboBox.OpenFile(Properties.Resources.ResourceManager.GetString("UpdateDbForm.OpenFileTitle"), Properties.Resources.ResourceManager.GetString("UpdateDbForm.OpenFileFilter"));
         }
 
         /// <summary>
@@ -339,7 +333,7 @@ namespace PMA.WinForms.Forms
         {
             if (Visible)
             {
-                _dbUpdateViewModel.OnAppearing();
+                _dbUpdateViewModel.IsActive = true;
                 SetSettings();
                 SubscribeEvents();
             }
@@ -347,7 +341,7 @@ namespace PMA.WinForms.Forms
             {
                 SaveSettings();
                 UnsubscribeEvents();
-                _dbUpdateViewModel.OnDisappearing();
+                _dbUpdateViewModel.IsActive = false;
             }
         }
 
@@ -356,10 +350,10 @@ namespace PMA.WinForms.Forms
         /// </summary>
         private void SetSettings()
         {
-            Height = _settingService.GetValue<int>($"{Name}.Height");
-            TimeColumnHeader.Width = _settingService.GetValue<int>($"{Name}.TimeColumnHeader.Width");
-            EventColumnHeader.Width = _settingService.GetValue<int>($"{Name}.EventColumnHeader.Width");
-            DescriptionColumnHeader.Width = _settingService.GetValue<int>($"{Name}.DescriptionColumnHeader.Width");
+            Height = _settingService.GetValue<int>("WinForms.UpdateDbForm.Height");
+            TimeColumnHeader.Width = _settingService.GetValue<int>("WinForms.UpdateDbForm.TimeColumnHeader.Width");
+            EventColumnHeader.Width = _settingService.GetValue<int>("WinForms.UpdateDbForm.EventColumnHeader.Width");
+            DescriptionColumnHeader.Width = _settingService.GetValue<int>("WinForms.UpdateDbForm.DescriptionColumnHeader.Width");
 
             _openFileComboBox.Items.Add(_dbUpdateViewModel.DataFilePath);
             _openFileComboBox.Text = _dbUpdateViewModel.DataFilePath;
@@ -386,10 +380,10 @@ namespace PMA.WinForms.Forms
         /// </summary>
         private void SaveSettings()
         {
-            _settingService.SetValue($"{Name}.Height", Height);
-            _settingService.SetValue($"{Name}.TimeColumnHeader.Width", TimeColumnHeader.Width);
-            _settingService.SetValue($"{Name}.EventColumnHeader.Width", EventColumnHeader.Width);
-            _settingService.SetValue($"{Name}.DescriptionColumnHeader.Width", DescriptionColumnHeader.Width);
+            _settingService.SetValue("WinForms.UpdateDbForm.Height", Height);
+            _settingService.SetValue("WinForms.UpdateDbForm.TimeColumnHeader.Width", TimeColumnHeader.Width);
+            _settingService.SetValue("WinForms.UpdateDbForm.EventColumnHeader.Width", EventColumnHeader.Width);
+            _settingService.SetValue("WinForms.UpdateDbForm.DescriptionColumnHeader.Width", DescriptionColumnHeader.Width);
         }
 
         /// <summary>

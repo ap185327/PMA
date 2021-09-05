@@ -1,0 +1,20 @@
+﻿<MudDialog IsVisible="_isVisible">
+    <TitleContent>
+        <div class="d-inline-flex align-center">
+            <MudIcon Class="mr-3"
+                     Icon="@Icons.Material.Filled.Search"
+                     Color="Color.Inherit"
+                     Size="Size.Large" />
+            <MudText Typo="Typo.h6">@Title</MudText>
+            <MudSpacer />
+            <MudIconButton Icon="@Icons.Material.Filled.Clear"
+                           Color="Color.Inherit"
+                           OnClick="OnCloseButtonCLick" />
+        </div>
+    </TitleContent>
+    <DialogContent>
+        <div style="width: 900px">
+            <GetEntryIdTableComponent ViewModel="ViewModel" />
+        </div>
+    </DialogContent>
+</MudDialog>

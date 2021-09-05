@@ -5,11 +5,13 @@
 using Autofac;
 using Autofac.Extras.DynamicProxy;
 using AutoMapper;
+using MediatR;
 using Microsoft.Extensions.Logging;
+using PMA.Application.MappingProfiles;
 using PMA.Domain.Interfaces.Interceptors;
-using PMA.Infrastructure.Configurations;
 using PMA.Infrastructure.DbContexts;
 using PMA.Infrastructure.Interceptors;
+using PMA.Infrastructure.MappingProfiles;
 using System.Reflection;
 
 namespace PMA.Infrastructure
@@ -20,20 +22,42 @@ namespace PMA.Infrastructure
     public static class StartupSetup
     {
         /// <summary>
-        /// Registers infrastructure types.
+        /// Adds infrastructure services.
         /// </summary>
-        /// <param name="builder">This DI container.</param>
+        /// <param name="builder">This DI container builder.</param>
         /// <param name="dataSource">The data source.</param>
-        public static void RegisterInfrastructureTypes(this ContainerBuilder builder, string dataSource)
+        public static void AddInfrastructureServices(this ContainerBuilder builder, string dataSource)
         {
-            // Configurations
+            // Interceptors
             builder.RegisterType<LoggerInterceptor>().As<ILoggerInterceptor>().SingleInstance();
+
+            // Mapper
+            builder.Register(c =>
+                    new Mapper(new MapperConfiguration(x =>
+                    {
+                        x.AddProfile(new EntityMappingProfile());
+                        x.AddProfile(new ModelMappingProfile());
+                        x.AddProfile(new ViewModelMappingProfile(c));
+                    })))
+                .As<IMapperBase>()
+                .SingleInstance();
+
+            // Logger
             builder.RegisterType<LoggerFactory>().As<ILoggerFactory>().SingleInstance();
             builder.RegisterGeneric(typeof(Logger<>)).As(typeof(ILogger<>)).SingleInstance();
+
+            // Mediator
+            builder.RegisterType<Mediator>().As<IMediator>().SingleInstance();
+            builder.Register<ServiceFactory>(context =>
+            {
+                var c = context.Resolve<IComponentContext>();
+                return t => c.Resolve(t);
+            });
+
+            // DbContexts
             builder.RegisterType<SqLiteDbContext>().WithParameter("dataSource", dataSource)
                 .InterceptedBy(typeof(ILoggerInterceptor))
                 .SingleInstance();
-            builder.RegisterType<Mapper>().As<IMapperBase>().WithParameter("configurationProvider", new MapperConfiguration(x => x.AddProfile(new MappingProfile()))).SingleInstance();
 
             var dataAccess = Assembly.GetExecutingAssembly();
 

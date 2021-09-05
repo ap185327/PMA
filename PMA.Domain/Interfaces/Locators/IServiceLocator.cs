@@ -30,5 +30,10 @@ namespace PMA.Domain.Interfaces.Locators
         /// Gets a translate service.
         /// </summary>
         ITranslateService TranslateService { get; }
+
+        /// <summary>
+        /// Gets a modal dialog service.
+        /// </summary>
+        IModalDialogService ModalDialogService { get; }
     }
 }

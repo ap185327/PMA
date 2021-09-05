@@ -3,10 +3,14 @@
 // </copyright>
 
 using PMA.Domain.DataContracts;
+using PMA.Domain.InputPorts;
 using PMA.Domain.Interfaces.Interactors.Base;
+using PMA.Domain.Interfaces.ViewModels.Controls;
 using PMA.Domain.Models;
 using PMA.Domain.OutputPorts;
 using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace PMA.Domain.Interfaces.Interactors.Primary
 {
@@ -19,21 +23,24 @@ namespace PMA.Domain.Interfaces.Interactors.Primary
         /// Tries to delete a collection of morphological entries from the database.
         /// </summary>
         /// <param name="ids">The collection of morphological entry IDs.</param>
-        /// <returns>The operation result.</returns>
-        OperationResult<IList<DeleteMorphEntryOutputPort>> TryToDeleteMorphEntries(IList<int> ids);
+        /// <param name="token">The cancellation token.</param>
+        /// <returns>The collection of delete morphological entry output ports.</returns>
+        Task<OperationResult<IList<DeleteMorphEntryOutputPort>>> TryToDeleteMorphEntriesAsync(IList<int> ids, CancellationToken token = default);
 
         /// <summary>
         /// Extracts a morphological information from the collection of morphological parameters.
         /// </summary>
-        /// <param name="parameters">The collection of morphological parameters.</param>
+        /// <param name="inputPort">The extract a morphological information input data.</param>
+        /// <param name="token">The cancellation token.</param>
         /// <returns>The operation result.</returns>
-        OperationResult<string> ExtractMorphInfoFromMorphParameters(byte[] parameters);
+        Task<OperationResult<string>> ExtractMorphInfoFromMorphParametersAsync(ExtractMorphInfoInputPort inputPort, CancellationToken token = default);
 
         /// <summary>
-        /// Gets a collection of morphological entries by the morphological entry.
+        /// Gets a collection of get entry ID control view models by the morphological entry.
         /// </summary>
         /// <param name="morphEntry">The morphological entry.</param>
-        /// <returns>The operation result.</returns>
-        OperationResult<IList<MorphEntry>> GetMorphEntriesByMorphEntry(MorphEntry morphEntry);
+        /// <param name="token">The cancellation token.</param>
+        /// <returns>The collection of get entry ID control view models.</returns>
+        Task<OperationResult<IList<IGetEntryIdControlViewModel>>> GetGetEntryIdControlViewModelsAsync(MorphEntry morphEntry, CancellationToken token = default);
     }
 }
