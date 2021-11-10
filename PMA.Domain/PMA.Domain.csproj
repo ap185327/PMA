@@ -1,11 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net5.0</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
     <Authors>Andrey Pospelov</Authors>
-    <Version>0.9.1.0</Version>
+    <Version>0.9.2.0</Version>
     <Copyright>Copyright © Andrey Pospelov 2017-2021</Copyright>
-    <AssemblyVersion>0.9.1.0</AssemblyVersion>
-    <FileVersion>0.9.1.0</FileVersion>
+    <AssemblyVersion>$(Version)</AssemblyVersion>
+    <FileVersion>$(Version)</FileVersion>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="MediatR" Version="9.0.0" />

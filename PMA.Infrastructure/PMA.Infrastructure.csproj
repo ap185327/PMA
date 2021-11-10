@@ -1,11 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net5.0</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
     <Authors>Andrey Pospelov</Authors>
-    <Version>0.9.1.0</Version>
+    <Version>0.9.2.0</Version>
     <Copyright>Copyright © Andrey Pospelov 2017-2021</Copyright>
-    <AssemblyVersion>0.9.1.0</AssemblyVersion>
-    <FileVersion>0.9.1.0</FileVersion>
+    <AssemblyVersion>$(Version)</AssemblyVersion>
+    <FileVersion>$(Version)</FileVersion>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\PMA.Application\PMA.Application.csproj" />
@@ -13,6 +13,6 @@
   <ItemGroup>
     <PackageReference Include="AutoMapper" Version="10.1.1" />
     <PackageReference Include="DocumentFormat.OpenXml" Version="2.14.0" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="5.0.11" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="6.0.0" />
   </ItemGroup>
 </Project>
