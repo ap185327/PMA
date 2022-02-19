@@ -1,5 +1,5 @@
 // <copyright file="Program.cs" company="Andrey Pospelov">
-//     Copyright 2017-2021 Andrey Pospelov. All rights reserved.
+//     Copyright 2017-2022 Andrey Pospelov. All rights reserved.
 // </copyright>
 
 using Autofac;
@@ -16,8 +16,10 @@ using PMA.WinForms.Forms;
 using PMA.WinForms.Helpers;
 using PMA.WinForms.Models;
 using System;
+using System.Globalization;
 using System.IO;
 using System.Reflection;
+using System.Threading;
 using System.Windows.Forms;
 
 namespace PMA.WinForms
@@ -40,6 +42,8 @@ namespace PMA.WinForms
         [STAThread]
         private static void Main()
         {
+            Thread.CurrentThread.CurrentCulture = new CultureInfo("en-US");
+
             // ReSharper disable once PossibleNullReferenceException
             Version = Assembly.GetExecutingAssembly().GetName().Version.ToString();
 
