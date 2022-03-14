@@ -3,17 +3,16 @@
 ################################################################################
 
 *.user
-/.vs
-/Solution Items
-/PMA.Application/bin
-/PMA.Application/obj
-/PMA.Domain/bin
-/PMA.Domain/obj
-/PMA.Infrastructure/bin
-/PMA.Infrastructure/obj
-/PMA.Utils/bin
-/PMA.Utils/obj
-/PMA.WinForms/bin
-/PMA.WinForms/obj
-/PMA.Blazor/bin
-/PMA.Blazor/obj
+/src/.vs
+/src/PMA.Application/bin
+/src/PMA.Application/obj
+/src/PMA.Domain/bin
+/src/PMA.Domain/obj
+/src/PMA.Infrastructure/bin
+/src/PMA.Infrastructure/obj
+/src/PMA.Utils/bin
+/src/PMA.Utils/obj
+/src/PMA.WinForms/bin
+/src/PMA.WinForms/obj
+/src/PMA.Blazor/bin
+/src/PMA.Blazor/obj
