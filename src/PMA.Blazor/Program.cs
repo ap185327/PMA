@@ -1,5 +1,5 @@
 // <copyright file="Program.cs" company="Andrey Pospelov">
-//     Copyright 2017-2021 Andrey Pospelov. All rights reserved.
+//     Copyright 2017-2022 Andrey Pospelov. All rights reserved.
 // </copyright>
 
 using Autofac.Extensions.DependencyInjection;
@@ -9,6 +9,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using NLog.Web;
 using System;
+using System.Globalization;
 using System.IO;
 
 namespace PMA.Blazor
@@ -17,6 +18,9 @@ namespace PMA.Blazor
     {
         public static void Main(string[] args)
         {
+            CultureInfo.DefaultThreadCurrentCulture = new CultureInfo("en-US");
+            CultureInfo.DefaultThreadCurrentUICulture = new CultureInfo("en-US");
+
             var logger = NLogBuilder.ConfigureNLog("nlog.config").GetCurrentClassLogger();
 
             try
