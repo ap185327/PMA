@@ -1,0 +1,19 @@
+﻿################################################################################
+# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
+################################################################################
+
+*.user
+/.vs
+/Solution Items
+/PMA.Application/bin
+/PMA.Application/obj
+/PMA.Domain/bin
+/PMA.Domain/obj
+/PMA.Infrastructure/bin
+/PMA.Infrastructure/obj
+/PMA.Utils/bin
+/PMA.Utils/obj
+/PMA.WinForms/bin
+/PMA.WinForms/obj
+/PMA.Blazor/bin
+/PMA.Blazor/obj
