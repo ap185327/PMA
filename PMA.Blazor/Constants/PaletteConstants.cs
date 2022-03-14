@@ -13,75 +13,75 @@ namespace PMA.Blazor.Constants
     {
         public static readonly Palette Default = new()
         {
-            Primary = "#b73801",
+            Primary = new MudColor("#b73801"),
             Error = Colors.Red.Default,
             Warning = Colors.Orange.Default,
 
             // Buttons
-            ActionDefault = Color.Black.ToRgba(0.75),
-            ActionDisabled = Color.Black.ToRgba(0.25),
+            ActionDefault = new MudColor(Color.Black.ToHex()).SetAlpha(0.75),
+            ActionDisabled = new MudColor(Color.Black.ToHex()).SetAlpha(0.25),
 
             // Lines
-            Divider = Color.Black.ToRgba(0.1),
-            TableLines = Color.Black.ToRgba(0.25),
-            LinesInputs = Color.Black.ToRgba(0.5),
-            LinesDefault = Color.Black.ToRgba(0.12),
+            Divider = new MudColor(Color.Black.ToHex()).SetAlpha(0.1),
+            TableLines = new MudColor(Color.Black.ToHex()).SetAlpha(0.25),
+            LinesInputs = new MudColor(Color.Black.ToHex()).SetAlpha(0.5),
+            LinesDefault = new MudColor(Color.Black.ToHex()).SetAlpha(0.12),
 
             // Hovers
-            TableHover = Color.Black.ToRgba(0.04),
+            TableHover = new MudColor(Color.Black.ToHex()).SetAlpha(0.04),
 
             // Texts
-            AppbarText = Color.Black.ToRgba(0.75),
-            TextPrimary = Color.Black.ToRgba(0.75),
-            TextSecondary = Color.Black.ToRgba(0.5),
-            TextDisabled = Color.Black.ToRgba(0.25),
-            DrawerText = Color.Black.ToRgba(0.5),
+            AppbarText = new MudColor(Color.Black.ToHex()).SetAlpha(0.75),
+            TextPrimary = new MudColor(Color.Black.ToHex()).SetAlpha(0.75),
+            TextSecondary = new MudColor(Color.Black.ToHex()).SetAlpha(0.5),
+            TextDisabled = new MudColor(Color.Black.ToHex()).SetAlpha(0.25),
+            DrawerText = new MudColor(Color.Black.ToHex()).SetAlpha(0.5),
 
             // Backgrounds
-            Surface = Color.White.ToHex(),
-            Background = Color.FromArgb(245, 243, 237).ToHex(),
-            AppbarBackground = Color.White.ToHex(),
-            DrawerBackground = Color.White.ToHex(),
+            Surface = new MudColor(Color.White.ToHex()),
+            Background = new MudColor(Color.FromArgb(245, 243, 237).ToHex()),
+            AppbarBackground = new MudColor(Color.White.ToHex()),
+            DrawerBackground = new MudColor(Color.White.ToHex()),
 
             //Tooltip
-            DarkContrastText = Color.White.ToRgba(0.85)
+            DarkContrastText = new MudColor(Color.White.ToHex()).SetAlpha(0.85)
         };
 
         public static readonly Palette Dark = new()
         {
-            Primary = "#5898e1",
-            Error = new MudColor(Colors.Red.Default).SetAlpha(0.75).ToString(MudColorOutputFormats.RGBA),
-            Warning = new MudColor(Colors.Orange.Default).SetAlpha(0.75).ToString(MudColorOutputFormats.RGBA),
+            Primary = new MudColor("#5898e1"),
+            Error = new MudColor(Colors.Red.Default).SetAlpha(0.75),
+            Warning = new MudColor(Colors.Orange.Default).SetAlpha(0.75),
 
             // Buttons
-            ActionDefault = Color.White.ToRgba(0.75),
-            ActionDisabled = Color.White.ToRgba(0.25),
+            ActionDefault = new MudColor(Color.White.ToHex()).SetAlpha(0.75),
+            ActionDisabled = new MudColor(Color.White.ToHex()).SetAlpha(0.25),
 
             // Lines
-            Divider = Color.White.ToRgba(0.1),
-            TableLines = Color.White.ToRgba(0.25),
-            LinesInputs = Color.White.ToRgba(0.5),
-            LinesDefault = Color.White.ToRgba(0.12),
+            Divider = new MudColor(Color.White.ToHex()).SetAlpha(0.1),
+            TableLines = new MudColor(Color.White.ToHex()).SetAlpha(0.25),
+            LinesInputs = new MudColor(Color.White.ToHex()).SetAlpha(0.5),
+            LinesDefault = new MudColor(Color.White.ToHex()).SetAlpha(0.12),
 
             // Hovers
-            TableHover = Color.White.ToRgba(0.04),
+            TableHover = new MudColor(Color.White.ToHex()).SetAlpha(0.04),
 
             // Texts
-            AppbarText = Color.White.ToRgba(0.75),
-            TextPrimary = Color.White.ToRgba(0.75),
-            TextSecondary = Color.White.ToRgba(0.5),
-            TextDisabled = Color.White.ToRgba(0.25),
-            DrawerText = Color.White.ToRgba(0.5),
+            AppbarText = new MudColor(Color.White.ToHex()).SetAlpha(0.75),
+            TextPrimary = new MudColor(Color.White.ToHex()).SetAlpha(0.75),
+            TextSecondary = new MudColor(Color.White.ToHex()).SetAlpha(0.5),
+            TextDisabled = new MudColor(Color.White.ToHex()).SetAlpha(0.25),
+            DrawerText = new MudColor(Color.White.ToHex()).SetAlpha(0.5),
 
 
             // Backgrounds
-            Surface = "#172a46",
-            Background = "#0a192f",
-            AppbarBackground = "#172a46",
-            DrawerBackground = "#172a46",
+            Surface = new MudColor("#172a46"),
+            Background = new MudColor("#0a192f"),
+            AppbarBackground = new MudColor("#172a46"),
+            DrawerBackground = new MudColor("#172a46"),
 
             // Tooltip
-            DarkContrastText = Color.White.ToRgba(0.85),
+            DarkContrastText = new MudColor(Color.White.ToHex()).SetAlpha(0.85),
             GrayDarker = "#0a192f"
         };
     }
