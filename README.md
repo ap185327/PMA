@@ -27,7 +27,7 @@ There are two types of applications: WinForms and WebServer. For Windows, you ca
 4. Run <b>PMA.WinForms.exe</b>
 
 <p align="center">
-  <img src="content/winforms_screen01.png?raw=true">
+  <img src="content/winforms_demo.gif?raw=true">
 </p>
 
 ## WebServer
