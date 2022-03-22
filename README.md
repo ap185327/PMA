@@ -39,5 +39,5 @@ There are two types of applications: WinForms and WebServer. For Windows, you ca
 6. Open <b>localhost:5000</b> or <b>localhost:5001</b> in web browser
 
 <p align="center">
-  <img src="content/blazor_screen01.png?raw=true">
+  <img src="content/webserver_demo.gif?raw=true">
 </p>
